@@ -155,7 +155,7 @@ void calculate_uv(  double dt,
 	double inverse_dy = 1.0 / dy;
 	
 	int i,j;
-	for( i = 1; i < imax; ++j )	{
+	for( i = 1; i < imax; ++i )	{
 		for( j = 1; j <= imax; ++j )	{
 			U[i][j] = F[i][j] - dt * inverse_dx * ( P[i+1][j] - P[i][j] );
 		}

@@ -14,7 +14,7 @@ void boundaryvalues(int imax,//Grid size in x-direction
 		V[i][0] = 0;
 		V[i][jmax] = 0;
 		U[i][0] = -1.0 * U[i][1];
-		U[i][jmax+1] = -1.0 * U[i][jmax];
+		U[i][jmax+1] = 2.0 - U[i][jmax];
 	}
 	
 	for(j = 1; j <= jmax; ++j) {

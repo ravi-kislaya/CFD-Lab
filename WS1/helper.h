@@ -32,7 +32,7 @@ int max( int a, int b);
 double fmin( double a, double b);
 double fmax( double a, double b);
 
-//Functions added by Ravi
+/*Functions added by Ravi*/
 double absoluteMaxInArray(double **A, int nr, int nc);
 
 /**

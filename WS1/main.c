@@ -38,5 +38,14 @@
  * - calculate_uv() Calculate the velocity at the next time step.
  */
 int main(int argn, char** args){
-  return -1;
+    // 0. declare all variables
+    // 1. read the data file 
+    // 2. initialize all varaibles: t, U, V, P
+    // 3. write the while loop
 }
+
+
+
+
+
+

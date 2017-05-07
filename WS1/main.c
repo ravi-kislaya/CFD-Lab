@@ -103,6 +103,8 @@ int main(int argn, char** args){
 		// Update the velocities U and V
 		calculate_uv(dt, dx, dy, imax, jmax, U, V, F, G, P);
 		
+		printf("Time = %f \n",t);
+		
 		//DELETE Comment We can also write the vtk at the end
 		//Output vtk file every 50th timestep
 		if (n % 50 == 0) write_vtkFile("Cavity100", n, xlength, ylength, imax, jmax, dx, dy, U, V, P);

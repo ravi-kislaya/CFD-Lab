@@ -1,11 +1,12 @@
 CC = gcc
-CFLAGS = -Wall -pedantic -Werror
+CFLAGS = -Wall -pedantic -g
 .c.o:  ; $(CC) -c $(CFLAGS) $<
 
 OBJ = 	helper.o\
       	init.o\
       	boundary_val.o\
       	uvp.o\
+		sor.o\
       	main.o\
       	visual.o
 
@@ -25,4 +26,4 @@ boundary_val.o: helper.h boundary_val.h
 uvp.o         : helper.h uvp.h
 visual.o      : helper.h
 
-main.o        : helper.h init.h boundary_val.h uvp.h visual.h
+main.o        : helper.h init.h boundary_val.h uvp.h sor.h visual.h

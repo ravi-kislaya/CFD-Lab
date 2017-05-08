@@ -1,0 +1,149 @@
+==32466== Memcheck, a memory error detector
+==32466== Copyright (C) 2002-2015, and GNU GPL'd, by Julian Seward et al.
+==32466== Using Valgrind-3.11.0 and LibVEX; rerun with -h for copyright info
+==32466== Command: ./sim
+==32466== 
+==32466== Conditional jump or move depends on uninitialised value(s)
+==32466==    at 0x51936C8: __printf_fp_l (printf_fp.c:381)
+==32466==    by 0x51920B8: vfprintf (vfprintf.c:1631)
+==32466==    by 0x51987F6: fprintf (fprintf.c:32)
+==32466==    by 0x4051C0: write_vtkFile (visual.c:40)
+==32466==    by 0x404D71: main (main.c:114)
+==32466== 
+==32466== Conditional jump or move depends on uninitialised value(s)
+==32466==    at 0x51936E2: __printf_fp_l (printf_fp.c:395)
+==32466==    by 0x51920B8: vfprintf (vfprintf.c:1631)
+==32466==    by 0x51987F6: fprintf (fprintf.c:32)
+==32466==    by 0x4051C0: write_vtkFile (visual.c:40)
+==32466==    by 0x404D71: main (main.c:114)
+==32466== 
+==32466== Conditional jump or move depends on uninitialised value(s)
+==32466==    at 0x518D060: __mpn_extract_double (dbl2mpn.c:56)
+==32466==    by 0x5193711: __printf_fp_l (printf_fp.c:411)
+==32466==    by 0x51920B8: vfprintf (vfprintf.c:1631)
+==32466==    by 0x51987F6: fprintf (fprintf.c:32)
+==32466==    by 0x4051C0: write_vtkFile (visual.c:40)
+==32466==    by 0x404D71: main (main.c:114)
+==32466== 
+==32466== Conditional jump or move depends on uninitialised value(s)
+==32466==    at 0x518D065: __mpn_extract_double (dbl2mpn.c:60)
+==32466==    by 0x5193711: __printf_fp_l (printf_fp.c:411)
+==32466==    by 0x51920B8: vfprintf (vfprintf.c:1631)
+==32466==    by 0x51987F6: fprintf (fprintf.c:32)
+==32466==    by 0x4051C0: write_vtkFile (visual.c:40)
+==32466==    by 0x404D71: main (main.c:114)
+==32466== 
+==32466== Conditional jump or move depends on uninitialised value(s)
+==32466==    at 0x51943B8: __printf_fp_l (printf_fp.c:959)
+==32466==    by 0x51920B8: vfprintf (vfprintf.c:1631)
+==32466==    by 0x51987F6: fprintf (fprintf.c:32)
+==32466==    by 0x4051C0: write_vtkFile (visual.c:40)
+==32466==    by 0x404D71: main (main.c:114)
+==32466== 
+==32466== Conditional jump or move depends on uninitialised value(s)
+==32466==    at 0x51943DB: __printf_fp_l (printf_fp.c:962)
+==32466==    by 0x51920B8: vfprintf (vfprintf.c:1631)
+==32466==    by 0x51987F6: fprintf (fprintf.c:32)
+==32466==    by 0x4051C0: write_vtkFile (visual.c:40)
+==32466==    by 0x404D71: main (main.c:114)
+==32466== 
+==32466== Conditional jump or move depends on uninitialised value(s)
+==32466==    at 0x519480A: __printf_fp_l (printf_fp.c:972)
+==32466==    by 0x51920B8: vfprintf (vfprintf.c:1631)
+==32466==    by 0x51987F6: fprintf (fprintf.c:32)
+==32466==    by 0x4051C0: write_vtkFile (visual.c:40)
+==32466==    by 0x404D71: main (main.c:114)
+==32466== 
+==32466== Conditional jump or move depends on uninitialised value(s)
+==32466==    at 0x519481E: __printf_fp_l (printf_fp.c:972)
+==32466==    by 0x51920B8: vfprintf (vfprintf.c:1631)
+==32466==    by 0x51987F6: fprintf (fprintf.c:32)
+==32466==    by 0x4051C0: write_vtkFile (visual.c:40)
+==32466==    by 0x404D71: main (main.c:114)
+==32466== 
+==32466== Conditional jump or move depends on uninitialised value(s)
+==32466==    at 0x5194A8B: round_away (rounding-mode.h:52)
+==32466==    by 0x5194A8B: __printf_fp_l (printf_fp.c:979)
+==32466==    by 0x51920B8: vfprintf (vfprintf.c:1631)
+==32466==    by 0x51987F6: fprintf (fprintf.c:32)
+==32466==    by 0x4051C0: write_vtkFile (visual.c:40)
+==32466==    by 0x404D71: main (main.c:114)
+==32466== 
+==32466== Conditional jump or move depends on uninitialised value(s)
+==32466==    at 0x519455F: __printf_fp_l (printf_fp.c:1147)
+==32466==    by 0x51920B8: vfprintf (vfprintf.c:1631)
+==32466==    by 0x51987F6: fprintf (fprintf.c:32)
+==32466==    by 0x4051C0: write_vtkFile (visual.c:40)
+==32466==    by 0x404D71: main (main.c:114)
+==32466== 
+==32466== Conditional jump or move depends on uninitialised value(s)
+==32466==    at 0x5194836: __printf_fp_l (printf_fp.c:1154)
+==32466==    by 0x51920B8: vfprintf (vfprintf.c:1631)
+==32466==    by 0x51987F6: fprintf (fprintf.c:32)
+==32466==    by 0x4051C0: write_vtkFile (visual.c:40)
+==32466==    by 0x404D71: main (main.c:114)
+==32466== 
+==32466== Conditional jump or move depends on uninitialised value(s)
+==32466==    at 0x51949F1: __printf_fp_l (printf_fp.c:1210)
+==32466==    by 0x51920B8: vfprintf (vfprintf.c:1631)
+==32466==    by 0x51987F6: fprintf (fprintf.c:32)
+==32466==    by 0x4051C0: write_vtkFile (visual.c:40)
+==32466==    by 0x404D71: main (main.c:114)
+==32466== 
+==32466== Conditional jump or move depends on uninitialised value(s)
+==32466==    at 0x51949D3: __printf_fp_l (printf_fp.c:1212)
+==32466==    by 0x51920B8: vfprintf (vfprintf.c:1631)
+==32466==    by 0x51987F6: fprintf (fprintf.c:32)
+==32466==    by 0x4051C0: write_vtkFile (visual.c:40)
+==32466==    by 0x404D71: main (main.c:114)
+==32466== 
+==32466== Syscall param write(buf) points to uninitialised byte(s)
+==32466==    at 0x52396E0: __write_nocancel (syscall-template.S:84)
+==32466==    by 0x51BBBFE: _IO_file_write@@GLIBC_2.2.5 (fileops.c:1263)
+==32466==    by 0x51BD408: new_do_write (fileops.c:518)
+==32466==    by 0x51BD408: _IO_do_write@@GLIBC_2.2.5 (fileops.c:494)
+==32466==    by 0x51BD91A: _IO_file_overflow@@GLIBC_2.2.5 (fileops.c:854)
+==32466==    by 0x5195666: __printf_fp_l (printf_fp.c:1236)
+==32466==    by 0x51920B8: vfprintf (vfprintf.c:1631)
+==32466==    by 0x51987F6: fprintf (fprintf.c:32)
+==32466==    by 0x4051C0: write_vtkFile (visual.c:40)
+==32466==    by 0x404D71: main (main.c:114)
+==32466==  Address 0x55437c1 is 4,081 bytes inside a block of size 4,096 alloc'd
+==32466==    at 0x4C2DB8F: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==32466==    by 0x51B01D4: _IO_file_doallocate (filedoalloc.c:127)
+==32466==    by 0x51BE593: _IO_doallocbuf (genops.c:398)
+==32466==    by 0x51BD8F7: _IO_file_overflow@@GLIBC_2.2.5 (fileops.c:820)
+==32466==    by 0x51BC28C: _IO_file_xsputn@@GLIBC_2.2.5 (fileops.c:1331)
+==32466==    by 0x51B17BA: fwrite (iofwrite.c:39)
+==32466==    by 0x405417: write_vtkHeader (visual.c:73)
+==32466==    by 0x404FF6: write_vtkFile (visual.c:31)
+==32466==    by 0x404D71: main (main.c:114)
+==32466== 
+File: cavity100.dat		*xlength       = 1.000000
+File: cavity100.dat		*ylength       = 1.000000
+File: cavity100.dat		*Re            = 100.000000
+File: cavity100.dat		*t_end         = 50.000000
+File: cavity100.dat		*dt            = 0.050000
+File: cavity100.dat		*imax          = 50
+File: cavity100.dat		*jmax          = 50
+File: cavity100.dat		*omg           = 1.700000
+File: cavity100.dat		*eps           = 0.001000
+File: cavity100.dat		*tau           = 0.500000
+File: cavity100.dat		*alpha         = 0.500000
+File: cavity100.dat		*itermax       = 1000
+File: cavity100.dat		*dt_value      = 0.500000
+File: cavity100.dat		*UI            = 0.000000
+File: cavity100.dat		*VI            = 0.000000
+File: cavity100.dat		*GX            = 0.000000
+File: cavity100.dat		*GY            = 0.000000
+File: cavity100.dat		*PI            = 0.000000
+==32466== 
+==32466== HEAP SUMMARY:
+==32466==     in use at exit: 0 bytes in 0 blocks
+==32466==   total heap usage: 449 allocs, 449 frees, 1,148,808 bytes allocated
+==32466== 
+==32466== All heap blocks were freed -- no leaks are possible
+==32466== 
+==32466== For counts of detected and suppressed errors, rerun with: -v
+==32466== Use --track-origins=yes to see where uninitialised values come from
+==32466== ERROR SUMMARY: 9600 errors from 14 contexts (suppressed: 0 from 0)

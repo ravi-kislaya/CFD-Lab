@@ -1,15 +1,20 @@
 # That is the script that can simplify your workflow.
+# The script can take one perameter
 #
-# There is three modes that one can use:
-#   1. the basic mode - the mode cleans the folder from *.vtk and *.o files
-#      Type the following command to run that mode: ./script.sh
+# There is four modes that one can use:
+#   1. the clean mode - the mode cleans the folder from *.vtk, *.o 
+#      files and REPORT::<day>-<month>-<time>.
+#      Type the following command to run that mode: ./script.sh clean
 #
-#   2. the run mode - that mode includes step 1. and runs the make program
-#      to generate the executable. The script runs the executable after 
-#      successful compilation 
-#      Type the following commnad to run that mode: ./script.sh make
+#	2. the make mode - the mode include the 1 mode and run make program
+#	   to generate executable
+#	   Type the following command to run that mode: ./script.sh make
 #
-#   3. the memory check mode - that mode includes steps 1 and 2. 
+#   3. the run mode - that mode includes step 1. and 2. The script runs the 
+#	   executable after successful compilation 
+#      Type the following commnad to run that mode: ./script.sh make-and-run
+#
+#   4. the memory check mode - that mode includes steps 1, 2. and 3. 
 #      Additionally, it runs valgrind and write its output
 #      into the file called MEMORY_LEAKS_REPORT
 #      Typpe the following command to run that mode: ./script make mem-check
@@ -17,42 +22,113 @@
 
 #!/bin/bash
 
-# clean the window
-clear
+
+# define all necessary functions
+function cleanProject { 
+
+	# clean the window
+	clear
+
+	# remove executable
+	make clean
+	if [ -f ./$EXECUTABLE ]; then
+		rm ./sim
+	fi
+
+	# remove all vtk files
+	rm ./*.vtk
+	rm ./*.o
+} 
 
 
-# declare all variables
-RUN_MAKE=make
-RUN_VALGRIND=mem-check
-EXECUTABLE=sim
-
-
-# clean the project
-make clean
-if [ -f ./$EXECUTABLE ]; then
-    rm ./sim
-fi
-
-
-# remove all vtk files
-rm ./*.vtk
-rm ./*.o
-
-
-# generate the executable file
-if [ $1 = $RUN_MAKE ]; then
-    # run make program
+function generateExecutable {
+	
+	# clean the project
+	cleanProject
+	
+	# run make program
     make
-    
-    # run simulation if the compilation process was successful
+}
+
+
+function runExecutable {
+
+	# run simulation if the compilation process was successful
     if [ -f ./$EXECUTABLE ]; then
         ./$EXECUTABLE
     fi
+}
+
+
+function runValgrind {
+	
+	if [ -f ./$EXECUTABLE ]; then
+
+		# remove the old report
+		rm ./$MEM_CHECK_FILE*
+
+		# set file name according to the format above 
+		DATE=`date +%d-%m-%r`
+		FILE_NAME=$MEM_CHECK_FILE$DATE
+
+		# generate the report 
+		valgrind --tool=memcheck ./$EXECUTABLE > $FILE_NAME 2>&1
+	fi
+}
+
+
+# declare all variables
+RUN_CLEAN=clean
+RUN_MAKE=make
+MAKE_AND_RUN=make-and-run
+RUN_VALGRIND=mem-check
+EXECUTABLE=sim
+MEM_CHECK_FILE=REPORT::
+NUMBER_OF_AVALIABLE_PARAMETERS=1
+
+# process all modes
+
+if [ "$#" = $NUMBER_OF_AVALIABLE_PARAMETERS ]; then
+
+	
+	if [ $1 = $RUN_CLEAN ]; then
+
+		# clean project mode
+		cleanProject
+
+	elif [ $1 = $RUN_MAKE ]; then
+
+		# make-run executable mode
+		generateExecutable
+
+	elif [ $1 = $MAKE_AND_RUN ]; then
+
+		# make and run executable mode
+		generateExecutable
+		runExecutable
+
+	elif [ $1 = $RUN_VALGRIND ]; then
+
+		# compile the memory leaks report
+		generateExecutable
+		runExecutable
+		runValgrind
+	else 
+
+		# print the error message
+		echo
+		echo "ERROR: there is no such mode"
+		echo "HINT: choose one of the following modes:" \
+					"clean, make, make-and-run, mem-check"
+		echo
+
+	fi
+
+else
+    # print the error message
+	echo
+	echo "ERROR: incorrect number of input parameters"	
+	echo
+	
 fi
-
-# compile the memory leaks report
-if [ $2 = $RUN_VALGRIND ]; then
-    valgrind --tool=memcheck ./$EXECUTABLE > MEMORY_LEAKS_REPORT 2>&1
-fi 
-
 

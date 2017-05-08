@@ -1,5 +1,21 @@
-#!/bin/bash
+# That is the script that can simplify your workflow.
+#
+# There is three modes that one can use:
+#   1. the basic mode - the mode cleans the folder from *.vtk and *.o files
+#      Type the following command to run that mode: ./script.sh
+#
+#   2. the run mode - that mode includes step 1. and runs the make program
+#      to generate the executable. The script runs the executable after 
+#      successful compilation 
+#      Type the following commnad to run that mode: ./script.sh make
+#
+#   3. the memory check mode - that mode includes steps 1 and 2. 
+#      Additionally, it runs valgrind and write its output
+#      into the file called MEMORY_LEAKS_REPORT
+#      Typpe the following command to run that mode: ./script make mem-check
 
+
+#!/bin/bash
 
 # clean the window
 clear

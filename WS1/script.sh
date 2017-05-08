@@ -6,7 +6,8 @@ clear
 
 
 # declare all variables
-COMMAND=make
+RUN_MAKE=make
+RUN_VALGRIND=mem-check
 EXECUTABLE=sim
 
 
@@ -23,14 +24,19 @@ rm ./*.o
 
 
 # generate the executable file
-if [ "$#" -eq 1 ]; then
-    if [ $1 = $COMMAND ]; then
-        # run make program
-        make
+if [ $1 = $RUN_MAKE ]; then
+    # run make program
+    make
     
-        # run simulation if the compilation process was successful
-        if [ -f ./$EXECUTABLE ]; then
-            ./$EXECUTABLE
-        fi
+    # run simulation if the compilation process was successful
+    if [ -f ./$EXECUTABLE ]; then
+        ./$EXECUTABLE
     fi
 fi
+
+# compile the memory leaks report
+if [ $2 = $RUN_VALGRIND ]; then
+    valgrind --tool=memcheck ./$EXECUTABLE > MEMORY_LEAKS_REPORT 2>&1
+fi 
+
+

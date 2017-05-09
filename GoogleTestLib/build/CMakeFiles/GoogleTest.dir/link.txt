@@ -1,0 +1,2 @@
+/usr/bin/ar qc libGoogleTest.a  CMakeFiles/GoogleTest.dir/googletest-release-1.8.0/googletest/src/gtest_main.cc.o CMakeFiles/GoogleTest.dir/googletest-release-1.8.0/googletest/src/gtest-all.cc.o
+/usr/bin/ranlib libGoogleTest.a

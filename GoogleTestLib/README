@@ -1,0 +1,19 @@
+# Google Test 1.8.0
+
+This folder contains the STATIC library that we have to
+use during the compilation process of our test projects.
+
+The library was built by the following files: 
+    1. gtest_main.cc 
+    2. gtest_all.cc
+
+# Example of building a static library:
+    Being at the current directory, type the following:
+    	./cmake_run.sh make
+
+	After that you can see the fresh compiled STATIC library
+	at the current directory
+
+
+# Example of a test project compilation:
+

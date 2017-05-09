@@ -3,17 +3,17 @@
 #include <stdio.h>
 
 
-void write_vtkFile(const char *szProblem,
-		 int    timeStepNumber,
-		 double xlength,
-                 double ylength,
-                 int    imax,
-                 int    jmax,
-		 double dx,
-		 double dy,
-                 double **U,
-                 double **V,
-                 double **P) {
+void write_vtkFile( const char *szProblem,
+		            int timeStepNumber,
+		            double xlength,
+                    double ylength,
+                    int imax,
+                    int jmax,
+		            double dx,
+		            double dy,
+                    double **U,
+                    double **V,
+                    double **P) {
   
   int i,j;
   char szFileName[80];
@@ -31,20 +31,27 @@ void write_vtkFile(const char *szProblem,
   write_vtkHeader( fp, imax, jmax, dx, dy);
   write_vtkPointCoordinates(fp, imax, jmax, dx, dy);
 
-  fprintf(fp,"POINT_DATA %i \n", (imax+1)*(jmax+1) );
+  // DEBUGGING: wrong indexes
+  fprintf(fp,"\nPOINT_DATA %i \n", (imax)*(jmax) );
 	
-  fprintf(fp,"\n");
+  //fprintf(fp,"\n");
   fprintf(fp, "VECTORS velocity float\n");
-  for(j = 0; j < jmax+1; j++) {
-    for(i = 0; i < imax+1; i++) {
+
+  // DEBUGGING: wrong indexes
+  for(j = 0; j < jmax; j++) {
+    for(i = 0; i < imax; i++) {
       fprintf(fp, "%f %f 0\n", (U[i][j] + U[i][j+1]) * 0.5, (V[i][j] + V[i+1][j]) * 0.5 );
     }
   }
 
   fprintf(fp,"\n");
-  fprintf(fp,"CELL_DATA %i \n", ((imax)*(jmax)) );
-  fprintf(fp, "SCALARS pressure float 1 \n"); 
+
+  // DEBUGGING: redundant line
+  //fprintf(fp,"CELL_DATA %i \n", ((imax)*(jmax)) );
+  fprintf(fp, "SCALARS pressure float 1 \n");
   fprintf(fp, "LOOKUP_TABLE default \n");
+
+  // DEBUGGING: the indexes are correct
   for(j = 1; j < jmax+1; j++) {
     for(i = 1; i < imax+1; i++) {
       fprintf(fp, "%f\n", P[i][j] );
@@ -75,8 +82,11 @@ void write_vtkHeader( FILE *fp, int imax, int jmax,
   fprintf(fp,"ASCII\n");
   fprintf(fp,"\n");	
   fprintf(fp,"DATASET STRUCTURED_GRID\n");
-  fprintf(fp,"DIMENSIONS  %i %i 1 \n", imax+1, jmax+1);
-  fprintf(fp,"POINTS %i float\n", (imax+1)*(jmax+1) );
+
+  // DEBUGGING: wrong indexes
+  fprintf(fp,"DIMENSIONS  %i %i 1 \n", imax, jmax);
+  fprintf(fp,"POINTS %i float", (imax)*(jmax) );
+
   fprintf(fp,"\n");
 }
 
@@ -89,8 +99,9 @@ void write_vtkPointCoordinates( FILE *fp, int imax, int jmax,
   int i = 0;
   int j = 0;
 
-  for(j = 0; j < jmax+1; j++) {
-    for(i = 0; i < imax+1; i++) {
+  // DEBUGGING: indexes
+  for(j = 0; j < jmax; j++) {
+    for(i = 0; i < imax; i++) {
       fprintf(fp, "%f %f 0\n", originX+(i*dx), originY+(j*dy) );
     }
   }

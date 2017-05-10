@@ -49,10 +49,10 @@ void calculate_fg(  double Re,//Reynold's Number of the flow
 	for( i=1; i < imax; ++i )	{
 		for( j=1; j <= jmax; ++j ) {
 			
-			d2udx2 = ( U[i+1][j] - 2.0 * U[i][j] + U[i-1][j] ) * inverse_dxSquare;
+			d2udx2 = ( U[i+1][j] - 2.0 * U[i][j] + U[i-1][j] ) * inverse_dxSquare; //*
 			
 			
-			d2udy2 = ( U[i][j+1] - 2.0 * U[i][j] + U[i][j-1] ) * inverse_dySquare;
+			d2udy2 = ( U[i][j+1] - 2.0 * U[i][j] + U[i][j-1] ) * inverse_dySquare; //*
 			
 			
 			du2dx = ( ( ( U[i][j] + U[i+1][j] ) * ( U[i][j] + U[i+1][j] )  
@@ -87,7 +87,9 @@ void calculate_fg(  double Re,//Reynold's Number of the flow
 			dv2dy = ( ( ( V[i][j] + V[i][j+1] ) * ( V[i][j] + V[i][j+1] )  
 						- ( V[i][j-1] + V[i][j] ) * ( V[i][j-1] + V[i][j] ) )
 					  + alpha * ( fabs( V[i][j] + V[i][j+1] ) * ( V[i][j] - V[i][j+1] )
-					            - fabs( V[i][j-1] + V[i][j] ) * ( V[i][j-1] + V[i][j] ) ) ) 
+					  // DEBUGGING
+					  //        - fabs( V[i][j-1] + V[i][j] ) * ( V[i][j-1] + V[i][j] ) ) )
+					             - fabs( V[i][j-1] + V[i][j] ) * ( V[i][j-1] - V[i][j] ) ) )
 					* inverse_4dy;
 					
 					

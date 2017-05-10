@@ -56,8 +56,9 @@ function generateExecutable {
 function runExecutable {
 
 	# run simulation if the compilation process was successful
+    # $1 - means the parameter passed to the function
     if [ -f ./$EXECUTABLE ]; then
-        ./$EXECUTABLE
+        ./$EXECUTABLE $1
     fi
 }
 
@@ -74,7 +75,7 @@ function runValgrind {
 		FILE_NAME=$MEM_CHECK_FILE$DATE
 
 		# generate the report 
-		valgrind --tool=memcheck ./$EXECUTABLE > $FILE_NAME 2>&1
+		valgrind --tool=memcheck ./$EXECUTABLE $1 > $FILE_NAME 2>&1
 	fi
 }
 
@@ -113,6 +114,7 @@ RUN_PARAVIEW=make-and-depict
 EXECUTABLE=sim
 MEM_CHECK_FILE=REPORT::
 NUMBER_OF_AVALIABLE_PARAMETERS=1
+SIMULATION_INPUT_FILE=cavity100.dat
 SIMULATION_OUTPUT_FILE=Cavity100...vtk
 
 # process all modes
@@ -134,20 +136,19 @@ if [ "$#" = $NUMBER_OF_AVALIABLE_PARAMETERS ]; then
 
 		# make and run executable mode
 		generateExecutable
-		runExecutable
+		runExecutable $SIMULATION_INPUT_FILE
 
 	elif [ $1 = $RUN_VALGRIND ]; then
 
 		# compile the memory leaks report
 		generateExecutable
-		runExecutable
-		runValgrind
+		runValgrind $SIMULATION_INPUT_FILE
 
     elif [ $1 = $RUN_PARAVIEW ]; then
 
         # make and run executable mode
 		generateExecutable
-		runExecutable
+		runExecutable $SIMULATION_INPUT_FILE
         
         
         # run paraview if the compilation was successful
@@ -180,4 +181,3 @@ else
 	echo
 	
 fi
-

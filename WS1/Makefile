@@ -1,5 +1,7 @@
 CC = gcc
 CFLAGS = -Wall -pedantic -g
+DEFINE = -DDEBUGGING
+#DEFINE = -DRELEASE
 .c.o:  ; $(CC) -c $(CFLAGS) $<
 
 OBJ = 	helper.o\
@@ -15,7 +17,7 @@ all:  $(OBJ)
 	$(CC) $(CFLAGS) -o sim $(OBJ)  -lm
 
 %.o : %.c
-	$(CC) -c $(CFLAGS) $*.c -o $*.o
+	$(CC) -c $(CFLAGS) $(DEFINE) $*.c -o $*.o
 
 clean:
 	rm $(OBJ)

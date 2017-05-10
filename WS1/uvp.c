@@ -87,7 +87,9 @@ void calculate_fg(  double Re,//Reynold's Number of the flow
 			dv2dy = ( ( ( V[i][j] + V[i][j+1] ) * ( V[i][j] + V[i][j+1] )  
 						- ( V[i][j-1] + V[i][j] ) * ( V[i][j-1] + V[i][j] ) )
 					  + alpha * ( fabs( V[i][j] + V[i][j+1] ) * ( V[i][j] - V[i][j+1] )
-					            - fabs( V[i][j-1] + V[i][j] ) * ( V[i][j-1] - V[i][j] ) ) ) 
+					  // DEBUGGING
+					  //        - fabs( V[i][j-1] + V[i][j] ) * ( V[i][j-1] + V[i][j] ) ) )
+					             - fabs( V[i][j-1] + V[i][j] ) * ( V[i][j-1] - V[i][j] ) ) )
 					* inverse_4dy;
 					
 					
@@ -97,10 +99,11 @@ void calculate_fg(  double Re,//Reynold's Number of the flow
 					            - fabs( U[i-1][j] + U[i-1][j+1] ) * ( V[i-1][j] - V[i][j] ) ) ) 
 					* inverse_4dx;
 					
-	
+					
 			G[i][j] = V[i][j] + dt * ( ( ( d2vdx2 + d2vdy2 ) * inverseRe ) - dv2dy - duvdx + GY);
 		}
 	}
+	
 	
 	//for boundary values of F
 	for( j = 1; j <= jmax; ++j )	{

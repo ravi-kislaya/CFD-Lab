@@ -67,7 +67,7 @@ void init_uvp(double UI,//initial value of U
 	double **V,//2D array which stores V
 	double **P)//2D array which stores P
 {
-	init_matrix( U, 0, imax, 0, jmax, UI);
-	init_matrix( V, 0, imax, 0, jmax, VI);
-	init_matrix( P, 0, imax, 0, jmax, PI);
+	init_matrix( U, 0, imax+1, 0, jmax+1, UI);
+	init_matrix( V, 0, imax+1, 0, imax+1, VI);
+	init_matrix( P, 0, imax+1, 0, jmax+1, PI);
 }

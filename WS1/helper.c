@@ -50,9 +50,10 @@ double absoluteMaxInArray(double **A, int nr, int nc) {
 // nc - number of columns
 // A - a two dimensional array 
 
+	int i,j;
     double max = fabs( A[0][0] );
-	for( int i = 0; i < nr; ++i ) {
-		for( int j=0; j < nc; ++j ) {
+	for( i = 0; i < nr; ++i ) {
+		for( j=0; j < nc; ++j ) {
 			max = fmax( max, fabs( A[i][j] ) );
 		}
 	}

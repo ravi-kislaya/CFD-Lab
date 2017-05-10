@@ -1,0 +1,9 @@
+Framework.zip
+Numerical\ Fluid\ Flow\ and\ Heat\ Transfer\ by\ Patankar.pdf
+WS1/UnitTest/CMakeFailure/
+*.swp
+WS1/.idea/
+<<<<<<< HEAD
+=======
+GoogleTestLib/
+>>>>>>> 02d93522b52abdc289eb6b35e8f7f8657b0cdcd4

@@ -71,8 +71,7 @@ function runValgrind {
 		rm ./$MEM_CHECK_FILE*
 
 		# set file name according to the format above 
-		DATE=`date +%d-%m-%r`
-		FILE_NAME=$MEM_CHECK_FILE$DATE
+		FILE_NAME=$MEM_CHECK_FILE
 
 		# generate the report 
 		valgrind --tool=memcheck ./$EXECUTABLE $1 > $FILE_NAME 2>&1
@@ -112,7 +111,7 @@ RUN_PARAVIEW=make-and-depict
 
 #declare all variables
 EXECUTABLE=sim
-MEM_CHECK_FILE=REPORT::
+MEM_CHECK_FILE=MEM_CHECK_REPORT
 NUMBER_OF_AVALIABLE_PARAMETERS=1
 SIMULATION_INPUT_FILE=cavity100.dat
 SIMULATION_OUTPUT_FILE=Cavity100...vtk

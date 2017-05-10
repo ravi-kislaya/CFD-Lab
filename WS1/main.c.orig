@@ -41,12 +41,6 @@
  * - calculate_uv() Calculate the velocity at the next time step.
  */
 int main(int argn, char** args){
-<<<<<<< HEAD
-    // 0. declare all variables
-    // 1. read the data file 
-    // 2. initialize all varaibles: t, U, V, P
-    // 3. write the while loop
-=======
 
 	// declaring the matrices
 	double **U, **V, **P;
@@ -87,6 +81,11 @@ int main(int argn, char** args){
 		//DELETE Comment Can tau be = 0?? or only > 0
 		//Calcaulte the time step
 		if (tau >= 0.0) calculate_dt(Re, tau, &dt, dx, dy, imax, jmax, U, V);
+<<<<<<< HEAD
+		else dt = dt_value;
+		
+=======
+>>>>>>> master
 		
 		// Set the boundary for U and V
 		boundaryvalues(imax, jmax, U, V);
@@ -98,7 +97,11 @@ int main(int argn, char** args){
 		calculate_rs(dt, dx, dy, imax, jmax, F, G, RS);
 
 		iternum = 0;
+<<<<<<< HEAD
+		res = 100.0 * eps;
+=======
 		res = 0.0;
+>>>>>>> master
 		
 		//Perform SOR
 		while (iternum < itermax && res > eps) {
@@ -108,18 +111,32 @@ int main(int argn, char** args){
 
 		// Update the velocities U and V
 		calculate_uv(dt, dx, dy, imax, jmax, U, V, F, G, P);
-		
-		printf("Time = %f \n",t);
-		
+
+#ifdef DEBUGGING        
+
+        printf("Time = %f \n",t);
+
+#endif
+
 		//DELETE Comment We can also write the vtk at the end
 		//Output vtk file every 50th timestep
+<<<<<<< HEAD
+		if (n % 50 == 0) {
+			write_vtkFile("Cavity100", n, xlength, ylength, imax, jmax, dx, dy, U, V, P);
+		}
+=======
 		if (n % 50 == 0) write_vtkFile("Cavity100", n, xlength, ylength, imax, jmax, dx, dy, U, V, P);
+>>>>>>> master
 		
 		//Update the loop variables
 		t += dt;
 		++n;
 	}
 	
+<<<<<<< HEAD
+	
+=======
+>>>>>>> master
 	//Free the memory held by matrix
 	free_matrix(U, 0, imax + 1, 0, jmax + 1);
 	free_matrix(V, 0, imax + 1, 0, jmax + 1);
@@ -130,7 +147,6 @@ int main(int argn, char** args){
 	free_matrix(G, 0, imax + 1, 0, jmax);
 
 	return -1;
->>>>>>> master
 }
 
 

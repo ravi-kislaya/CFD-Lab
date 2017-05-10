@@ -43,18 +43,13 @@ int min_int( const int n1, const int n2 )
     return n2;
 }
 
-
-
-double absoluteMaxInArray(double **A, int nr, int nc) {
-// nr - number of rows
-// nc - number of columns
-// A - a two dimensional array 
-
-    double max = fabs( A[0][0] );
+double absoluteMaxInArray(double **A, int nr, int nc)
+{
+	double max = fabs(A[0][0]);
 	int i,j;
 	for(i=0;i<nr;++i){
 		for(j=0;j<nc;++j){
-			max = fmax( max, fabs( A[i][j] ) );
+			max = fmax(max,fabs(A[i][j]));
 		}
 	}
 	return max;

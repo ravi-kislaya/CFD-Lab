@@ -81,8 +81,6 @@ int main(int argn, char** args){
 		//DELETE Comment Can tau be = 0?? or only > 0
 		//Calcaulte the time step
 		if (tau >= 0.0) calculate_dt(Re, tau, &dt, dx, dy, imax, jmax, U, V);
-		else dt = dt_value;
-		
 		
 		// Set the boundary for U and V
 		boundaryvalues(imax, jmax, U, V);
@@ -94,7 +92,7 @@ int main(int argn, char** args){
 		calculate_rs(dt, dx, dy, imax, jmax, F, G, RS);
 
 		iternum = 0;
-		res = 100.0 * eps;
+		res = 0.0;
 		
 		//Perform SOR
 		while (iternum < itermax && res > eps) {
@@ -113,15 +111,12 @@ int main(int argn, char** args){
 
 		//DELETE Comment We can also write the vtk at the end
 		//Output vtk file every 50th timestep
-		if (n % 50 == 0) {
-			write_vtkFile("Cavity100", n, xlength, ylength, imax, jmax, dx, dy, U, V, P);
-		}
+		if (n % 50 == 0) write_vtkFile("Cavity100", n, xlength, ylength, imax, jmax, dx, dy, U, V, P);
 		
 		//Update the loop variables
 		t += dt;
 		++n;
 	}
-	
 	
 	//Free the memory held by matrix
 	free_matrix(U, 0, imax + 1, 0, jmax + 1);

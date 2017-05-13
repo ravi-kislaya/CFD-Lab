@@ -139,19 +139,27 @@ int main(int argn, char** args){
 
 	// TODO: figure out that how to use that value: dt_value
 
-	// Allocating memory for matrices
-
+	// Allocating memory for matrices: U, V and P
 	U = matrix(0, imax + 1, 0, jmax + 1);
 	V = matrix(0, imax + 1, 0, jmax + 1);
 	P = matrix(0, imax + 1, 0, jmax + 1);
 
-	RS = matrix(0, imax + 1, 0, jmax + 1);
-	F = matrix(0, imax, 0, jmax + 1);
-	G = matrix(0, imax + 1, 0, jmax);
-
-
-	// Initialization
+	// iniitialize U, V and P matrices
 	init_uvp(UI, VI, PI, imax, jmax, U, V, P);
+
+
+    // Allocating memory for matrices: U, V and P
+	RS = matrix(0, imax + 1, 0, jmax + 1);
+	F = matrix(0, imax + 1, 0, jmax + 1);
+	G = matrix(0, imax + 1, 0, jmax + 1 );
+
+
+    // iniitialize RS, F and G matrixes
+	double InitialMatrixValues = 0.0;
+	init_matrix(RS, 0, imax + 1, 0, jmax + 1, InitialMatrixValues);
+    init_matrix(F, 0, imax + 1, 0, jmax + 1, InitialMatrixValues);
+    init_matrix(G, 0, imax + 1, 0, jmax + 1, InitialMatrixValues);
+
 
 
 	//Some additional variables

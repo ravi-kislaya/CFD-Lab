@@ -5,7 +5,7 @@
 #include "boundary_val.h"
 #include "sor.h"
 #include <stdio.h>
-
+#include <time.h>
 
 /**
  * The main operation reads the configuration file, initializes the scenario and
@@ -170,6 +170,9 @@ int main(int argn, char** args){
 	int SolverIterationNumber = 0;
 	const char* OUPUT_FILE_NAME = "Cavity100";
 
+    // Initializing timer
+    clock_t Begin = clock();
+
 	//The main while loop that iterates over time
 	while ( t < t_end ) {
 
@@ -235,6 +238,11 @@ int main(int argn, char** args){
 		++TimeStepNumber;
 	}
 	
+    clock_t End = clock();
+    double ConsumedTime = (double)( End - Begin ) / CLOCKS_PER_SEC;
+    printf("\n\nSpent time for mesh computing the mesh ( %d, %d )", imax, jmax);
+    printf(" with relaxation factor %f: %f \n\n", omg, ConsumedTime );
+
 	//Free the memory held by matrix
 	free_matrix(U, 0, imax + 1, 0, jmax + 1);
 	free_matrix(V, 0, imax + 1, 0, jmax + 1);

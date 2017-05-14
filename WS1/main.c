@@ -5,7 +5,7 @@
 #include "boundary_val.h"
 #include "sor.h"
 #include <stdio.h>
-
+#include <time.h>
 
 /**
  * The main operation reads the configuration file, initializes the scenario and
@@ -139,19 +139,27 @@ int main(int argn, char** args){
 
 	// TODO: figure out that how to use that value: dt_value
 
-	// Allocating memory for matrices
-
+	// Allocating memory for matrices: U, V and P
 	U = matrix(0, imax + 1, 0, jmax + 1);
 	V = matrix(0, imax + 1, 0, jmax + 1);
 	P = matrix(0, imax + 1, 0, jmax + 1);
 
-	RS = matrix(0, imax + 1, 0, jmax + 1);
-	F = matrix(0, imax, 0, jmax + 1);
-	G = matrix(0, imax + 1, 0, jmax);
-
-
-	// Initialization
+	// iniitialize U, V and P matrices
 	init_uvp(UI, VI, PI, imax, jmax, U, V, P);
+
+
+    // Allocating memory for matrices: U, V and P
+	RS = matrix(0, imax + 1, 0, jmax + 1);
+	F = matrix(0, imax + 1, 0, jmax + 1);
+	G = matrix(0, imax + 1, 0, jmax + 1 );
+
+
+    // iniitialize RS, F and G matrixes
+	double InitialMatrixValues = 0.0;
+	init_matrix(RS, 0, imax + 1, 0, jmax + 1, InitialMatrixValues);
+    init_matrix(F, 0, imax + 1, 0, jmax + 1, InitialMatrixValues);
+    init_matrix(G, 0, imax + 1, 0, jmax + 1, InitialMatrixValues);
+
 
 
 	//Some additional variables
@@ -161,6 +169,9 @@ int main(int argn, char** args){
 	int TimeStepNumber = 0;
 	int SolverIterationNumber = 0;
 	const char* OUPUT_FILE_NAME = "Cavity100";
+
+    // Initializing timer
+    clock_t Begin = clock();
 
 	//The main while loop that iterates over time
 	while ( t < t_end ) {
@@ -227,6 +238,11 @@ int main(int argn, char** args){
 		++TimeStepNumber;
 	}
 	
+    clock_t End = clock();
+    double ConsumedTime = (double)( End - Begin ) / CLOCKS_PER_SEC;
+    printf("\n\nSpent time for mesh computing the mesh ( %d, %d )", imax, jmax);
+    printf(" with relaxation factor %f: %f \n\n", omg, ConsumedTime );
+
 	//Free the memory held by matrix
 	free_matrix(U, 0, imax + 1, 0, jmax + 1);
 	free_matrix(V, 0, imax + 1, 0, jmax + 1);

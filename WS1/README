@@ -1,3 +1,13 @@
+To run the simulation you have to provide just one parameter which is the name
+of a data file.
+
+    ./sim <name>
+
+EXAMPLE: /sim cavity100.dat
+
+HINT: Check spelling of your data file if the simulation doesn't run
+
+================================================================================
 SUBMISSION AT MAY 16th 10.00am
 
 THINGS THAT HAVE TO BE DONE BEFORE SUBMISSION:
@@ -21,4 +31,3 @@ EXAMPLE:
 
 
 !!! ADD YOUR TASKS AND WE CAN DISCUSS IT TOGETHER !!!
-

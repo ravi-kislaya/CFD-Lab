@@ -209,8 +209,8 @@ int main(int argn, char** args){
 		calculate_uv(dt, dx, dy, imax, jmax, U, V, F, G, P);
 
 
-        // write result to a vtk file each ${dt_value} seconds
-        if ( floor( FrameCounter / dt_value ) ) {
+            // write result to a vtk file each ${dt_value} seconds
+        if ( floor( FrameCounter / dt_value ) || ( !TimeStepNumber ) ) {
 
                 write_vtkFile(  OUPUT_FILE_NAME,
                                 TimeStepNumber,
@@ -234,6 +234,7 @@ int main(int argn, char** args){
 		FrameCounter += dt;
 	}
 
+
 	// display the output information
     clock_t End = clock();
     double ConsumedTime = (double)( End - Begin ) / CLOCKS_PER_SEC;
@@ -241,6 +242,22 @@ int main(int argn, char** args){
     printf("\n\nComputational time: %f sec\n", ConsumedTime);
     printf("Mesh size [ imax x jmax ]: %d x %d \n", imax, jmax ); 
     printf("Relaxation factor [ omega ]: %4.4f \n\n", omg );
+
+
+
+    // write the last step to a vtk file
+    write_vtkFile(  OUPUT_FILE_NAME,
+                    TimeStepNumber,
+                    xlength,
+                    ylength,
+                    imax,
+                    jmax,
+                    dx,
+                    dy,
+                    U,
+                    V,
+                    P );
+
 
 	//Free the memory held by matrix
 	free_matrix(U, 0, imax + 1, 0, jmax + 1);

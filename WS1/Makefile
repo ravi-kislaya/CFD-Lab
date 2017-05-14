@@ -1,7 +1,13 @@
 CC = gcc
-CFLAGS = -Wall -pedantic -g
+
+# CFLAGS = -Wall -pedantic -g
+CFLAGS = -Wall -pedantic -O1
+
+
 DEFINE = -DDEBUGGING
-#DEFINE = -DRELEASE
+# DEFINE = -DRELEASE
+
+
 .c.o:  ; $(CC) -c $(CFLAGS) $<
 
 OBJ = 	helper.o\

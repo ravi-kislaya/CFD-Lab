@@ -213,11 +213,6 @@ int main(int argn, char** args){
 		// Update the velocities U and V
 		calculate_uv(dt, dx, dy, imax, jmax, U, V, F, G, P);
 
-#ifdef DEBUGGING        
-
-        //printf("Time = %f \n",t);
-
-#endif
 
 		//DELETE Comment We can also write the vtk at the end
 		//Output vtk file every 50th timestep
@@ -240,8 +235,9 @@ int main(int argn, char** args){
 	
     clock_t End = clock();
     double ConsumedTime = (double)( End - Begin ) / CLOCKS_PER_SEC;
-    printf("\n\nSpent time for mesh computing the mesh ( %d, %d )", imax, jmax);
-    printf(" with relaxation factor %f: %f \n\n", omg, ConsumedTime );
+    printf("\n\nComputational time: %f sec\n", ConsumedTime);
+    printf("Mesh size [ imax x jmax ]: %d x %d \n", imax, jmax ); 
+    printf("Relaxation factor [ omega ]: %4.4f \n\n", omg );
 
 	//Free the memory held by matrix
 	free_matrix(U, 0, imax + 1, 0, jmax + 1);

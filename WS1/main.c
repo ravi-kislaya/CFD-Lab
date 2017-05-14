@@ -70,7 +70,7 @@ int main(int argn, char** args){
     }
     else {
 
-        // Abort execution if number of input parameters is wrong
+        // Abort execution if the number of input parameters is wrong
         printf( "\nERROR: The number of input parameters is wrong\n\n" );
 
         printf( "HINT:   You've probably forgot to pass the input file" );
@@ -83,29 +83,29 @@ int main(int argn, char** args){
 
 
 
-	// declaring the matrices
+	// declare the matrices
 	double **U, **V, **P;
 	
 	double **RS, **F, **G;
 
-	// Declaring variables for the parameters that will be read from the input file
-	double Re, // Reynalds number
-	       UI, // initial values of the U velocity component
-	       VI, // initial values of the V velocity component
-	       PI, // initial values of the pressure
-	       GX, //acceleration due to gravity in x-direction
-	       GY, //acceleration due to gravity in y-direction
-	       t_end, // final of simulation time
-	       xlength, // dimension of the problem in x-direction
-	       ylength, // dimension of the problem in y-direction
-	       dt, // time step
-	       dx, //Grid size in x-direction
-	       dy, //Grid size in y-direction
+	// Declare variables for the parameters that will be read from the input file
+	double Re,          // Reynalds number
+	       UI,          // initial values of the U velocity component
+	       VI,          // initial values of the V velocity component
+	       PI,          // initial values of the pressure
+	       GX,          // acceleration due to gravity in x-direction
+	       GY,          // acceleration due to gravity in y-direction
+	       t_end,       // final of simulation time
+	       xlength,     // dimension of the problem in x-direction
+	       ylength,     // dimension of the problem in y-direction
+	       dt,          // time step
+	       dx,          //Grid size in x-direction
+	       dy,         //Grid size in y-direction
 	       alpha,
-	       omg, // SOR-relaxation factor
-	       tau, //safety factor
-	       eps, // numerical precision
-	       dt_value; // time for output
+	       omg,         // SOR-relaxation factor
+	       tau,         //safety factor
+	       eps,         // numerical precision
+	       dt_value;    // time for output
 	
 	int  imax, //number of cells x-direction
 	     jmax, //number of cells y-direction
@@ -138,7 +138,6 @@ int main(int argn, char** args){
 	                 &eps,
 	                 &dt_value );
 
-	// TODO: figure out that how to use that value: dt_value
 
 	// Allocating memory for matrices: U, V and P
 	U = matrix(0, imax + 1, 0, jmax + 1);
@@ -170,6 +169,8 @@ int main(int argn, char** args){
 	int TimeStepNumber = 0;
 	int SolverIterationNumber = 0;
 	const char* OUPUT_FILE_NAME = "Cavity100";
+	double FrameCounter = 0.0;
+
 
     // Initializing timer
     clock_t Begin = clock();
@@ -177,22 +178,16 @@ int main(int argn, char** args){
 	//The main while loop that iterates over time
 	while ( t < t_end ) {
 
-		//DELETE Comment Can tau be = 0?? or only > 0
-		//Calcaulte the time step
+		//Calcaulte the adaptive time step
 		if (tau >= 0.0)
 		    calculate_dt(Re, tau, &dt, dx, dy, imax, jmax, U, V);
 
-        //printf("dt: %6.20f  \n", dt); // DEBUGGING
 
 		// Set the boundary for U and V
 		boundaryvalues(imax, jmax, U, V);
 
 		// Calcualte F and G
 		calculate_fg(Re, GX, GY, alpha, dt, dx, dy, imax, jmax, U, V, F, G);
-
-
-		//double tmp = absoluteMaxInArray( U, imax, jmax );   // DEBUGGING
-		//printf("dt: %6.20f  \n", tmp); // DEBUGGING
 
 
 		// Calculate the RHS of Pressure Poisson Equation
@@ -207,50 +202,62 @@ int main(int argn, char** args){
 		    //Perform one SOR iteration
 			sor (omg, dx, dy, imax, jmax, P, RS, &Residual);
 			SolverIterationNumber++;
-			//printf("interation: %d   ", iternum ); // DEBUGGING
-			//printf("residual: %6.20f\n", res ); // DEBUGGING
 		}
-		
-#ifdef DEBUGGING
-		//adding the convergence criterion
-		if ( SolverIterationNumber == itermax )
-			printf("\n Not Converged \n");
-#endif
+
 
 		// Update the velocities U and V
 		calculate_uv(dt, dx, dy, imax, jmax, U, V, F, G, P);
 
 
-		//DELETE Comment We can also write the vtk at the end
-		//Output vtk file every 50th timestep
-	if ( TimeStepNumber % 50 == 0 ) write_vtkFile(  OUPUT_FILE_NAME,
-		                                            TimeStepNumber,
-		                                            xlength,
-		                                            ylength,
-		                                            imax,
-		                                            jmax,
-		                                            dx,
-		                                            dy,
-		                                            U,
-		                                            V,
-		                                            P);
+            // write result to a vtk file each ${dt_value} seconds
+        if ( floor( FrameCounter / dt_value ) || ( !TimeStepNumber ) ) {
+
+                write_vtkFile(  OUPUT_FILE_NAME,
+                                TimeStepNumber,
+                                xlength,
+                                ylength,
+                                imax,
+                                jmax,
+                                dx,
+                                dy,
+                                U,
+                                V,
+                                P );
+
+                FrameCounter = 0.0;
+	}
+
 
 		//Update the loop variables
 		t += dt;
 		++TimeStepNumber;
+		FrameCounter += dt;
 	}
-	double U_TopCentre = U[imax/2][7*jmax/8];
-	double V_TopCentre = V[imax/2][7*jmax/8];
-	printf("\nValues of U[imax/2][7*jmax/8] at 100sec is  %f \n",U_TopCentre);
-	printf("Values of V[imax/2][7*jmax/8] at 100sec is  %f \n",V_TopCentre);
-	printf("Magnitude of Velocity at x = imax/2 and y = 7*jmax/8 at 100sec is  %f \n",
-			sqrt( (U_TopCentre * U_TopCentre) + (V_TopCentre * V_TopCentre)));
-	
+
+
+	// display the output information
     clock_t End = clock();
     double ConsumedTime = (double)( End - Begin ) / CLOCKS_PER_SEC;
+
     printf("\n\nComputational time: %f sec\n", ConsumedTime);
     printf("Mesh size [ imax x jmax ]: %d x %d \n", imax, jmax ); 
     printf("Relaxation factor [ omega ]: %4.4f \n\n", omg );
+
+
+
+    // write the last step to a vtk file
+    write_vtkFile(  OUPUT_FILE_NAME,
+                    TimeStepNumber,
+                    xlength,
+                    ylength,
+                    imax,
+                    jmax,
+                    dx,
+                    dy,
+                    U,
+                    V,
+                    P );
+
 
 	//Free the memory held by matrix
 	free_matrix(U, 0, imax + 1, 0, jmax + 1);
@@ -258,10 +265,14 @@ int main(int argn, char** args){
 	free_matrix(P, 0, imax + 1, 0, jmax + 1);
 
 	free_matrix(RS, 0, imax + 1, 0, jmax + 1);
-	free_matrix(F, 0, imax, 0, jmax + 1);
-	free_matrix(G, 0, imax + 1, 0, jmax);
+	free_matrix(F, 0, imax + 1, 0, jmax + 1);
+	free_matrix(G, 0, imax + 1, 0, jmax + 1);
 
-    // DEBUGGING
-	// return -1;
 	return 0;
 }
+
+
+
+
+
+

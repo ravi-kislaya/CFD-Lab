@@ -179,7 +179,9 @@ int main(int argn, char** args){
 		//DELETE Comment Can tau be = 0?? or only > 0
 		//Calcaulte the time step
 		if (tau >= 0.0)
-		calculate_dt(Re, tau, &dt, dx, dy, imax, jmax, U, V);
+		    calculate_dt(Re, tau, &dt, dx, dy, imax, jmax, U, V);
+		else
+		    dt = dt_value;
 
         //printf("dt: %6.20f  \n", dt); // DEBUGGING
 

@@ -1,0 +1,33 @@
+To run the simulation you have to provide just one parameter which is the name
+of a data file.
+
+    ./sim <name>
+
+EXAMPLE: /sim cavity100.dat
+
+HINT: Check spelling of your data file if the simulation doesn't run
+
+================================================================================
+SUBMISSION AT MAY 16th 10.00am
+
+THINGS THAT HAVE TO BE DONE BEFORE SUBMISSION:
+
+1) Kammi: implement various simulations of store the graohical results
+          ( use different Rynolds number etc. )
+2) Ravi: comment the code
+3) All: prepare the theoretical questions and discuss them
++ 4) Ravil: remove all redundant files from the project
+5) Ravil: make profiling 
+6) Ravi: make the result table
+7) Ravil: make a TODOs list for the future projects
+8) ...
+
+
+If a task is done put the "+" sigh  at the beginning 
+of the corresponding line 
+EXAMPLE:
+
++ xx) All : submit the code
+
+
+!!! ADD YOUR TASKS AND WE CAN DISCUSS IT TOGETHER !!!

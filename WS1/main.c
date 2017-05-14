@@ -203,6 +203,9 @@ int main(int argn, char** args){
 			sor (omg, dx, dy, imax, jmax, P, RS, &Residual);
 			SolverIterationNumber++;
 		}
+		
+		if ( SolverIterationNumber == itermax )
+			printf("\n SOR not converged \n");
 
 
 		// Update the velocities U and V

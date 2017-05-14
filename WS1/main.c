@@ -212,7 +212,7 @@ int main(int argn, char** args){
 		calculate_uv(dt, dx, dy, imax, jmax, U, V, F, G, P);
 
 
-            // write result to a vtk file each ${dt_value} seconds
+        // write result to a vtk file each ${dt_value} seconds
         if ( floor( FrameCounter / dt_value ) || ( !TimeStepNumber ) ) {
 
                 write_vtkFile(  OUPUT_FILE_NAME,

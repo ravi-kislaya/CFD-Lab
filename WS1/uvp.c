@@ -30,10 +30,10 @@ void calculate_fg(  double Re,//Reynold's Number of the flow
 					double dy,//Step size in y-direction
 					int imax,//number of cells x-direction
 					int jmax,//number of cells y-direction
-					double **U,
-					double **V,
-					double **F,
-					double **G)
+					double **U,//2-D array to store U velocity
+					double **V,//2-D array to store V velocity
+					double **F,//2-D array to store F
+					double **G)//2-D array to store G
 {
 	int i,j;
 	/*
@@ -87,8 +87,6 @@ void calculate_fg(  double Re,//Reynold's Number of the flow
 			dv2dy = ( ( ( V[i][j] + V[i][j+1] ) * ( V[i][j] + V[i][j+1] )  
 						- ( V[i][j-1] + V[i][j] ) * ( V[i][j-1] + V[i][j] ) )
 					  + alpha * ( fabs( V[i][j] + V[i][j+1] ) * ( V[i][j] - V[i][j+1] )
-					  // DEBUGGING
-					  //        - fabs( V[i][j-1] + V[i][j] ) * ( V[i][j-1] + V[i][j] ) ) )
 					             - fabs( V[i][j-1] + V[i][j] ) * ( V[i][j-1] - V[i][j] ) ) )
 					* inverse_4dy;
 					
@@ -119,14 +117,14 @@ void calculate_fg(  double Re,//Reynold's Number of the flow
 	}
 }
 
-void calculate_rs(  double dt,
-					double dx,
-					double dy,
-					int imax,
-					int jmax,
-					double **F,
-					double **G,
-					double **RS)
+void calculate_rs(  double dt,//Time Step
+					double dx,//Grid Size x-direction
+					double dy,//Grid Size x-direction
+					int imax,//number of cells x-direction
+					int jmax,//number of cells y-direction
+					double **F,//2-D array to store F
+					double **G,//2-D array to store G
+					double **RS)//2-D array to store rs
 {	
 	double inverse_dt = 1.0 / dt;
 	double inverse_dx = 1.0 / dx;
@@ -142,16 +140,16 @@ void calculate_rs(  double dt,
 
 }
 
-void calculate_uv(  double dt,
-					double dx,
-					double dy,
-					int imax,
-					int jmax,
-					double **U,
-					double **V,
-					double **F,
-					double **G,
-					double **P)
+void calculate_uv(  double dt,//Time Step
+					double dx,//Grid Size x-direction
+					double dy,//Grid Size y-direction
+					int imax,//number of cells x-direction
+					int jmax,//number of cells y-direction
+					double **U,//2-D array to store U velocity
+					double **V,//2-D array to store V velocity
+					double **F,//2-D array to store F
+					double **G,//2-D array to store G
+					double **P)//2-D array to store Pressure
 {
 	double inverse_dx = 1.0 / dx;
 	double inverse_dy = 1.0 / dy;

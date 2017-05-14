@@ -6,6 +6,7 @@
 #include "sor.h"
 #include <stdio.h>
 #include <time.h>
+#include <math.h>
 
 /**
  * The main operation reads the configuration file, initializes the scenario and
@@ -180,8 +181,6 @@ int main(int argn, char** args){
 		//Calcaulte the time step
 		if (tau >= 0.0)
 		    calculate_dt(Re, tau, &dt, dx, dy, imax, jmax, U, V);
-		else
-		    dt = dt_value;
 
         //printf("dt: %6.20f  \n", dt); // DEBUGGING
 
@@ -211,6 +210,12 @@ int main(int argn, char** args){
 			//printf("interation: %d   ", iternum ); // DEBUGGING
 			//printf("residual: %6.20f\n", res ); // DEBUGGING
 		}
+		
+#ifdef DEBUGGING
+		//adding the convergence criterion
+		if ( SolverIterationNumber == itermax )
+			printf("\n Not Converged \n");
+#endif
 
 		// Update the velocities U and V
 		calculate_uv(dt, dx, dy, imax, jmax, U, V, F, G, P);
@@ -234,6 +239,12 @@ int main(int argn, char** args){
 		t += dt;
 		++TimeStepNumber;
 	}
+	double U_TopCentre = U[imax/2][7*jmax/8];
+	double V_TopCentre = V[imax/2][7*jmax/8];
+	printf("\nValues of U[imax/2][7*jmax/8] at 100sec is  %f \n",U_TopCentre);
+	printf("Values of V[imax/2][7*jmax/8] at 100sec is  %f \n",V_TopCentre);
+	printf("Magnitude of Velocity at x = imax/2 and y = 7*jmax/8 at 100sec is  %f \n",
+			sqrt( (U_TopCentre * U_TopCentre) + (V_TopCentre * V_TopCentre)));
 	
     clock_t End = clock();
     double ConsumedTime = (double)( End - Begin ) / CLOCKS_PER_SEC;

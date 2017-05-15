@@ -203,9 +203,25 @@ int main(int argn, char** args){
 			sor (omg, dx, dy, imax, jmax, P, RS, &Residual);
 			SolverIterationNumber++;
 		}
-		
-		if ( SolverIterationNumber == itermax )
-			printf("\n SOR not converged \n");
+
+
+		if ( SolverIterationNumber == itermax ) {
+			printf("\nSOR not converged ");
+			printf("at the time: %f\n", t);
+			printf("time iteration: %d", TimeStepNumber);
+
+            // increas the current simulation time
+            // to abort while loop
+            //
+            // IDEA: if we can't achieve convergence at the current
+            // time step we stop proceeding the simulation since
+            // the futher steps will be meaningless in terms of
+            // the physics
+            //
+            // IMPORTANT: that is an alternative of using break-statment
+            // which can help compiler to optimize the code
+            t = t_end;
+        }
 
 
 		// Update the velocities U and V
@@ -213,7 +229,7 @@ int main(int argn, char** args){
 
 
         // write result to a vtk file each ${dt_value} seconds
-        if ( floor( FrameCounter / dt_value ) || ( !TimeStepNumber ) ) {
+        if ( floor( FrameCounter / dt_value ) ) {
 
                 write_vtkFile(  OUPUT_FILE_NAME,
                                 TimeStepNumber,

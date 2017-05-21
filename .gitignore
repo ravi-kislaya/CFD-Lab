@@ -5,3 +5,4 @@ WS1/UnitTest/CMakeFailure/
 *.orig
 WS1/.idea/
 GoogleTestLib/
+WS2/PDFs/

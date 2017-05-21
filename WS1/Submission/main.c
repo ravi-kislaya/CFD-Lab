@@ -217,9 +217,6 @@ int main(int argn, char** args){
             // time step we stop proceeding the simulation since
             // the futher steps will be meaningless in terms of
             // the physics
-            //
-            // IMPORTANT: that is an alternative of using break-statment
-            // which can help compiler to optimize the code
             t = t_end;
         }
 

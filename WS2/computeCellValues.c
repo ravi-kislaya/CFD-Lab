@@ -5,7 +5,7 @@ void computeDensity(const double *const currentCell, double *density){
 
   *density = 0.0;
 
-  for( int Vel_Component = 0 ; Vel_Component < Vel_DOF ; ++Vel_Component ) {
+  for( int Vel_Component = 0 ; Vel_Component < Cell_Vel_DOF ; ++Vel_Component ) {
     *density += currentCell[ Vel_Component ];
   }
 
@@ -18,7 +18,7 @@ void computeVelocity(const double * const currentCell, const double * const dens
   velocity[ 2 ] = 0.0;
   double Inverse_Density = 1.0 / ( *density );
 
-  for( int Vel_Component = 0 ; Vel_Component < Vel_DOF ; ++Vel_Component ) {
+  for( int Vel_Component = 0 ; Vel_Component < Cell_Vel_DOF ; ++Vel_Component ) {
     velocity[ 0 ] += currentCell[ Vel_Component ]  * LATTICEVELOCITIES[ Vel_Component ][ 0 ];
     velocity[ 1 ] += currentCell[ Vel_Component ]  * LATTICEVELOCITIES[ Vel_Component ][ 1 ];
     velocity[ 2 ] += currentCell[ Vel_Component ]  * LATTICEVELOCITIES[ Vel_Component ][ 2 ];
@@ -32,18 +32,29 @@ void computeVelocity(const double * const currentCell, const double * const dens
 void computeFeq(const double * const density, const double * const velocity, double *feq){
 
  //CS means Speed of Sound
- static const double Inverse_Square_CS = 1.0 / ( C_S * C_S );
- static const double Inverse_Four_CS = Inverse_Square_CS * Inverse_Square_CS * 0.5;
- double temp1 = 0.0 , temp2 = 0.0;
+ // TODO: make Inverse_Square_CS and Inverse_Four_CS static and const
+ double Inverse_Square_CS = 1.0 / ( C_S * C_S );
+ double Inverse_Four_CS = 0.5 * Inverse_Square_CS * Inverse_Square_CS;
 
- for( int Vel_Component = 0 ; Vel_Component < Vel_DOF ; ++Vel_Component ) {
+ double temp1 = 0.0, temp2 = 0.0;
+
+ for( int Vel_Component = 0 ; Vel_Component < Cell_Vel_DOF ; ++Vel_Component ) {
+
    temp1 = 0.0;
    temp2 = 0.0;
-   for( int i = 0 ; i < Dimensions ; ++Dimensions ) {
-     temp1 += LATTICEVELOCITIES[ Vel_Component ][ i ] * velocity[ i ]; //dot product of c and U
-     temp2 += velocity[ i ] * velocity[ i ]; //dot product of U and U
+
+   for( int i = 0 ; i < Dimensions ; ++i ) {
+     //dot product of c and U
+     temp1 += LATTICEVELOCITIES[ Vel_Component ][ i ] * velocity[ i ];
+
+     //dot product of U and U
+     temp2 += velocity[ i ] * velocity[ i ];
    }
-   feq[ Vel_Component ] = LATTICEWEIGHTS[ Vel_Component ] * density * ( 1 + ( Inverse_Square_CS * temp1 ) + ( 0.5 * temp1 * temp1 * Inverse_Four_CS ) - ( temp2 * Inverse_Square_CS * 0.5 ) );
+
+   feq[ Vel_Component ] = LATTICEWEIGHTS[ Vel_Component ] * ( *density )
+                        * ( 1 + ( Inverse_Square_CS * temp1 )
+                            + ( 0.5 * temp1 * temp1 * Inverse_Four_CS )
+                            - ( temp2 * Inverse_Square_CS * 0.5 ) );
  }
 
 }

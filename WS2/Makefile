@@ -5,23 +5,28 @@ SOURCES=initLB.c visualLB.c boundary.c collision.c streaming.c computeCellValues
 # --------
 CC=gcc
 
-CFLAGS=-Werror -pedantic -Wall
+CFLAGS= -pedantic -Wall -Werror
 
 # Linker flags
 # ------------
-LDFLAGS= 
+LDFLAGS=
+
+# ASSEMBLY FOLDER
+FOLDER=./build/
 
 OBJECTS=$(SOURCES:.c=.o)
+OBJS = $(patsubst %,$(FOLDER)%,$(OBJECTS))
+
 EXECUTABLE=lbsim
 
 all: $(EXECUTABLE)
 
 $(EXECUTABLE): $(OBJECTS)
-	$(CC) $(OBJECTS) -o $@ $(LDFLAGS) 
+	$(CC) $(OBJS) -o $@ $(LDFLAGS)
 
 clean:
-	rm -f $(OBJECTS) $(EXECUTABLE)
+	rm -f $(OBJS) $(EXECUTABLE)
 
 
 $(OBJECTS): %.o : %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $(FOLDER)$@

@@ -8,7 +8,9 @@ int readParameters(int *xlength, double *tau, double *velocityWall, int *timeste
 		szFilename = argv[1];
 		READ_INT( szFilename, *xlength );
 		READ_DOUBLE( szFilename, *tau );
-		READ_DOUBLE( szFilename, *velocityWall ); //TODO: I am not sure about this BC. I think we have to set the side walls to zero and top wall to 1.
+		read_double( szFileName, "velocityWall1", &velocityWall[0] );
+		read_double( szFileName, "velocityWall2", &velocityWall[1] );
+		read_double( szFileName, "velocityWall3", &velocityWall[2] );
 		READ_INT( szFilename, *timesteps );
 		READ_INT( szFilename , *timestepsPerPlotting );
 	}

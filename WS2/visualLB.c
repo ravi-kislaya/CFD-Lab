@@ -2,7 +2,7 @@
 
 //Writes Density and Velocity from the collision field
 void writeVtkOutput(const double * const collideField, const int * const flagField, const char * filename, unsigned int t, int xlength) {
-    int i,j;
+    int x, y, z;
     char szFilename[80];
     FILE *fp = NULL;
     sprintf( szFilename, "%s.%i.vtk", filename, t);

@@ -1,11 +1,24 @@
 #include "initLB.h"
 
 int readParameters(int *xlength, double *tau, double *velocityWall, int *timesteps, int *timestepsPerPlotting, int argc, char *argv[]){
-  /* TODO */
+	//DELETE COMMENT: I don't know why argc is used here instead of being used in main.
 
+	if ( argc == 2 ) {
+		const char *szFilename = NULL;
+		szFilename = argv[1];
+		READ_INT( szFilename, *xlength );
+		READ_DOUBLE( szFilename, *tau );
+		READ_DOUBLE( szFilename, *velocityWall ); //TODO: I am not sure about this BC. I think we have to set the side walls to zero and top wall to 1.
+		READ_INT( szFilename, *timesteps );
+		READ_INT( szFilename , *timestepsPerPlotting );
+	}
 
+	else {
+		printf("Error : The input is wrong. Pass an input file as a parameter. \n"); // DELETE: I couldn't think of a reasonable error message
+		return -1;
+	}
 
-  return 0;
+	return 0;
 }
 
 

@@ -33,7 +33,7 @@ void initialiseFields(double *collideField, double *streamField, int *flagField,
 		for( Y_Coordinate = 0 ; Y_Coordinate <= xlength ; ++Y_Coordinate )  {
 			for( X_Coordinate = 0 ; X_Coordinate <= xlength ; ++X_Coordinate ) {
 
-				Current_Cell = Cell_Vel_DOF * ( ( Z_Coordinate * Square_xlength )
+				Current_Cell = Vel_DOF * ( ( Z_Coordinate * Square_xlength )
 										    + ( Y_Coordinate * xlength ) + X_Coordinate ) ;
 
 				collideField[ Current_Cell ]      = Initialization_Value_2 ;
@@ -64,7 +64,7 @@ void initialiseFields(double *collideField, double *streamField, int *flagField,
 	for( Z_Coordinate = 0 ; Z_Coordinate <= xlength ; ++Z_Coordinate )  {
 		for( Y_Coordinate = 0 ; Y_Coordinate <= xlength ; ++Y_Coordinate )  {
 			for( X_Coordinate = 0 ; X_Coordinate <= xlength ; ++X_Coordinate ) {
-        Current_Cell = Cell_Vel_DOF * ( ( Z_Coordinate * Square_xlength )
+        Current_Cell = Vel_DOF * ( ( Z_Coordinate * Square_xlength )
 										    + ( Y_Coordinate * xlength ) + X_Coordinate ) ;
 				streamField[ Current_Cell ]      = Initialization_Value_2 ;
 				streamField[ Current_Cell + 1 ]  = Initialization_Value_2 ;
@@ -95,7 +95,7 @@ void initialiseFields(double *collideField, double *streamField, int *flagField,
 		for( Y_Coordinate = 0 ; Y_Coordinate <= xlength ; ++Y_Coordinate )  {
 			for( X_Coordinate = 0 ; X_Coordinate <= xlength ; ++X_Coordinate ) {
 
-        Current_Cell = Cell_Vel_DOF * ( ( Z_Coordinate * Square_xlength )
+        Current_Cell = Vel_DOF * ( ( Z_Coordinate * Square_xlength )
 										    + ( Y_Coordinate * xlength ) + X_Coordinate ) ;
 
         //TODO : masking

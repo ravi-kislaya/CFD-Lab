@@ -5,7 +5,7 @@ void computeDensity(const double *const currentCell, double *density){
 
   *density = 0.0;
 
-  for( int Vel_Component = 0 ; Vel_Component < Cell_Vel_DOF ; ++Vel_Component ) {
+  for( int Vel_Component = 0 ; Vel_Component < Vel_DOF ; ++Vel_Component ) {
     *density += currentCell[ Vel_Component ];
   }
 
@@ -18,7 +18,7 @@ void computeVelocity(const double * const currentCell, const double * const dens
   velocity[ 2 ] = 0.0;
   double Inverse_Density = 1.0 / ( *density );
 
-  for( int Vel_Component = 0 ; Vel_Component < Cell_Vel_DOF ; ++Vel_Component ) {
+  for( int Vel_Component = 0 ; Vel_Component < Vel_DOF ; ++Vel_Component ) {
     velocity[ 0 ] += currentCell[ Vel_Component ]  * LATTICEVELOCITIES[ Vel_Component ][ 0 ];
     velocity[ 1 ] += currentCell[ Vel_Component ]  * LATTICEVELOCITIES[ Vel_Component ][ 1 ];
     velocity[ 2 ] += currentCell[ Vel_Component ]  * LATTICEVELOCITIES[ Vel_Component ][ 2 ];
@@ -29,6 +29,7 @@ void computeVelocity(const double * const currentCell, const double * const dens
   velocity[ 2 ] *= Inverse_Density;
 }
 
+
 void computeFeq(const double * const density, const double * const velocity, double *feq){
 
  //CS means Speed of Sound
@@ -38,7 +39,7 @@ void computeFeq(const double * const density, const double * const velocity, dou
 
  double temp1 = 0.0, temp2 = 0.0;
 
- for( int Vel_Component = 0 ; Vel_Component < Cell_Vel_DOF ; ++Vel_Component ) {
+ for( int Vel_Component = 0 ; Vel_Component < Vel_DOF ; ++Vel_Component ) {
 
    temp1 = 0.0;
    temp2 = 0.0;

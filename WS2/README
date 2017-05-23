@@ -20,3 +20,11 @@ HINT: Check spelling of your data file if the simulation doesn't run
 5) Ravi:
 
 6) All: write main()
+
+
+--------------------------------------------------------------------------------
+what is left
+treat boundaries
+write vtk: visual.c
+read parameters
+main

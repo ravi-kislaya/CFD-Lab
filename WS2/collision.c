@@ -7,9 +7,8 @@ void computePostCollisionDistributions( double *currentCell,
                                         const double *const feq ) {
   /* TODO */
   double Inverse_Tau = 1.0 / ( *tau );
-  for( int Vel_Component = 0 ; Vel_Component < Cell_Vel_DOF ; ++Vel_Component ) {
-    currentCell[ Vel_Component ]
-                  -= Inverse_Tau * ( currentCell[ Vel_Component ] - ( *feq ) );
+  for( int i = 0; i < Vel_DOF; ++i ) {
+    currentCell[ i ] -= Inverse_Tau * ( currentCell[ i ] - ( *feq ) );
   }
 }
 
@@ -23,7 +22,7 @@ void doCollision( double *collideField,
 
   double Density = 0.0;
 	double Velocity[ Dimensions ];
-	double Feq[ Cell_Vel_DOF ];
+	double Feq[ Vel_DOF ];
 
 
 	int X_Coordinate = 0, Y_Coordinate = 0, Z_Coordinate = 0;
@@ -35,7 +34,7 @@ void doCollision( double *collideField,
 		for( Y_Coordinate = 1 ; Y_Coordinate < xlength ; ++Y_Coordinate )  {
 			for( X_Coordinate = 1 ; X_Coordinate < xlength ; ++X_Coordinate ) {
 
-				Current_Cell =  Cell_Vel_DOF * ( ( Z_Coordinate * Square_xlength )
+				Current_Cell =  Vel_DOF * ( ( Z_Coordinate * Square_xlength )
 										    + ( Y_Coordinate * xlength ) + X_Coordinate );
 
 				computeDensity( (collideField + Current_Cell) , &Density );

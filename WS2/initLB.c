@@ -61,7 +61,7 @@ void initialiseFields(double *collideField, double *streamField, int *flagField,
 		for( Y_Coordinate = 0 ; Y_Coordinate <= xlength ; ++Y_Coordinate )  {
 			for( X_Coordinate = 0 ; X_Coordinate <= xlength ; ++X_Coordinate ) {
 
-        Current_Cell = Vel_DOF * ( ( Z_Coordinate * Square_xlength )
+        Current_Cell = ( ( Z_Coordinate * Square_xlength )
 										    + ( Y_Coordinate * xlength ) + X_Coordinate ) ;
 
         //TODO : masking

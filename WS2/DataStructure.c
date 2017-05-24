@@ -2,27 +2,26 @@
 #include "helper.h"
 #include "computeCellValues.h"
 #include <list>
+#include <math.h>
 
 //------------------------------------------------------------------------------
 //                            Wall cell
 //------------------------------------------------------------------------------
 void StationaryWall::treatBoundary( double * Field ) {
     // TODO: write iplementation
-	int Initial_Velocity_Component = getVelocityComponent();
-	int Reflected_Vel_Component = 2 * ( 9 - Initial_Velocity_Component );
+	int Reflected_Vel_Component = abs( 18 - getVelocityComponent() );
 	Field[ getTargetIndex() + Reflected_Vel_Component ] = 
-				Field[ getSelfIndex() + Initial_Velocity_Component ];
+				Field[ getSelfIndex() + getVelocityComponent() ];
 }
 
 
 void MovingWall::treatBoundary( double * Field ) {
     // TODO: write iplementation
 	double Density = 0.0;
-	int Initial_Velocity_Component = getVelocityComponent();
-	int Reflected_Vel_Component = 2 * ( 9 - Initial_Velocity_Component );
+	int Reflected_Vel_Component = abs( 18 - getVelocityComponent() );
 	computeDensity( Field + getTargetIndex(), &Density );
 	Field[ getTargetIndex() + Reflected_Vel_Component ] = 
-				Field[ getSelfIndex() + Initial_Velocity_Component ]
+				Field[ getSelfIndex() + getVelocityComponent() ]
 			+ ( 2.0 * LATTICEWEIGHTS[getVelocityComponent()] * Density 
 				*getDotProduct() * InverseCS_Square );
 	

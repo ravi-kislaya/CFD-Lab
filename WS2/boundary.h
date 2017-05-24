@@ -10,6 +10,10 @@ void scanBoundary( std::list<Fluid*>& ObstacleList,
                     int xlength,
                     double* wallVelocity );
 
-void treatBoundary(double *collideField, int* flagField, const double * const wallVelocity,int xlength);
+
+void treatBoundary( double *collideField,
+                    std::list<Fluid*>& BoundaryLayerList,
+                    const double * const wallVelocity,
+                    int xlength );
 
 #endif

@@ -23,7 +23,8 @@ class Obstacle {
 
         int getSelfIndex() { return m_SelfIndex; }
         int getTargetIndex() { return m_TargetIndex; }
-    private:
+
+    protected:
         int m_SelfIndex;
         int m_TargetIndex;
         int m_VelocityComponent;

@@ -61,7 +61,7 @@ int main(int argc, char *argv[]){
 //******************************************************************************
 
   // Allocate all fields
-  int xlength = 5;
+  int xlength = 9;
   int TotalLength = xlength + 2;
   int CellNumber = TotalLength * TotalLength * TotalLength;
 
@@ -75,17 +75,14 @@ int main(int argc, char *argv[]){
   std::list<Fluid*> BoundaryList;
 
 
-  double Time = 0.0;
-  const char* OUTPUT_FILE_NAME = "LBM";
+  const double tau = 1.0;
+  const char* OUTPUT_FILE_NAME = "./Frames/Cube3D";
+  int TimeSteps = 1000;
+  int TimeStepsPerPlotting = 10;
+
+
 
   // initialize all fields
-
-//******************************************************************************
-//                          DEBUGGING: start
-//******************************************************************************
-
-// BEFORE WRITING THE MAIN LOOP ALL FUNCTIONS HAVE TO BE DEBUGGED !!!
-
   initialiseFields( collideField,
                     streamField,
                     flagField,
@@ -98,27 +95,44 @@ int main(int argc, char *argv[]){
               wallVelocity );
 
 
-   writeVtkOutput( collideField,
-                   OUTPUT_FILE_NAME,
-                   Time,
-                   xlength );
-
-
-
-//******************************************************************************
-//                          DEBUGGING: end
-//******************************************************************************
-   // Initializing timer
    clock_t Begin = clock();
 
 
+    double* Swap = 0;
+    for ( int Step = 0; Step < TimeSteps; ++Step ) {
+
+        doStreaming( collideField,
+                     streamField,
+                     flagField,
+                     xlength );
 
 
-    //**************************************************************************
-   //
-  //                            WHILE LOOP
- //
-//******************************************************************************
+        Swap = collideField;
+        collideField = streamField;
+        streamField = Swap;
+
+
+        doCollision( collideField,
+                     flagField,
+                     &tau,
+                     xlength);
+
+
+        treatBoundary( collideField,
+                       BoundaryList,
+                       wallVelocity,
+                       xlength );
+
+
+        if ( ( Step % TimeStepsPerPlotting ) == 0 ) {
+            writeVtkOutput( collideField,
+                            OUTPUT_FILE_NAME,
+                            Step,
+                            xlength );
+        }
+
+    }
+
 
 
 

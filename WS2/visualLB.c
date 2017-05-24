@@ -99,6 +99,8 @@ void write_vtkHeader( FILE *fp, int xlength ) {
 void write_vtkPointCoordinates( FILE *fp, int xlength ){
 
     //Since we are working with cubes of unit dimensions, dx = dy = dz = 1 / (xlength - 1)
+
+    // TODO: fix coordinates that we're writing to vtk files
     double dx = 1.0 / (xlength - 1);
     double dy = 1.0 / (xlength - 1);
     double dz = 1.0 / (xlength - 1);
@@ -108,10 +110,10 @@ void write_vtkPointCoordinates( FILE *fp, int xlength ){
     double CoordZ = 0;
 
     //TODO: I think I can be wrong here. Are the co-ordinates right here?
-    for( int z = 0; z <= xlength; ++z )
-        for( int y = 0; y <= xlength; ++y ) {
-            for( int x = 0; x <= xlength; ++x ) {
-              fprintf(fp, "%4.2f %4.2f %4.2f\n", CoordX, CoordY, CoordZ );
+    for( int z = 1; z <= xlength; ++z )
+        for( int y = 1; y <= xlength; ++y ) {
+            for( int x = 1; x <= xlength; ++x ) {
+              fprintf(fp, "%d %d %d\n", x, y, z );
               CoordX += dx;
               CoordY += dy;
               CoordZ += dz;

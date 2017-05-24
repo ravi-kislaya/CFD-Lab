@@ -46,7 +46,7 @@ void initialiseFields(double *collideField, double *streamField, int *flagField,
 		for( y = 0 ; y <= xlength + 1 ; ++y )  {
 			for( x = 0 ; x <= xlength + 1 ; ++x ) {
 
-				Current_Cell = computeFlagIndex( x, y, z, xlength );
+				Current_Cell = computeFieldIndex( x, y, z, xlength );
 
         for( Vel_Component = 0 ; Vel_Component < Vel_DOF ; ++Vel_Component ) {
           collideField [ Current_Cell + Vel_Component ] = LATTICEWEIGHTS[ Vel_Component ] ;
@@ -61,7 +61,7 @@ void initialiseFields(double *collideField, double *streamField, int *flagField,
 		for( y = 0 ; y <= xlength + 1; ++y )  {
 			for( x = 0 ; x <= xlength + 1; ++x ) {
 
-        Current_Cell = computeFlagIndex( x, y, z, xlength );
+        Current_Cell = computeFieldIndex( x, y, z, xlength );
 
         for( Vel_Component = 0 ; Vel_Component < Vel_DOF ; ++Vel_Component ) {
           streamField [ Current_Cell + Vel_Component ] = LATTICEWEIGHTS[ Vel_Component ] ;

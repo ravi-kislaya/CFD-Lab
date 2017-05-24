@@ -37,8 +37,14 @@ function cleanProject {
 		rm ./sim
 	fi
 
+	cleanVisualizationData
+}
+
+function cleanVisualizationData {
+	VTK_FOLDER=./Frames
+
 	# remove all vtk files
-	rm ./*.vtk
+	rm $VTK_FOLDER/*.vtk
 }
 
 
@@ -53,6 +59,8 @@ function generateExecutable {
 
 
 function runExecutable {
+
+	cleanVisualizationData
 
 	# run simulation if the compilation process was successful
     # $1 - means the parameter passed to the function
@@ -113,7 +121,8 @@ EXECUTABLE=lbsim
 MEM_CHECK_FILE=MEM_CHECK_REPORT
 NUMBER_OF_AVALIABLE_PARAMETERS=1
 SIMULATION_INPUT_FILE=cube.data
-SIMULATION_OUTPUT_FILE=Cube3D
+SIMULATION_OUTPUT_FILE=Cube3D...vtk
+VTK_FOLDER=./Frames
 
 
 # process all modes
@@ -154,7 +163,7 @@ if [ "$#" = $NUMBER_OF_AVALIABLE_PARAMETERS ]; then
         VtkExistence=false
         isFileFormatExists vtk $VtkExistence
         if [ $VtkExistence  ]; then
-            paraview $SIMULATION_OUTPUT_FILE
+            paraview $VTK_FOLDER/$SIMULATION_OUTPUT_FILE
         else
             echo
             echo "Cannot run paraview. There is no vtk files"

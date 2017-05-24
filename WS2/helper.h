@@ -14,10 +14,10 @@
 /* ----------------------------------------------------------------------- */
 /*                      user define functions                              */
 /* ----------------------------------------------------------------------- */
-int computeFlagIndex( int , int, int , int);
+int computeFlagIndex( int , int, int , int );
 
 // function to calculate lexicographical co-ordinates of the lattices in the field
-int computeFieldIndex( int , int, int, int);
+int computeFieldIndex( int , int, int, int );
 
 
 #ifdef PI

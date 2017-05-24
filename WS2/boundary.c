@@ -68,9 +68,8 @@ void scanBoundary( std::list<Fluid*>& ObstacleList,
 
 void treatBoundary( double *collideField,
                     std::list<Fluid*>& BoundaryLayerList,
-                    int* flagField,
                     const double * const wallVelocity,
-                    int xlength ){
+                    int xlength ) {
 
 
     // iterate through out all bounsry layer cells

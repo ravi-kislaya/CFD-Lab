@@ -11,7 +11,9 @@ void computeDensity( const double *const currentCell, double *density ){
 
 }
 
-void computeVelocity(const double * const currentCell, const double * const density, double *velocity){
+void computeVelocity( const double * const currentCell,
+                      const double * const density,
+                      double *velocity) {
 
   velocity[ 0 ] = 0.0;
   velocity[ 1 ] = 0.0;
@@ -39,12 +41,12 @@ void computeFeq(const double * const density, const double * const velocity, dou
 
  double temp1 = 0.0, temp2 = 0.0;
 
- for( int Vel_Component = 0 ; Vel_Component < Vel_DOF ; ++Vel_Component ) {
+ for( int Vel_Component = 0; Vel_Component < Vel_DOF; ++Vel_Component ) {
 
    temp1 = 0.0;
    temp2 = 0.0;
 
-   for( int i = 0 ; i < Dimensions ; ++i ) {
+   for( int i = 0; i < Dimensions; ++i ) {
      //dot product of c and U
      temp1 += LATTICEVELOCITIES[ Vel_Component ][ i ] * velocity[ i ];
 

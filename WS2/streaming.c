@@ -18,12 +18,16 @@ void doStreaming(double *collideField, double *streamField,int *flagField,int xl
 										    + ( Y_Coordinate * xlength ) + X_Coordinate ) ;
 				//Cell wise streaming considering the velocity component
 				for( Vel_Component = 0 ; Vel_Component < Vel_DOF ; ++Vel_Component ) {
+
+
 					Target_Cell = Vel_DOF * ( ( ( Z_Coordinate + LATTICEVELOCITIES[ Vel_Component ][ 2 ] ) * Square_xlength )
 									+ ( ( Y_Coordinate + LATTICEVELOCITIES[ Vel_Component ][ 1 ] ) * xlength )
-								  + ( X_Coordinate + LATTICEVELOCITIES[ Vel_Component ][ 0 ] ) );
+							   	  + ( X_Coordinate + LATTICEVELOCITIES[ Vel_Component ][ 0 ] ) );
 
-					streamField[ Target_Cell + Vel_Component ] = collideField[ Current_Cell + Vel_Component ] ;
 
+
+					streamField[ Target_Cell + Vel_Component ]
+								= collideField[ Current_Cell + Vel_Component ] ;
 				}
 
 			}

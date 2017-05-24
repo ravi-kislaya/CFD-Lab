@@ -6,6 +6,7 @@
 /* ----------------------------------------------------------------------- */
 /*                             auxiliary functions                         */
 /* ----------------------------------------------------------------------- */
+/* DEBUGGING: this functions overlaps with the function declared in the std library
 int min( int a, int b)
 {
     if( a < b ) return a;
@@ -26,6 +27,20 @@ double fmin( double a, double b)
 
 double fmax( double a, double b)
 {
+    if( a > b ) return a;
+    return b;
+}
+
+*/
+
+template< class T >
+T min( T a, T b ) {
+    if( a < b ) return a;
+    return b;
+}
+
+template< class T >
+T max( T a, T b ) {
     if( a > b ) return a;
     return b;
 }
@@ -90,7 +105,7 @@ void errhandler( int nLine, const char *szFile, const char *szString )
 char* find_string( const char* szFileName, const char *szVarName )
 {
     int nLine = 0;
-    int i;
+    unsigned i;
     FILE *fh = NULL;
 
     static char szBuffer[MAX_LINE_LENGTH];      /* containes the line read  */

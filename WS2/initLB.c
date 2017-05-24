@@ -1,14 +1,29 @@
 #include "initLB.h"
 #include "LBDefinitions.h"
-
+/*
 int readParameters(int *xlength, double *tau, double *velocityWall, int *timesteps, int *timestepsPerPlotting, int argc, char *argv[]){
-  /* TODO */
+  	//DELETE COMMENT: I don't know why argc is used here instead of being used in main.
 
+	if ( argc == 2 ) {
+		const char *szFilename = NULL;
+		szFilename = argv[1];
+		READ_INT( szFilename, *xlength );
+		READ_DOUBLE( szFilename, *tau );
+		read_double( szFileName, "velocityWall1", &velocityWall[0] );
+		read_double( szFileName, "velocityWall2", &velocityWall[1] );
+		read_double( szFileName, "velocityWall3", &velocityWall[2] );
+		READ_INT( szFilename, *timesteps );
+		READ_INT( szFilename , *timestepsPerPlotting );
+	}
 
+	else {
+		printf("Error : The input is wrong. Pass an input file as a parameter. \n"); // DELETE: I couldn't think of a reasonable error message
+		return -1;
+	}
 
-  return 0;
+	return 0;
 }
-
+*/
 
 void initialiseFields(double *collideField, double *streamField, int *flagField, int xlength){
 	/* TODO
@@ -25,9 +40,9 @@ void initialiseFields(double *collideField, double *streamField, int *flagField,
 	//all the fields are separately initialised for cache optimisation
 
   //Initialization of collideField
-	for( Z_Coordinate = 0 ; Z_Coordinate <= xlength ; ++Z_Coordinate )  {
-		for( Y_Coordinate = 0 ; Y_Coordinate <= xlength ; ++Y_Coordinate )  {
-			for( X_Coordinate = 0 ; X_Coordinate <= xlength ; ++X_Coordinate ) {
+	for( Z_Coordinate = 0 ; Z_Coordinate <= xlength + 1; ++Z_Coordinate )  {
+		for( Y_Coordinate = 0 ; Y_Coordinate <= xlength + 1 ; ++Y_Coordinate )  {
+			for( X_Coordinate = 0 ; X_Coordinate <= xlength + 1 ; ++X_Coordinate ) {
 
 				Current_Cell = Vel_DOF * ( ( Z_Coordinate * Square_xlength )
 										    + ( Y_Coordinate * xlength ) + X_Coordinate ) ;
@@ -41,9 +56,10 @@ void initialiseFields(double *collideField, double *streamField, int *flagField,
 	}
 
   //Initialization of streamField
-	for( Z_Coordinate = 0 ; Z_Coordinate <= xlength ; ++Z_Coordinate )  {
-		for( Y_Coordinate = 0 ; Y_Coordinate <= xlength ; ++Y_Coordinate )  {
-			for( X_Coordinate = 0 ; X_Coordinate <= xlength ; ++X_Coordinate ) {
+	for( Z_Coordinate = 0 ; Z_Coordinate <= xlength + 1; ++Z_Coordinate )  {
+		for( Y_Coordinate = 0 ; Y_Coordinate <= xlength + 1; ++Y_Coordinate )  {
+			for( X_Coordinate = 0 ; X_Coordinate <= xlength + 1; ++X_Coordinate ) {
+
         Current_Cell = Vel_DOF * ( ( Z_Coordinate * Square_xlength )
 										    + ( Y_Coordinate * xlength ) + X_Coordinate ) ;
 
@@ -57,21 +73,24 @@ void initialiseFields(double *collideField, double *streamField, int *flagField,
 
 
 	//Initialization of flagField
-	for( Z_Coordinate = 0 ; Z_Coordinate <= xlength ; ++Z_Coordinate )  {
-		for( Y_Coordinate = 0 ; Y_Coordinate <= xlength ; ++Y_Coordinate )  {
-			for( X_Coordinate = 0 ; X_Coordinate <= xlength ; ++X_Coordinate ) {
+	for( Z_Coordinate = 0 ; Z_Coordinate <= ( xlength + 1 ); ++Z_Coordinate )  {
+		for( Y_Coordinate = 0 ; Y_Coordinate <= ( xlength + 1 ); ++Y_Coordinate )  {
+			for( X_Coordinate = 0 ; X_Coordinate <= ( xlength + 1 ); ++X_Coordinate ) {
 
-        Current_Cell = Vel_DOF * ( ( Z_Coordinate * Square_xlength )
+					Current_Cell = ( ( Z_Coordinate * Square_xlength )
 										    + ( Y_Coordinate * xlength ) + X_Coordinate ) ;
 
-        //TODO : masking
-				if( Z_Coordinate == xlength )
-					flagField [Current_Cell] = 2 ;
-				else if(   X_Coordinate == 0 || X_Coordinate == xlength
-						|| Y_Coordinate == 0 || Y_Coordinate == xlength )
-					flagField [Current_Cell] = 1 ;
-				else
-					flagField [Current_Cell] = 0 ;
+						//TODO : masking
+					if( Z_Coordinate == ( xlength + 1 ) )
+						flagField [Current_Cell] = MOVING_WALL ;
+					else if(   X_Coordinate == 0
+                            || Y_Coordinate == 0 
+                            || X_Coordinate == ( xlength + 1 )
+                            || Y_Coordinate == ( xlength + 1 ) )
+						flagField [ Current_Cell ] = WALL ;
+					else
+						flagField [ Current_Cell ] = FLUID ;
+
 			}
 		}
 	}

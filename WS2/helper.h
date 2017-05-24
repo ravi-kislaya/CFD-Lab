@@ -26,11 +26,17 @@
  */
 extern clock_t last_timer_reset;
 
+// DEBUGGING: this functions overlaps with the function declared in the std library
+//int min( int a, int b);
+//int max( int a, int b);
+//double fmin( double a, double b);
+//double fmax( double a, double b);
 
-int min( int a, int b);
-int max( int a, int b);
-double fmin( double a, double b);
-double fmax( double a, double b);
+template< class T >
+T min( T a, T b );
+
+template< class T >
+T max( T a, T b );
 
 
 /**
@@ -604,4 +610,3 @@ int **read_pgm(const char *filename);
         }
 
 #endif
-

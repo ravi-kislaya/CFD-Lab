@@ -1,5 +1,9 @@
 #include "initLB.h"
 #include "LBDefinitions.h"
+#include "helper.h"
+#include <iostream>
+
+
 /*
 int readParameters(int *xlength, double *tau, double *velocityWall, int *timesteps, int *timestepsPerPlotting, int argc, char *argv[]){
   	//DELETE COMMENT: I don't know why argc is used here instead of being used in main.
@@ -31,24 +35,21 @@ void initialiseFields(double *collideField, double *streamField, int *flagField,
   */
 
 	//Variable declaration
-	int X_Coordinate = 0 , Y_Coordinate = 0 , Z_Coordinate = 0 , Vel_Component = 0;
+	int x = 0 , y = 0 , z = 0 , Vel_Component = 0;
 	int Current_Cell = 0.0;
-
-	int Square_xlength = xlength * xlength;
 
 
 	//all the fields are separately initialised for cache optimisation
 
   //Initialization of collideField
-	for( Z_Coordinate = 0 ; Z_Coordinate <= xlength + 1; ++Z_Coordinate )  {
-		for( Y_Coordinate = 0 ; Y_Coordinate <= xlength + 1 ; ++Y_Coordinate )  {
-			for( X_Coordinate = 0 ; X_Coordinate <= xlength + 1 ; ++X_Coordinate ) {
+	for( z = 0 ; z <= xlength + 1; ++z )  {
+		for( y = 0 ; y <= xlength + 1 ; ++y )  {
+			for( x = 0 ; x <= xlength + 1 ; ++x ) {
 
-				Current_Cell = Vel_DOF * ( ( Z_Coordinate * Square_xlength )
-										    + ( Y_Coordinate * xlength ) + X_Coordinate ) ;
+				Current_Cell = computeFlagIndex( x, y, z, xlength );
 
         for( Vel_Component = 0 ; Vel_Component < Vel_DOF ; ++Vel_Component ) {
-          collideField [Current_Cell + Vel_Component] = LATTICEWEIGHTS[Vel_Component] ;
+          collideField [ Current_Cell + Vel_Component ] = LATTICEWEIGHTS[ Vel_Component ] ;
         }
 
 			}
@@ -56,15 +57,14 @@ void initialiseFields(double *collideField, double *streamField, int *flagField,
 	}
 
   //Initialization of streamField
-	for( Z_Coordinate = 0 ; Z_Coordinate <= xlength + 1; ++Z_Coordinate )  {
-		for( Y_Coordinate = 0 ; Y_Coordinate <= xlength + 1; ++Y_Coordinate )  {
-			for( X_Coordinate = 0 ; X_Coordinate <= xlength + 1; ++X_Coordinate ) {
+	for( z = 0 ; z <= xlength + 1; ++z )  {
+		for( y = 0 ; y <= xlength + 1; ++y )  {
+			for( x = 0 ; x <= xlength + 1; ++x ) {
 
-        Current_Cell = Vel_DOF * ( ( Z_Coordinate * Square_xlength )
-										    + ( Y_Coordinate * xlength ) + X_Coordinate ) ;
+        Current_Cell = computeFlagIndex( x, y, z, xlength );
 
         for( Vel_Component = 0 ; Vel_Component < Vel_DOF ; ++Vel_Component ) {
-          streamField [Current_Cell + Vel_Component] = LATTICEWEIGHTS[Vel_Component] ;
+          streamField [ Current_Cell + Vel_Component ] = LATTICEWEIGHTS[ Vel_Component ] ;
         }
 
 			}
@@ -73,27 +73,29 @@ void initialiseFields(double *collideField, double *streamField, int *flagField,
 
 
 	//Initialization of flagField
-	for( Z_Coordinate = 0 ; Z_Coordinate <= ( xlength + 1 ); ++Z_Coordinate )  {
-		for( Y_Coordinate = 0 ; Y_Coordinate <= ( xlength + 1 ); ++Y_Coordinate )  {
-			for( X_Coordinate = 0 ; X_Coordinate <= ( xlength + 1 ); ++X_Coordinate ) {
+	for( z = 0 ; z <= ( xlength + 1 ); ++z )  {
+		for( y = 0 ; y <= ( xlength + 1 ); ++y )  {
+			for( x = 0 ; x <= ( xlength + 1 ); ++x ) {
 
-					Current_Cell = ( ( Z_Coordinate * Square_xlength )
-										    + ( Y_Coordinate * xlength ) + X_Coordinate ) ;
+				Current_Cell = computeFlagIndex( x, y, z, xlength );
 
-						//TODO : masking
-					if( Z_Coordinate == ( xlength + 1 ) )
-						flagField [Current_Cell] = MOVING_WALL ;
-					else if(   X_Coordinate == 0
-                            || Y_Coordinate == 0 
-                            || X_Coordinate == ( xlength + 1 )
-                            || Y_Coordinate == ( xlength + 1 ) )
-						flagField [ Current_Cell ] = WALL ;
-					else
-						flagField [ Current_Cell ] = FLUID ;
+				//TODO : masking
+				if( z == ( xlength + 1 ) ) {
+                    flagField [ Current_Cell ] = MOVING_WALL;
+                }
+				else if ( x == 0
+                          || y == 0
+                          || z == 0
+                          || x == ( xlength + 1 )
+                          || y == ( xlength + 1 ) ) {
 
-			}
-		}
-	}
+						flagField [ Current_Cell ] = WALL;
+                }
+				else {
+					flagField [ Current_Cell ] = FLUID ;
+                }
 
-
+            }
+        }
+    }
 }

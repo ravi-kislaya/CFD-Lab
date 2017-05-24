@@ -1,7 +1,7 @@
 #include "computeCellValues.h"
 #include "LBDefinitions.h"
 
-void computeDensity(const double *const currentCell, double *density){
+void computeDensity( const double *const currentCell, double *density ){
 
   *density = 0.0;
 

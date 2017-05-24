@@ -9,6 +9,16 @@
 #include <string.h>
 #include <float.h>
 #include <time.h>
+#include "LBDefinitions.h"
+
+/* ----------------------------------------------------------------------- */
+/*                      user define functions                              */
+/* ----------------------------------------------------------------------- */
+int computeFlagIndex( int , int, int , int);
+
+// function to calculate lexicographical co-ordinates of the lattices in the field
+int computeFieldIndex( int , int, int, int);
+
 
 #ifdef PI
 #undef PI
@@ -25,6 +35,9 @@
  * Stores the last timer value
  */
 extern clock_t last_timer_reset;
+
+
+
 
 // DEBUGGING: this functions overlaps with the function declared in the std library
 //int min( int a, int b);

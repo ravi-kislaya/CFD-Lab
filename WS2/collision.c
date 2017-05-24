@@ -30,9 +30,9 @@ void doCollision( double *collideField,
   int Square_xlength = xlength * xlength;
 
 	//Looping through individual element
-	for( Z_Coordinate = 1 ; Z_Coordinate < xlength ; ++Z_Coordinate )  {
-		for( Y_Coordinate = 1 ; Y_Coordinate < xlength ; ++Y_Coordinate )  {
-			for( X_Coordinate = 1 ; X_Coordinate < xlength ; ++X_Coordinate ) {
+	for( Z_Coordinate = 1 ; Z_Coordinate <= xlength ; ++Z_Coordinate )  {
+		for( Y_Coordinate = 1 ; Y_Coordinate <= xlength ; ++Y_Coordinate )  {
+			for( X_Coordinate = 1 ; X_Coordinate <= xlength ; ++X_Coordinate ) {
 
 				Current_Cell =  Vel_DOF * ( ( Z_Coordinate * Square_xlength )
 										    + ( Y_Coordinate * xlength ) + X_Coordinate );

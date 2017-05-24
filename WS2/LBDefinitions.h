@@ -47,6 +47,8 @@
                                               1.0 / 36.0
                                            };
 
+  enum Flags{ FLUID, WALL, MOVING_WALL }; 
+
 
   // C_S - is the speed of sound which is equal to 1.0 / sqrt ( 3.0 ) = 0.577350269
   static const double C_S = 0.577350269;

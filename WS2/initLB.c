@@ -1,8 +1,12 @@
-#include "initLB.h"
+#include "helper.h"
+#include "visualLB.h"
+#include "computeCellValues.h"
+#include <stdio.h>
 #include "LBDefinitions.h"
 
+/*
 int readParameters(int *xlength, double *tau, double *velocityWall, int *timesteps, int *timestepsPerPlotting, int argc, char *argv[]){
-  /* TODO */
+
   	//DELETE COMMENT: I don't know why argc is used here instead of being used in main.
 
 	if ( argc == 2 ) {
@@ -24,6 +28,8 @@ int readParameters(int *xlength, double *tau, double *velocityWall, int *timeste
 
 	return 0;
 }
+*/
+
 
 
 void initialiseFields(double *collideField, double *streamField, int *flagField, int xlength){
@@ -41,9 +47,9 @@ void initialiseFields(double *collideField, double *streamField, int *flagField,
 	//all the fields are separately initialised for cache optimisation
 
   //Initialization of collideField
-	for( Z_Coordinate = 0 ; Z_Coordinate <= xlength ; ++Z_Coordinate )  {
-		for( Y_Coordinate = 0 ; Y_Coordinate <= xlength ; ++Y_Coordinate )  {
-			for( X_Coordinate = 0 ; X_Coordinate <= xlength ; ++X_Coordinate ) {
+	for( Z_Coordinate = 0 ; Z_Coordinate <= xlength + 1 ; ++Z_Coordinate )  {
+		for( Y_Coordinate = 0 ; Y_Coordinate <= xlength + 1 ; ++Y_Coordinate )  {
+			for( X_Coordinate = 0 ; X_Coordinate <= xlength + 1; ++X_Coordinate ) {
 
 				Current_Cell = Vel_DOF * ( ( Z_Coordinate * Square_xlength )
 										    + ( Y_Coordinate * xlength ) + X_Coordinate ) ;
@@ -57,9 +63,9 @@ void initialiseFields(double *collideField, double *streamField, int *flagField,
 	}
 
   //Initialization of streamField
-	for( Z_Coordinate = 0 ; Z_Coordinate <= xlength ; ++Z_Coordinate )  {
-		for( Y_Coordinate = 0 ; Y_Coordinate <= xlength ; ++Y_Coordinate )  {
-			for( X_Coordinate = 0 ; X_Coordinate <= xlength ; ++X_Coordinate ) {
+	for( Z_Coordinate = 0 ; Z_Coordinate <= xlength + 1 ; ++Z_Coordinate )  {
+		for( Y_Coordinate = 0 ; Y_Coordinate <= xlength + 1 ; ++Y_Coordinate )  {
+			for( X_Coordinate = 0 ; X_Coordinate <= xlength + 1  ; ++X_Coordinate ) {
         Current_Cell = Vel_DOF * ( ( Z_Coordinate * Square_xlength )
 										    + ( Y_Coordinate * xlength ) + X_Coordinate ) ;
 
@@ -73,25 +79,22 @@ void initialiseFields(double *collideField, double *streamField, int *flagField,
 
 
 	//Initialization of flagField
-	for( Z_Coordinate = 0 ; Z_Coordinate <= xlength ; ++Z_Coordinate )  {
-		for( Y_Coordinate = 0 ; Y_Coordinate <= xlength ; ++Y_Coordinate )  {
-			for( X_Coordinate = 0 ; X_Coordinate <= xlength ; ++X_Coordinate ) {
+	for( Z_Coordinate = 0 ; Z_Coordinate <= xlength + 1 ; ++Z_Coordinate )  {
+		for( Y_Coordinate = 0 ; Y_Coordinate <= xlength + 1 ; ++Y_Coordinate )  {
+			for( X_Coordinate = 0 ; X_Coordinate <= xlength + 1 ; ++X_Coordinate ) {
 
-					Current_Cell = Vel_DOF *( ( Z_Coordinate * Square_xlength )
+					Current_Cell = ( ( Z_Coordinate * Square_xlength )
 										    + ( Y_Coordinate * xlength ) + X_Coordinate ) ;
-		
+
 						//TODO : masking
 					if( Z_Coordinate == xlength )
-						for( Vel_Component = 0 ;Vel_Component <Vel_DOF ; ++Vel_Component ) 	
-							flagField [Current_Cell + Vel_Component] = 2 ;
+						flagField [Current_Cell] = MOVING_WALL ;
 					else if(   X_Coordinate == 0 || X_Coordinate == xlength
 							|| Y_Coordinate == 0 || Y_Coordinate == xlength )
-						for( Vel_Component = 0 ;Vel_Component <Vel_DOF ; ++Vel_Component ) 	
-							flagField [Current_Cell + Vel_Component] = 1 ;
+						flagField [Current_Cell] = WALL ;
 					else
-						for( Vel_Component = 0 ;Vel_Component <Vel_DOF ; ++Vel_Component ) 
-							flagField [Current_Cell + Vel_Component] = 0 ;
-					
+						flagField [Current_Cell] = FLUID ;
+
 			}
 		}
 	}

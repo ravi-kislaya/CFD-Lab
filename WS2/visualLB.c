@@ -1,9 +1,14 @@
+#include "helper.h"
 #include "visualLB.h"
+#include "computeCellValues.h"
+#include <stdio.h>
+#include "LBDefinitions.h"
 
 
+/*
 //Writes Density and Velocity from the collision field
 void writeVtkOutput(const double * const collideField, const int * const flagField, const char * filename, unsigned int t, int xlength) {
-  /* TODO */
+
       int x, y, z;
     char szFilename[80];
     FILE *fp = NULL;
@@ -92,8 +97,8 @@ void write_vtkPointCoordinates( FILE *fp, int xlength ){
     for( z = 0; z <= xlength; z+=dz )
         for( y = 0; y <= xlength; y+=dy ) {
             for( x = 0; x <= xlength; x+=dx ) {
-            fprintf(fp, "%f %f %f\n", x,y,z );
+              fprintf(fp, "%f %f %f\n", x,y,z );
         }
     }
 }
-
+*/

@@ -2,10 +2,12 @@
 #include "LBDefinitions.h"
 #include <math.h>
 
-double dotProduct(double *A , double *B) {
+double dotProduct(const double * const A , double *B) {
 	return (A[0]*B[0]) + (A[1]*B[1]) + (A[2]*B[2]) ;
 }
 
+/*
+This is stupid implementation
 void mixedBoundary( double *collideField,
                     int* flagField,
                     const double * const wallVelocity,
@@ -18,10 +20,9 @@ void mixedBoundary( double *collideField,
 					int Current_Cell){
 	
 	double Density = 1.0 ;
-	double Velocity[3] = {0.0};
+	double Velocity[3] = {0.0}; 
 	int Target_Cell = 0 ;
 	computeDensity( (collideField+Current_Cell) , Density ) ;
-	computeVelocity( (collideField+Current_Cell) , Density , Velocity) ;
 	
 	for( int Vel_Component = 0 ; Vel_Component < Vel_DOF ; ++Vel_Component ) {
 		Target_Cell = Vel_DOF * ( ( ( Z_Coordinate + LATTICEVELOCITIES[ Vel_Component ][ 2 ] ) * Square_xlength )
@@ -31,9 +32,12 @@ void mixedBoundary( double *collideField,
 			collideField[Current_Cell + Vel_Component] += collideField[Target_Cell + abs(9-Vel_Component)] ;
 		}
 		if( flagField[Target_Cell] == 2 ) {
+			Velocity[ 0 ] = LATTICEVELOCITIES[ Vel_Component ][ 0 ];
+			Velocity[ 1 ] = LATTICEVELOCITIES[ Vel_Component ][ 1 ];
+			Velocity[ 2 ] = LATTICEVELOCITIES[ Vel_Component ][ 2 ];
 			collideField[Current_Cell + Vel_Component] += collideField[Target_Cell + abs(9-Vel_Component)]
 													   + ( 2 * LATTICEWEIGHTS[Vel_Component] * Density 
-													   * dotProduct(Velocity,wallVelocity) * Inverse_Square_CS );
+													   * dotProduct(wallVelocity,Velocity) * Inverse_Square_CS );
 		}
 	}
 }
@@ -53,16 +57,19 @@ void movingBoundary( double *collideField,
 	double Velocity[3] = {0.0};
 	int Target_Cell = 0 ;
 	computeDensity( (collideField+Current_Cell) , Density ) ;
-	computeVelocity( (collideField+Current_Cell) , Density , Velocity) ;
+	
 	
 	for( int Vel_Component = 0 ; Vel_Component < Vel_DOF ; ++Vel_Component ) {
 		Target_Cell = Vel_DOF * ( ( ( Z_Coordinate + LATTICEVELOCITIES[ Vel_Component ][ 2 ] ) * Square_xlength )
 					+ ( ( Y_Coordinate + LATTICEVELOCITIES[ Vel_Component ][ 1 ] ) * xlength )
 					+ ( X_Coordinate + LATTICEVELOCITIES[ Vel_Component ][ 0 ] ) );
 		if( flagField[Target_Cell] == 2 ) {
+			Velocity[ 0 ] = LATTICEVELOCITIES[ Vel_Component ][ 0 ];
+			Velocity[ 1 ] = LATTICEVELOCITIES[ Vel_Component ][ 1 ];
+			Velocity[ 2 ] = LATTICEVELOCITIES[ Vel_Component ][ 2 ];
 			collideField[Current_Cell + Vel_Component] += collideField[Target_Cell + abs(9-Vel_Component)]
 													   + ( 2 * LATTICEWEIGHTS[Vel_Component] * Density 
-													   * dotProduct(Velocity,wallVelocity) * Inverse_Square_CS );
+													   * dotProduct(wallVelocity,Velocity) * Inverse_Square_CS );
 		}
 	}
 }
@@ -93,7 +100,7 @@ void treatBoundary( double *collideField,
                     int* flagField,
                     const double * const wallVelocity,
                     int xlength ){
-  /* TODO */
+
 	int X_Coordinate = 0, Y_Coordinate = 0, Z_Coordinate = 1;
 	int Current_Cell = 0, Target_Cell = 0;
 	int Square_xlength = xlength * xlength;
@@ -179,4 +186,106 @@ void treatBoundary( double *collideField,
 							X_Coordinate, Y_Coordinate, Z_Coordinate, Current_Cell );
 		}
 	}
+}
+*/
+
+void teachBoundary( int* flagField,
+					int xlength,
+					int **NoSlip,
+					int **MovingWall,
+					double *MovingWallDotProduct,
+					const double * const wallVelocity) {
+	
+	int X_Coordinate = 0, Y_Coordinate = 0, Z_Coordinate = 0;
+	int Vel_Component = 0, Current_Cell = 0, Target_Cell = 0;
+	int Square_xlength = xlength * xlength;
+	int X_Target = 0, Y_Target = 0, Z_Target = 0;
+	int CountNoSlip = 0, CountMovingWall = 0;
+	double Inverse_Square_CS = 1.0 / ( C_S * C_S );
+	double Velocity[3] = {0.0};
+
+	//Looping through individual element
+	for( Z_Coordinate = 0 ; Z_Coordinate <= xlength ; ++Z_Coordinate )  {
+		for( Y_Coordinate = 0 ; Y_Coordinate < xlength ; ++Y_Coordinate )  {
+			for( X_Coordinate = 0 ; X_Coordinate < xlength ; ++X_Coordinate ) {
+
+				Current_Cell = Vel_DOF * ( ( Z_Coordinate * Square_xlength )
+										    + ( Y_Coordinate * xlength ) + X_Coordinate ) ;
+				if(flagField[Current_Cell] == 1) {
+					//Cell wise streaming considering the velocity component
+					NoSlip[CountNoSlip][0] = Current_Cell + Vel_Component;
+					for( Vel_Component = 0 ; Vel_Component < Vel_DOF ; ++Vel_Component ) {
+						X_Target = X_Coordinate + LATTICEVELOCITIES[ Vel_Component ][ 0 ];
+						Y_Target = Y_Coordinate + LATTICEVELOCITIES[ Vel_Component ][ 1 ];
+						Z_Target = Z_Coordinate + LATTICEVELOCITIES[ Vel_Component ][ 2 ];
+						if( X_Target < 0 || Y_Target < 0 || Z_Target < 0 
+						  ||X_Target > xlength || Y_Target > xlength || Z_Target > xlength ) {
+							Target_Cell = Vel_DOF * ( ( Z_Target * Square_xlength )
+											+ ( Y_Target * xlength ) + ( X_Target ) );
+							
+							NoSlip[CountNoSlip][1] = Target_Cell + abs(9 - Vel_Component);
+						}
+						else {
+							NoSlip[CountNoSlip][1] = Current_Cell + Vel_Component;
+						}
+					}
+					++CountNoSlip;
+				}
+				if(flagField[Current_Cell] == 2) {
+					//Cell wise streaming considering the velocity component
+					MovingWall[CountMovingWall][0] = Current_Cell + Vel_Component;
+					for( Vel_Component = 0 ; Vel_Component < Vel_DOF ; ++Vel_Component ) {
+						X_Target = X_Coordinate + LATTICEVELOCITIES[ Vel_Component ][ 0 ];
+						Y_Target = Y_Coordinate + LATTICEVELOCITIES[ Vel_Component ][ 1 ];
+						Z_Target = Z_Coordinate + LATTICEVELOCITIES[ Vel_Component ][ 2 ];
+						if( X_Target < 0 || Y_Target < 0 || Z_Target < 0 
+						  ||X_Target > xlength || Y_Target > xlength || Z_Target > xlength ) {
+							Target_Cell = Vel_DOF * ( ( Z_Target * Square_xlength )
+											+ ( Y_Target * xlength ) + ( X_Target ) );
+							
+							MovingWall[CountMovingWall][1] = Target_Cell + abs(9 - Vel_Component);
+							Velocity[ 0 ] = LATTICEVELOCITIES[ Vel_Component ][ 0 ];
+							Velocity[ 1 ] = LATTICEVELOCITIES[ Vel_Component ][ 1 ];
+							Velocity[ 2 ] = LATTICEVELOCITIES[ Vel_Component ][ 2 ];
+							MovingWallDotProduct[CountMovingWall] = 2 * LATTICEWEIGHTS[ Vel_Component ] 
+																	* dotProduct(wallVelocity, Velocity) * Inverse_Square_CS;
+						}
+						else {
+							MovingWall[CountMovingWall][1] = Current_Cell + Vel_Component;
+							movingWallDotProduct[CountMovingWall] = 0.0;
+						}
+					}
+					++CountMovingWall;
+				}
+
+			}
+		}
+	}
+
+}
+
+void treatBoundary( double *collideField,
+                    int* flagField,
+                    const double * const wallVelocity,
+                    int xlength,
+					int **NoSlip,
+					int **MovingWall,
+					double *MovingWallDotProduct,
+					const double * const wallVelocity ){
+	
+	double Density = 0.0;
+	
+	int NumberOfNoSlip = sizeof( NoSlip ) / sizeof( NoSlip[0] );
+	//assumption: there are atleast some Moving walls
+	int NumberOfMovingWall = sizeof( MovingWall ) / sizeof( MovingWall[0] );
+	
+	for( int i = 0; i < NumberOfNoSlip; ++i ) {
+		collideField[NoSlip[i][1]] += collideField[NoSlip[i][0]];
+	}
+	
+	for( int i = 0; i < NumberOfMovingWall; ++i ) {
+		computeDensity(
+		collideField[NoSlip[i][1]] += collideField[NoSlip[i][0]]
+	}
+	
 }

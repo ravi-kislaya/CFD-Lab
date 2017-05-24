@@ -17,7 +17,7 @@
 #include "visualLB.h"
 
 
-int main(int argc, char *argv[]){
+int main( int argc, char *argv[] ){
 
 
     // check the correctness of the input parameters
@@ -58,10 +58,9 @@ int main(int argc, char *argv[]){
      }
 
 
-//******************************************************************************
 
   // Allocate all fields
-  int xlength = 9;
+  int xlength = 10;
   int TotalLength = xlength + 2;
   int CellNumber = TotalLength * TotalLength * TotalLength;
 
@@ -75,10 +74,10 @@ int main(int argc, char *argv[]){
   std::list<Fluid*> BoundaryList;
 
 
-  const double tau = 1.0;
+  const double tau = 1.8;
   const char* OUTPUT_FILE_NAME = "./Frames/Cube3D";
   int TimeSteps = 1000;
-  int TimeStepsPerPlotting = 10;
+  int TimeStepsPerPlotting = 100;
 
 
 

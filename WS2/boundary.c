@@ -14,6 +14,7 @@ void scanBoundary( std::list<Fluid*>& ObstacleList,
 
     int Current_Cell = 0;
     int Neighbour_Cell = 0;
+	double Dot_Product = 0.0;
 
     for( int z = 1 ; z <= xlength; ++z )  {
         for( int y = 1 ; y <= xlength; ++y )  {
@@ -37,15 +38,19 @@ void scanBoundary( std::list<Fluid*>& ObstacleList,
 
                     // add neighbours cell ( which is wall or moving wall to the list )
                     if ( flagField[ Neighbour_Cell ] == WALL ) {
-                        Obstacle* Wall = new StationaryWall( Neighbour_Cell, Current_Cell, i );
-                        aFluidCell->addObestacle( Wall );
+						Dot_Product = 0.0;
+                        Obstacle* Wall = new StationaryWall( Neighbour_Cell, Current_Cell, i, Dot_Product );
+                        aFluidCell->addObstacle( Wall );
 
                         }
 
 
                     if ( flagField[ Neighbour_Cell ] == MOVING_WALL ) {
-                        Obstacle* Wall = new MovingWall( Neighbour_Cell, Current_Cell, i );
-                        aFluidCell->addObestacle( Wall );
+						Dot_Product = ( wallVelocity[0] * LATTICEVELOCITIES[i][0] )
+									+ ( wallVelocity[1] * LATTICEVELOCITIES[i][1] )
+									+ ( wallVelocity[2] * LATTICEVELOCITIES[i][2] ) ;
+                        Obstacle* Wall = new MovingWall( Neighbour_Cell, Current_Cell, i, Dot_Product );
+                        aFluidCell->addObstacle( Wall );
                     }
 
                 }
@@ -73,7 +78,7 @@ void treatBoundary( double *collideField,
                     int xlength ){
 
 
-    // iterate through out all bounsry layer cells
+    // iterate through out all boundary layer cells
     for ( std::list<Fluid*>::iterator FluidCell = BoundaryLayerList.begin();
           FluidCell != BoundaryLayerList.end();
           ++FluidCell ) {

@@ -1,5 +1,6 @@
 #include "DataStructure.h"
 #include "helper.h"
+#include "computeCellValues.h"
 #include <list>
 
 //------------------------------------------------------------------------------
@@ -7,18 +8,31 @@
 //------------------------------------------------------------------------------
 void StationaryWall::treatBoundary( double * Field ) {
     // TODO: write iplementation
+	int Initial_Velocity_Component = getVelocityComponent();
+	int Reflected_Vel_Component = 2 * ( 9 - Initial_Velocity_Component );
+	Field[ getTargetIndex() + Reflected_Vel_Component ] = 
+				Field[ getSelfIndex() + Initial_Velocity_Component ];
 }
 
 
 void MovingWall::treatBoundary( double * Field ) {
     // TODO: write iplementation
+	double Density = 0.0;
+	int Initial_Velocity_Component = getVelocityComponent();
+	int Reflected_Vel_Component = 2 * ( 9 - Initial_Velocity_Component );
+	computeDensity( Field + getTargetIndex(), &Density );
+	Field[ getTargetIndex() + Reflected_Vel_Component ] = 
+				Field[ getSelfIndex() + Initial_Velocity_Component ]
+			+ ( 2.0 * LATTICEWEIGHTS[getVelocityComponent()] * Density 
+				*getDotProduct() * InverseCS_Square );
+	
 }
 
 
 //------------------------------------------------------------------------------
 //                            Fluid cell
 //------------------------------------------------------------------------------
-void Fluid::addObestacle( Obstacle* Obj ) {
+void Fluid::addObstacle( Obstacle* Obj ) {
     ObstacleList.push_back( Obj );
 }
 

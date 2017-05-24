@@ -55,14 +55,8 @@
   static const double C_S = 0.577350269;
   static const int Dimensions = 3;
   static const int Vel_DOF = 19;
+  static const double InverseCS_Square = 3.0;
+  static const double InverseCS_Four = 9.0;
 
-  static const int CX[ 19 ] = { 0 , -1 , 0 , 1 , 0 , -1 , 0 , 1 , -1 , \
-												        0 , 1 , -1 , 0 , 1 , 0 , -1 , 0 , 1 , 0 };
-
-	static const int CY[ 19 ] = { -1 , 0 , 0 , 0 , 1 , -1 , -1 , -1 , 0 , \
-													       0 , 0 , 1 , 1 , 1 , -1 , 0 , 0 , 0 , 1 };
-
-	static const int CZ[ 19 ] = { -1 , -1 , -1 , -1 , -1 , 0 , 0 , 0 , 0 , \
-						 							       0 , 0 , 0 , 0 , 0 , 1 , 1 , 1 , 1 , 1 };
-
+ 
 #endif

@@ -68,7 +68,7 @@ int main( int argc, char *argv[] ){
   double *streamField = ( double* )calloc( Vel_DOF * CellNumber, sizeof( double ) );
   int *flagField = ( int* )calloc( CellNumber, sizeof(int) );
 
-  double wallVelocity[ 3 ] = { 1.0 ,1.0, 0.0 };
+  double wallVelocity[ 3 ] = { 1.0 ,0.0, 0.0 };
 
   // Allcocate the list of boundary layer cells
   std::list<Fluid*> BoundaryList;
@@ -76,8 +76,8 @@ int main( int argc, char *argv[] ){
 
   const double tau = 1.8;
   const char* OUTPUT_FILE_NAME = "./Frames/Cube3D";
-  int TimeSteps = 1000;
-  int TimeStepsPerPlotting = 100;
+  int TimeSteps = 10;
+  int TimeStepsPerPlotting = 1;
 
 
 
@@ -95,6 +95,11 @@ int main( int argc, char *argv[] ){
 
 
    clock_t Begin = clock();
+   
+ /*             writeVtkOutput( collideField,
+                            OUTPUT_FILE_NAME,
+                            0,
+                            xlength );*/
 
 
     double* Swap = 0;

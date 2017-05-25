@@ -10,9 +10,9 @@ void doStreaming(double *collideField, double *streamField,int *flagField,int xl
 
 
 	//Looping through individual element
-	for( int z = 1 ; z < xlength ; ++z )  {
-		for( int y = 1 ; y < xlength ; ++y )  {
-			for( int x = 1 ; x < xlength ; ++x ) {
+	for( int z = 1 ; z <= xlength ; ++z )  {
+		for( int y = 1 ; y <= xlength ; ++y )  {
+			for( int x = 1 ; x <= xlength ; ++x ) {
 
 				Current_Cell = computeFieldIndex( x, y, z, xlength );
 

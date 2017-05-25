@@ -12,8 +12,10 @@ void scanBoundary( std::list<Fluid*>& ObstacleList,
                     int xlength,
                     double* wallVelocity ) {
 
-    int Current_Cell = 0;
-    int Neighbour_Cell = 0;
+    int Current_Cell_Flag = 0;
+    int Neighbour_Cell_Flag = 0;
+	int Current_Cell_Field = 0;
+    int Neighbour_Cell_Field = 0;
 	double Dot_Product = 0.0;
 
     for( int z = 1 ; z <= xlength; ++z )  {
@@ -21,26 +23,31 @@ void scanBoundary( std::list<Fluid*>& ObstacleList,
             for( int x = 1 ; x <= xlength; ++x ) {
 
                 // Compute the current cell
-                Current_Cell = computeFlagIndex( x, y, z, xlength );
+                Current_Cell_Flag = computeFlagIndex( x, y, z, xlength );
+				Current_Cell_Field = computeFieldIndex( x, y, z, xlength );
 
                 // Allocate a new fluid cell
-                Fluid* aFluidCell = new Fluid( Current_Cell );
+                Fluid* aFluidCell = new Fluid( Current_Cell_Flag );
 
                 // scan neighbours
                 for ( int i = 0; i < 19; ++i ) {
 
 
-                    Neighbour_Cell = computeFlagIndex(  x + LATTICEVELOCITIES[ i ][ 0 ],
+                    Neighbour_Cell_Flag = computeFlagIndex(  x + LATTICEVELOCITIES[ i ][ 0 ],
                                                         y + LATTICEVELOCITIES[ i ][ 1 ],
                                                         z + LATTICEVELOCITIES[ i ][ 2 ],
                                                         xlength );
 
 
                     // add neighbours cell ( which is wall or moving wall to the list )
-                    if ( flagField[ Neighbour_Cell ] == WALL ) {
+                    if ( flagField[ Neighbour_Cell_Flag ] == WALL ) {
 						Dot_Product = 0.0;
-                        Obstacle* Wall = new StationaryWall( Neighbour_Cell,
-                                                             Current_Cell,
+						Neighbour_Cell_Field = computeFieldIndex(  x + LATTICEVELOCITIES[ i ][ 0 ],
+                                                        y + LATTICEVELOCITIES[ i ][ 1 ],
+                                                        z + LATTICEVELOCITIES[ i ][ 2 ],
+                                                        xlength );
+                        Obstacle* Wall = new StationaryWall( Neighbour_Cell_Field,
+                                                             Current_Cell_Field,
                                                              i,
                                                              Dot_Product );
                         aFluidCell->addObstacle( Wall );
@@ -48,13 +55,18 @@ void scanBoundary( std::list<Fluid*>& ObstacleList,
                         }
 
 
-                    if ( flagField[ Neighbour_Cell ] == MOVING_WALL ) {
+                    if ( flagField[ Neighbour_Cell_Flag ] == MOVING_WALL ) {
 						Dot_Product = ( wallVelocity[0] * LATTICEVELOCITIES[i][0] )
 									+ ( wallVelocity[1] * LATTICEVELOCITIES[i][1] )
 									+ ( wallVelocity[2] * LATTICEVELOCITIES[i][2] );
+						
+						Neighbour_Cell_Field = computeFieldIndex(  x + LATTICEVELOCITIES[ i ][ 0 ],
+                                                        y + LATTICEVELOCITIES[ i ][ 1 ],
+                                                        z + LATTICEVELOCITIES[ i ][ 2 ],
+                                                        xlength );
 
-                        Obstacle* Wall = new MovingWall( Neighbour_Cell,
-                                                         Current_Cell,
+                        Obstacle* Wall = new MovingWall( Neighbour_Cell_Field,
+                                                         Current_Cell_Field,
                                                          i,
                                                          Dot_Product );
                         aFluidCell->addObstacle( Wall );

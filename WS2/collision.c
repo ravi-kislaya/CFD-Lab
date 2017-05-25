@@ -9,7 +9,9 @@ void computePostCollisionDistributions( double *currentCell,
   /* TODO */
   double Inverse_Tau = 1.0 / ( *tau );
   for( int i = 0; i < Vel_DOF; ++i ) {
-    currentCell[ i ] -= Inverse_Tau * ( currentCell[ i ] - ( *feq ) );
+	//printf("%f  \n",currentCell[ i ] - (Inverse_Tau * ( currentCell[ i ] - ( *feq )) ));
+    currentCell[ i ] -= Inverse_Tau * ( currentCell[ i ] - feq[ i ]  );
+	
   }
 }
 
@@ -28,9 +30,9 @@ void doCollision( double *collideField,
   int Current_Cell = 0;
 
 	//Looping through individual element
-	for( int z = 1; z < xlength; ++z )  {
-		for( int y = 1; y < xlength; ++y )  {
-			for( int x = 1; x < xlength; ++x ) {
+	for( int z = 1; z <= xlength; ++z )  {
+		for( int y = 1; y <= xlength; ++y )  {
+			for( int x = 1; x <= xlength; ++x ) {
 
 				Current_Cell = computeFieldIndex( x, y, z, xlength );
 

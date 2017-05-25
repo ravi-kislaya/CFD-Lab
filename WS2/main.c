@@ -60,7 +60,7 @@ int main( int argc, char *argv[] ){
 
 
   // Allocate all fields
-  int xlength = 10;
+  int xlength = 50;
   int TotalLength = xlength + 2;
   int CellNumber = TotalLength * TotalLength * TotalLength;
 
@@ -68,16 +68,16 @@ int main( int argc, char *argv[] ){
   double *streamField = ( double* )calloc( Vel_DOF * CellNumber, sizeof( double ) );
   int *flagField = ( int* )calloc( CellNumber, sizeof(int) );
 
-  double wallVelocity[ 3 ] = { 1.0 ,0.0, 0.0 };
+  double wallVelocity[ 3 ] = { 0.05*C_S ,0.0, 0.0 };
 
   // Allcocate the list of boundary layer cells
   std::list<Fluid*> BoundaryList;
 
 
-  const double tau = 1.8;
+  const double tau = 2;
   const char* OUTPUT_FILE_NAME = "./Frames/Cube3D";
-  int TimeSteps = 10;
-  int TimeStepsPerPlotting = 1;
+  int TimeSteps = 300;
+  int TimeStepsPerPlotting = 4;
 
 
 
@@ -102,7 +102,7 @@ int main( int argc, char *argv[] ){
                             xlength );*/
 
 
-    double* Swap = 0;
+    double* Swap = NULL;
     for ( int Step = 0; Step < TimeSteps; ++Step ) {
 
         doStreaming( collideField,
@@ -114,6 +114,7 @@ int main( int argc, char *argv[] ){
         Swap = collideField;
         collideField = streamField;
         streamField = Swap;
+		Swap = NULL;
 
 
         doCollision( collideField,

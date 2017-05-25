@@ -48,7 +48,7 @@ void writeVtkOutput ( double * const collideField,
 
                 idx = collideField + computeFieldIndex( x, y, z, xlength );
                 computeDensity ( idx, &density );
-				if(density<0.7 || density>1.3){
+				if(density<0.8 || density>1.2){
 					printf("x %d y %d z %d", x,y,z);
 					printf(  "density %f\n", density );
 				}
@@ -66,11 +66,15 @@ void writeVtkOutput ( double * const collideField,
         for( y = 1; y <= xlength; ++y ) {
             for ( x = 1; x <= xlength; ++x ) {
 
-                //idx = collideField + computeFlagIndex( x, y, z, xlength );
+                //idx1 = collideField + computeFlagIndex( x, y, z, xlength );
 				idx = collideField + computeFieldIndex( x, y, z, xlength );
 
                 computeDensity ( idx, &density);
                 computeVelocity ( idx, &density, velocity);
+				/*if(velocity [0]<0 || velocity [1]<0 || velocity [2]<0){
+					printf("x %d y %d z %d", x,y,z);
+					printf(  " %f   %f    %f\n", velocity [0], velocity [1], velocity [2] );
+				}*/
 
                 fprintf(fp, "%f %f %f\n", velocity [0], velocity [1], velocity [2]);
             }

@@ -81,8 +81,6 @@ int main( int argc, char *argv[] ){
   const char* OUTPUT_FILE_NAME = "./Frames/Cube3D";
   int TimeSteps = 200;
   int TimeStepsPerPlotting = 4;
-	//Debug
-  double density = 0.0;
 
 
   // initialize all fields

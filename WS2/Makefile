@@ -7,6 +7,9 @@ CC=g++
 
 CFLAGS= -pedantic -Wall #-Werror
 
+#MODE=-DDEBUGGING
+MODE=-DRELEASE
+
 # Linker flags
 # ------------
 LDFLAGS=
@@ -29,4 +32,4 @@ clean:
 
 
 $(OBJECTS): %.o : %.c
-	$(CC) $(CFLAGS) -c $< -o $(FOLDER)$@
+	$(CC) $(CFLAGS) $(MODE) -c $< -o $(FOLDER)$@

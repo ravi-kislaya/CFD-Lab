@@ -67,10 +67,11 @@ void writeVtkOutput ( double * const collideField,
 
                 computeDensity ( idx, &density);
                 computeVelocity ( idx, &density, velocity);
+				
+#ifdef DEBUGGING
 				if(density<0.9 || density>1.1)
 					printf("x %d y %d z %d  %f   \n", x,y,z, density);
-				//printf(  " %f   %f    %f\n", velocity [0], velocity [1], velocity [2] );
-				
+#endif				
 
                 fprintf(fp, "%f %f %f\n", velocity [0], velocity [1], velocity [2]);
             }

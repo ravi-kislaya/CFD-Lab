@@ -59,9 +59,9 @@ void scanBoundary( std::list<Fluid*>& ObstacleList,
 
                     if ( flagField[ Neighbour_Cell_Flag ] == MOVING_WALL ) {
 						
-						Dot_Product = ( wallVelocity[0] * LATTICEVELOCITIES[i][0] )
-									+ ( wallVelocity[1] * LATTICEVELOCITIES[i][1] )
-									+ ( wallVelocity[2] * LATTICEVELOCITIES[i][2] );
+						Dot_Product = ( wallVelocity[0] * LATTICEVELOCITIES[ 18 - i ][0] )
+									+ ( wallVelocity[1] * LATTICEVELOCITIES[ 18 - i ][1] )
+									+ ( wallVelocity[2] * LATTICEVELOCITIES[ 18 - i ][2] );
 									
 						
 						

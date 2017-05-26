@@ -1,7 +1,7 @@
 #include "DataStructure.h"
 #include "helper.h"
 #include "computeCellValues.h"
-#include <vector>
+#include <list>
 
 
 
@@ -46,20 +46,16 @@ void Fluid::addObstacle( Obstacle* Obj ) {
 
 
 void Fluid::processBoundary( double * Field ) {
-    for ( std::vector<Obstacle*>::iterator Iterator = ObstacleList.begin();
+    for ( std::list<Obstacle*>::iterator Iterator = ObstacleList.begin();
           Iterator != ObstacleList.end();
           ++Iterator ) {
-
+              ( *Iterator)->treatBoundary( Field );
     }
-}
-
-void Fluid::resizeEntries() {
-    ObstacleList.resize( ObstacleList.size() );
 }
 
 
 void Fluid::deleteObstacles() {
-    for ( std::vector<Obstacle*>::iterator Iterator = ObstacleList.begin();
+    for ( std::list<Obstacle*>::iterator Iterator = ObstacleList.begin();
           Iterator != ObstacleList.end();
           ++Iterator ) {
 

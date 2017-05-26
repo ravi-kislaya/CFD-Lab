@@ -2,7 +2,7 @@
 #define _MAIN_C_
 
 #include <time.h>
-#include <vector>
+#include <list>
 #include <iostream>
 #include <stdio.h>
 
@@ -74,13 +74,13 @@ int main( int argc, char *argv[] ){
   double wallVelocity[ 3 ] = { 0.05 ,0.0, 0.0 };
 
   // Allcocate the list of boundary layer cells
-  std::vector<Fluid*> BoundaryList;
+  std::list<Fluid*> BoundaryList;
 
 
   const double tau = 1.8;
   const char* OUTPUT_FILE_NAME = "./Frames/Cube3D";
   int TimeSteps = 200;
-  int TimeStepsPerPlotting = 50;
+  int TimeStepsPerPlotting = 10;
 
 
   // initialize all fields
@@ -96,13 +96,6 @@ int main( int argc, char *argv[] ){
                 xlength,
                 wallVelocity );
 
-   // Resize all vectors
-   BoundaryList.resize( BoundaryList.size() );
-   for ( std::vector<Fluid*>::iterator Iterator = BoundaryList.begin();
-         Iterator != BoundaryList.end();
-         ++ Iterator ) {
-         ( *Iterator )->resizeEntries();
-   }
 
    clock_t Begin = clock();
 
@@ -166,7 +159,7 @@ int main( int argc, char *argv[] ){
 
 
     // delete list of obstacles
-    for ( std::vector<Fluid*>::iterator Iterator = BoundaryList.begin();
+    for ( std::list<Fluid*>::iterator Iterator = BoundaryList.begin();
           Iterator != BoundaryList.end();
           ++ Iterator ) {
         // clean all obstacles assigned to the fluid cell

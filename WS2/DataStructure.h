@@ -1,4 +1,4 @@
-#include <vector>
+#include <list>
 
 
 #ifndef _DATA_STRUCTURE_H_
@@ -76,14 +76,13 @@ class Fluid {
 
         void addObstacle( Obstacle* Obj );
         void processBoundary( double * Field );
-        void resizeEntries();
         void deleteObstacles();
         bool isEmpty() { return ObstacleList.empty(); }
         int getCoodinate() { return m_Coordinate; }
 
     private:
         int m_Coordinate;
-        std::vector<Obstacle*> ObstacleList;
+        std::list<Obstacle*> ObstacleList;
 
 };
 

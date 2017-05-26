@@ -3,12 +3,12 @@
 #include <stdlib.h>
 
 #include "DataStructure.h"
-#include <vector>
+#include <list>
 #include <iostream>
 #include <stdio.h>
 #include "helper.h"
 
-void scanBoundary( std::vector<Fluid*>& ObstacleList,
+void scanBoundary( std::list<Fluid*>& ObstacleList,
                     int* flagField,
                     int xlength,
                     double* wallVelocity ) {
@@ -96,13 +96,13 @@ void scanBoundary( std::vector<Fluid*>& ObstacleList,
 
 
 void treatBoundary( double *collideField,
-                    std::vector<Fluid*>& BoundaryLayerList,
+                    std::list<Fluid*>& BoundaryLayerList,
                     const double * const wallVelocity,
                     int xlength ) {
 
 
     // iterate through out all boundary layer cells
-    for ( std::vector<Fluid*>::iterator FluidCell = BoundaryLayerList.begin();
+    for ( std::list<Fluid*>::iterator FluidCell = BoundaryLayerList.begin();
           FluidCell != BoundaryLayerList.end();
           ++FluidCell ) {
 

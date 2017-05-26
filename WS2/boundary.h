@@ -5,14 +5,14 @@
 
 /** handles the boundaries in our simulation setup */
 
-void scanBoundary( std::vector<Fluid*>& ObstacleList,
+void scanBoundary( std::list<Fluid*>& ObstacleList,
                     int* flagField,
                     int xlength,
                     double* wallVelocity );
 
 
 void treatBoundary( double *collideField,
-                    std::vector<Fluid*>& BoundaryLayerList,
+                    std::list<Fluid*>& BoundaryLayerList,
                     const double * const wallVelocity,
                     int xlength );
 

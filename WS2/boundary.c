@@ -3,12 +3,12 @@
 #include <stdlib.h>
 
 #include "DataStructure.h"
-#include <list>
+#include <vector>
 #include <iostream>
 #include <stdio.h>
 #include "helper.h"
 
-void scanBoundary( std::list<Fluid*>& ObstacleList,
+void scanBoundary( std::vector<Fluid*>& ObstacleList,
                     int* flagField,
                     int xlength,
                     double* wallVelocity ) {
@@ -42,7 +42,7 @@ void scanBoundary( std::list<Fluid*>& ObstacleList,
 
                     // add neighbours cell ( which is wall or moving wall to the list )
                     if ( flagField[ Neighbour_Cell_Flag ] == WALL ) {
-						
+
 						Dot_Product = 0.0;
 						Neighbour_Cell_Field = computeFieldIndex(  x + LATTICEVELOCITIES[ i ][ 0 ],
                                                         y + LATTICEVELOCITIES[ i ][ 1 ],
@@ -58,13 +58,13 @@ void scanBoundary( std::list<Fluid*>& ObstacleList,
 
 
                     if ( flagField[ Neighbour_Cell_Flag ] == MOVING_WALL ) {
-						
+
 						Dot_Product = ( wallVelocity[0] * LATTICEVELOCITIES[ 18 - i ][0] )
 									+ ( wallVelocity[1] * LATTICEVELOCITIES[ 18 - i ][1] )
 									+ ( wallVelocity[2] * LATTICEVELOCITIES[ 18 - i ][2] );
-									
-						
-						
+
+
+
 						Neighbour_Cell_Field = computeFieldIndex(  x + LATTICEVELOCITIES[ i ][ 0 ],
                                                         y + LATTICEVELOCITIES[ i ][ 1 ],
                                                         z + LATTICEVELOCITIES[ i ][ 2 ],
@@ -96,13 +96,13 @@ void scanBoundary( std::list<Fluid*>& ObstacleList,
 
 
 void treatBoundary( double *collideField,
-                    std::list<Fluid*>& BoundaryLayerList,
+                    std::vector<Fluid*>& BoundaryLayerList,
                     const double * const wallVelocity,
                     int xlength ) {
 
 
     // iterate through out all boundary layer cells
-    for ( std::list<Fluid*>::iterator FluidCell = BoundaryLayerList.begin();
+    for ( std::vector<Fluid*>::iterator FluidCell = BoundaryLayerList.begin();
           FluidCell != BoundaryLayerList.end();
           ++FluidCell ) {
 

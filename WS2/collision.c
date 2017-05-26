@@ -7,20 +7,20 @@
 void computePostCollisionDistributions( double *currentCell,
                                         const double * const tau,
                                         const double *const feq ) {
-  /* TODO */
+ 
   double Inverse_Tau = 1.0 / ( *tau );
-  
-  for( int i = 0; i < Vel_DOF; ++i ) {	
-    currentCell[ i ] -= Inverse_Tau * ( currentCell[ i ] - feq[ i ]  );	
+
+  for( int i = 0; i < Vel_DOF; ++i ) {
+    currentCell[ i ] -= Inverse_Tau * ( currentCell[ i ] - feq[ i ]  );
   }
-  
+
 }
 
 void doCollision( double *collideField,
                   int *flagField,
                   const double * const tau,
                   int xlength ) {
-					  
+
 	//Variable declaration
   //TODO : Ask Nicola if we need the pressure distribution
 

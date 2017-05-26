@@ -525,13 +525,6 @@ int **read_pgm(const char *filename)
 /* ----------------------------------------------------------------------- */
 
 // function to calculate lexicographical co-ordinates of the lattices in the Flag
-int computeFlagIndex( int x, int y, int z, int xlength) {
-    int TotalLength = ( xlength + 2 );
-    return ( z * TotalLength * TotalLength ) + ( y * TotalLength ) + x;
-}
+
 
 // function to calculate lexicographical co-ordinates of the lattices in the field
-int computeFieldIndex( int x, int y, int z, int xlength ) {
-    int TotalLength = ( xlength + 2 );
-    return Vel_DOF * ( ( z * TotalLength * TotalLength ) + ( y * TotalLength ) + x );
-}

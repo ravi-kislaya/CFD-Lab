@@ -14,11 +14,15 @@
 /* ----------------------------------------------------------------------- */
 /*                      user define functions                              */
 /* ----------------------------------------------------------------------- */
-int computeFlagIndex( int , int, int , int );
-
+inline int computeFlagIndex( int x, int y, int z, int xlength) {
+    int TotalLength = ( xlength + 2 );
+    return ( z * TotalLength * TotalLength ) + ( y * TotalLength ) + x;
+}
 // function to calculate lexicographical co-ordinates of the lattices in the field
-int computeFieldIndex( int , int, int, int );
-
+inline int computeFieldIndex( int x, int y, int z, int xlength ) {
+    int TotalLength = ( xlength + 2 );
+    return Vel_DOF * ( ( z * TotalLength * TotalLength ) + ( y * TotalLength ) + x );
+}
 
 #ifdef PI
 #undef PI

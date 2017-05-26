@@ -1,4 +1,4 @@
-#include <list>
+#include <vector>
 
 
 #ifndef _DATA_STRUCTURE_H_
@@ -9,7 +9,7 @@
 //------------------------------------------------------------------------------
 class Obstacle {
     public:
-        Obstacle() : m_SelfIndex( 0 ), m_SourceIndex( 0 ), 
+        Obstacle() : m_SelfIndex( 0 ), m_SourceIndex( 0 ),
 					 m_VelocityComponent( 0 ), m_DotProduct( 0.0 ) {}
         Obstacle( int SelfIndex,
                   int getSourceIndex,
@@ -28,6 +28,7 @@ class Obstacle {
         int getSourceIndex() { return m_SourceIndex; }
 		int getVelocityComponent() { return m_VelocityComponent; }
 		double getDotProduct() { return m_DotProduct; }
+
     protected:
         int m_SelfIndex;
         int m_SourceIndex;
@@ -75,13 +76,14 @@ class Fluid {
 
         void addObstacle( Obstacle* Obj );
         void processBoundary( double * Field );
+        void resizeEntries();
         void deleteObstacles();
         bool isEmpty() { return ObstacleList.empty(); }
         int getCoodinate() { return m_Coordinate; }
 
     private:
         int m_Coordinate;
-        std::list<Obstacle*> ObstacleList;
+        std::vector<Obstacle*> ObstacleList;
 
 };
 

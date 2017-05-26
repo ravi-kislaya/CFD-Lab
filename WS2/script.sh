@@ -34,7 +34,7 @@ function cleanProject {
 	# remove executable
 	make clean
 	if [ -f ./$EXECUTABLE ]; then
-		rm ./sim
+		rm -f ./sim
 	fi
 
 	cleanVisualizationData
@@ -44,7 +44,7 @@ function cleanVisualizationData {
 	VTK_FOLDER=./Frames
 
 	# remove all vtk files
-	rm $VTK_FOLDER/*.vtk
+	rm -f $VTK_FOLDER/*.vtk
 }
 
 
@@ -75,7 +75,7 @@ function runValgrind {
 	if [ -f ./$EXECUTABLE ]; then
 
 		# remove the old report
-		rm ./$MEM_CHECK_FILE*
+		rm -f ./$MEM_CHECK_FILE*
 
 		# set file name according to the format above
 		FILE_NAME=$MEM_CHECK_FILE

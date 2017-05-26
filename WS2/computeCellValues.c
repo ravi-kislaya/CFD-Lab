@@ -20,7 +20,7 @@ void computeVelocity( const double * const currentCell,
   velocity[ 1 ] = 0.0;
   velocity[ 2 ] = 0.0;
   double Inverse_Density = 1.0 / ( *density );
-  
+
 
   for( int Vel_Component = 0 ; Vel_Component < Vel_DOF ; ++Vel_Component ) {
     velocity[ 0 ] += currentCell[ Vel_Component ]  * LATTICEVELOCITIES[ Vel_Component ][ 0 ];
@@ -35,7 +35,9 @@ void computeVelocity( const double * const currentCell,
 }
 
 
-void computeFeq(const double * const density, const double * const velocity, double *feq){
+void computeFeq( const double * const density,
+                 const double * const velocity,
+                 double *feq ){
 
  //CS means Speed of Sound
   double temp1 = 0.0, temp2 = 0.0;
@@ -45,13 +47,13 @@ void computeFeq(const double * const density, const double * const velocity, dou
    temp1 = 0.0;
    temp2 = 0.0;
 
-   for( int i = 0; i < Dimensions; ++i ) {
-     //dot product of c and U
-     temp1 += LATTICEVELOCITIES[ Vel_Component ][ i ] * velocity[ i ];
+       for( int i = 0; i < Dimensions; ++i ) {
+         //dot product of c and U
+         temp1 += LATTICEVELOCITIES[ Vel_Component ][ i ] * velocity[ i ];
 
-     //dot product of U and U
-     temp2 += velocity[ i ] * velocity[ i ];
-   }
+         //dot product of U and U
+         temp2 += velocity[ i ] * velocity[ i ];
+       }
 
    feq[ Vel_Component ] = LATTICEWEIGHTS[ Vel_Component ] * ( *density )
                         * ( 1 + ( InverseCS_Square * temp1 )

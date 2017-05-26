@@ -1,7 +1,7 @@
 #include "DataStructure.h"
 #include "helper.h"
 #include "computeCellValues.h"
-#include <list>
+#include <vector>
 
 
 
@@ -9,11 +9,11 @@
 //                            Wall cell
 //------------------------------------------------------------------------------
 void StationaryWall::treatBoundary( double * Field ) {
-    
+
 
 	int Reflected_Vel_Component = 18 - m_VelocityComponent;
-	
-	
+
+
 
 	Field[ m_SelfIndex + Reflected_Vel_Component ]
                                 = Field[ m_SourceIndex + m_VelocityComponent ];
@@ -21,18 +21,18 @@ void StationaryWall::treatBoundary( double * Field ) {
 
 
 void MovingWall::treatBoundary( double * Field ) {
-   
+
 	double Density = 0.0;
-	int Reflected_Vel_Component = 18 - m_VelocityComponent ;
-	
+	int Reflected_Vel_Component = 18 - m_VelocityComponent;
+
 
 	computeDensity( Field + m_SourceIndex, &Density );
 
 	Field[ m_SelfIndex + Reflected_Vel_Component ]
-			          = Field[ m_SourceIndex + m_VelocityComponent ] 			          
+			          = Field[ m_SourceIndex + m_VelocityComponent ]
 					  + ( 2.0 * LATTICEWEIGHTS[ m_VelocityComponent ] * Density
 				           * m_DotProduct * InverseCS_Square );
-	
+
 
 }
 
@@ -46,16 +46,20 @@ void Fluid::addObstacle( Obstacle* Obj ) {
 
 
 void Fluid::processBoundary( double * Field ) {
-    for ( std::list<Obstacle*>::iterator Iterator = ObstacleList.begin();
+    for ( std::vector<Obstacle*>::iterator Iterator = ObstacleList.begin();
           Iterator != ObstacleList.end();
           ++Iterator ) {
-              (*Iterator)->treatBoundary( Field );
+
     }
+}
+
+void Fluid::resizeEntries() {
+    ObstacleList.resize( ObstacleList.size() );
 }
 
 
 void Fluid::deleteObstacles() {
-    for ( std::list<Obstacle*>::iterator Iterator = ObstacleList.begin();
+    for ( std::vector<Obstacle*>::iterator Iterator = ObstacleList.begin();
           Iterator != ObstacleList.end();
           ++Iterator ) {
 

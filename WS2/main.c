@@ -2,7 +2,7 @@
 #define _MAIN_C_
 
 #include <time.h>
-#include <list>
+#include <vector>
 #include <iostream>
 #include <stdio.h>
 
@@ -61,7 +61,7 @@ int main( int argc, char *argv[] ){
 
 
 
-   
+
   // Allocate all fields
   int xlength = 50;
   int TotalLength = xlength + 2;
@@ -74,7 +74,7 @@ int main( int argc, char *argv[] ){
   double wallVelocity[ 3 ] = { 0.05 ,0.0, 0.0 };
 
   // Allcocate the list of boundary layer cells
-  std::list<Fluid*> BoundaryList;
+  std::vector<Fluid*> BoundaryList;
 
 
   const double tau = 1.8;
@@ -88,23 +88,30 @@ int main( int argc, char *argv[] ){
                     streamField,
                     flagField,
                     xlength );
-					
+
 
 
   scanBoundary( BoundaryList,
-              flagField,
-              xlength,
-              wallVelocity );
+                flagField,
+                xlength,
+                wallVelocity );
 
+   // Resize all vectors
+   BoundaryList.resize( BoundaryList.size() );
+   for ( std::vector<Fluid*>::iterator Iterator = BoundaryList.begin();
+         Iterator != BoundaryList.end();
+         ++ Iterator ) {
+         ( *Iterator )->resizeEntries();
+   }
 
    clock_t Begin = clock();
-  
+
 
 
     double* Swap = NULL;
     for ( int Step = 0; Step < TimeSteps; ++Step ) {
-		
-		
+
+
         doStreaming( collideField,
                      streamField,
                      flagField,
@@ -115,27 +122,29 @@ int main( int argc, char *argv[] ){
         collideField = streamField;
         streamField = Swap;
 		Swap = NULL;
-		
+
 
         doCollision( collideField,
                      flagField,
                      &tau,
                      xlength);
-		
+
 
         treatBoundary( collideField,
                        BoundaryList,
                        wallVelocity,
                        xlength );
-		
 
+
+#ifndef MLUPS_FLAG
         if ( ( Step % TimeStepsPerPlotting ) == 0 ) {
-			
+
             writeVtkOutput( collideField,
                             OUTPUT_FILE_NAME,
                             Step,
                             xlength );
         }
+#endif
 
     }
 
@@ -145,11 +154,11 @@ int main( int argc, char *argv[] ){
    // display the output information
    clock_t End = clock();
    double ConsumedTime = (double)( End - Begin ) / CLOCKS_PER_SEC;
-   double MLUPS = ( xlength + 2 ) * ( xlength + 2 ) * ( xlength + 2 ) 
-				/ ( TimeSteps * ConsumedTime );
+   double MLUPS = ( CellNumber * TimeSteps ) / ( ConsumedTime * 1e6 );
 
+   // display MLUPS number that stands for Mega Lattice Updates Per Second
    std::cout << "Computational time: " << ConsumedTime << " sec " << std::endl;
-   std::cout << "MLUPS: " << MLUPS << " sec " << std::endl;
+   std::cout << "MLUPS: " << MLUPS << std::endl;
    std::cout << "Mesh size: " << xlength << " x "
                               << xlength << " x "
                               << xlength << std::endl << std::endl;
@@ -157,7 +166,7 @@ int main( int argc, char *argv[] ){
 
 
     // delete list of obstacles
-    for ( std::list<Fluid*>::iterator Iterator = BoundaryList.begin();
+    for ( std::vector<Fluid*>::iterator Iterator = BoundaryList.begin();
           Iterator != BoundaryList.end();
           ++ Iterator ) {
         // clean all obstacles assigned to the fluid cell

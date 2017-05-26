@@ -80,7 +80,7 @@ int main( int argc, char *argv[] ){
   const double tau = 1.8;
   const char* OUTPUT_FILE_NAME = "./Frames/Cube3D";
   int TimeSteps = 200;
-  int TimeStepsPerPlotting = 4;
+  int TimeStepsPerPlotting = 50;
 
 
   // initialize all fields
@@ -145,8 +145,11 @@ int main( int argc, char *argv[] ){
    // display the output information
    clock_t End = clock();
    double ConsumedTime = (double)( End - Begin ) / CLOCKS_PER_SEC;
+   double MLUPS = ( xlength + 2 ) * ( xlength + 2 ) * ( xlength + 2 ) 
+				/ ( TimeSteps * ConsumedTime );
 
    std::cout << "Computational time: " << ConsumedTime << " sec " << std::endl;
+   std::cout << "MLUPS: " << MLUPS << " sec " << std::endl;
    std::cout << "Mesh size: " << xlength << " x "
                               << xlength << " x "
                               << xlength << std::endl << std::endl;

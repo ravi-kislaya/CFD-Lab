@@ -9,13 +9,13 @@
 //------------------------------------------------------------------------------
 class Obstacle {
     public:
-        Obstacle() : m_SelfIndex( 0 ), m_TargetIndex( 0 ), 
+        Obstacle() : m_SelfIndex( 0 ), m_SourceIndex( 0 ), 
 					 m_VelocityComponent( 0 ), m_DotProduct( 0.0 ) {}
         Obstacle( int SelfIndex,
-                  int getTargetIndex,
+                  int getSourceIndex,
                   int Component,
 				  double DotProduct) : m_SelfIndex( SelfIndex ),
-                                    m_TargetIndex( getTargetIndex ),
+                                    m_SourceIndex( getSourceIndex ),
                                     m_VelocityComponent( Component ),
 									m_DotProduct( DotProduct ) {}
 
@@ -25,12 +25,12 @@ class Obstacle {
 
 
         int getSelfIndex() { return m_SelfIndex; }
-        int getTargetIndex() { return m_TargetIndex; }
+        int getSourceIndex() { return m_SourceIndex; }
 		int getVelocityComponent() { return m_VelocityComponent; }
 		double getDotProduct() { return m_DotProduct; }
     protected:
         int m_SelfIndex;
-        int m_TargetIndex;
+        int m_SourceIndex;
         int m_VelocityComponent;
 		double m_DotProduct;
 };
@@ -39,10 +39,10 @@ class Obstacle {
 class StationaryWall : public Obstacle {
     public:
         StationaryWall( int SelfIndex,
-                        int getTargetIndex,
+                        int getSourceIndex,
                         int Component,
 						double DotProduct) : Obstacle( SelfIndex,
-                                                    getTargetIndex,
+                                                    getSourceIndex,
                                                     Component,
 													DotProduct) {}
 
@@ -53,10 +53,10 @@ class StationaryWall : public Obstacle {
 class MovingWall : public Obstacle {
     public:
         MovingWall( int SelfIndex,
-                    int getTargetIndex,
+                    int getSourceIndex,
                     int Component,
 					double DotProduct) : Obstacle( SelfIndex,
-                                                getTargetIndex,
+                                                getSourceIndex,
                                                 Component,
 												DotProduct) {}
 

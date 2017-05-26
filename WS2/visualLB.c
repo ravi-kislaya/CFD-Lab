@@ -3,7 +3,7 @@
 #include "computeCellValues.h"
 #include <stdio.h>
 #include "LBDefinitions.h"
-
+#include <math.h>
 
 
 //Writes Density and Velocity from the collision field
@@ -33,8 +33,8 @@ void writeVtkOutput ( double * const collideField,
     fprintf(fp, "\nPOINT_DATA %i \n", xlength*xlength*xlength);
 
 
-    double density = 0;
-    double velocity[3] = {0};
+    double density = 0.0;
+    double velocity[3] = {0.0};
 
     //Computing Density
     fprintf(fp, "SCALARS density float 1 \n");
@@ -48,10 +48,6 @@ void writeVtkOutput ( double * const collideField,
 
                 idx = collideField + computeFieldIndex( x, y, z, xlength );
                 computeDensity ( idx, &density );
-				if(density<0.8 || density>1.2){
-					printf("x %d y %d z %d", x,y,z);
-					printf(  "density %f\n", density );
-				}
 
                 fprintf( fp, "%f\n", density );
             }
@@ -71,10 +67,10 @@ void writeVtkOutput ( double * const collideField,
 
                 computeDensity ( idx, &density);
                 computeVelocity ( idx, &density, velocity);
-				/*if(velocity [0]<0 || velocity [1]<0 || velocity [2]<0){
-					printf("x %d y %d z %d", x,y,z);
-					printf(  " %f   %f    %f\n", velocity [0], velocity [1], velocity [2] );
-				}*/
+				if(density<0.9 || density>1.1)
+					printf("x %d y %d z %d  %f   \n", x,y,z, density);
+				//printf(  " %f   %f    %f\n", velocity [0], velocity [1], velocity [2] );
+				
 
                 fprintf(fp, "%f %f %f\n", velocity [0], velocity [1], velocity [2]);
             }

@@ -30,9 +30,7 @@ int readParameters(int *xlength, double *tau, double *velocityWall, int *timeste
 */
 
 void initialiseFields(double *collideField, double *streamField, int *flagField, int xlength){
-	/* TODO
-  1. masking
-  */
+	
 
 	//Variable declaration
 	int x = 0 , y = 0 , z = 0 , Vel_Component = 0;

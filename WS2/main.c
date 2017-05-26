@@ -15,6 +15,8 @@
 #include "boundary.h"
 #include "DataStructure.h"
 #include "visualLB.h"
+#include "computeCellValues.h"
+#include "helper.h"
 
 
 int main( int argc, char *argv[] ){
@@ -59,6 +61,7 @@ int main( int argc, char *argv[] ){
 
 
 
+   
   // Allocate all fields
   int xlength = 50;
   int TotalLength = xlength + 2;
@@ -68,17 +71,18 @@ int main( int argc, char *argv[] ){
   double *streamField = ( double* )calloc( Vel_DOF * CellNumber, sizeof( double ) );
   int *flagField = ( int* )calloc( CellNumber, sizeof(int) );
 
-  double wallVelocity[ 3 ] = { 0.05*C_S ,0.0, 0.0 };
+  double wallVelocity[ 3 ] = { 0.05 ,0.0, 0.0 };
 
   // Allcocate the list of boundary layer cells
   std::list<Fluid*> BoundaryList;
 
 
-  const double tau = 2;
+  const double tau = 1.8;
   const char* OUTPUT_FILE_NAME = "./Frames/Cube3D";
-  int TimeSteps = 300;
+  int TimeSteps = 200;
   int TimeStepsPerPlotting = 4;
-
+	//Debug
+  double density = 0.0;
 
 
   // initialize all fields
@@ -86,6 +90,7 @@ int main( int argc, char *argv[] ){
                     streamField,
                     flagField,
                     xlength );
+					
 
 
   scanBoundary( BoundaryList,
@@ -95,16 +100,13 @@ int main( int argc, char *argv[] ){
 
 
    clock_t Begin = clock();
-   
- /*             writeVtkOutput( collideField,
-                            OUTPUT_FILE_NAME,
-                            0,
-                            xlength );*/
+  
 
 
     double* Swap = NULL;
     for ( int Step = 0; Step < TimeSteps; ++Step ) {
-
+		
+		
         doStreaming( collideField,
                      streamField,
                      flagField,
@@ -115,21 +117,22 @@ int main( int argc, char *argv[] ){
         collideField = streamField;
         streamField = Swap;
 		Swap = NULL;
-
+		
 
         doCollision( collideField,
                      flagField,
                      &tau,
                      xlength);
-
+		
 
         treatBoundary( collideField,
                        BoundaryList,
                        wallVelocity,
                        xlength );
-
+		
 
         if ( ( Step % TimeStepsPerPlotting ) == 0 ) {
+			
             writeVtkOutput( collideField,
                             OUTPUT_FILE_NAME,
                             Step,

@@ -5,6 +5,7 @@
 #include "DataStructure.h"
 #include <list>
 #include <iostream>
+#include <stdio.h>
 #include "helper.h"
 
 void scanBoundary( std::list<Fluid*>& ObstacleList,
@@ -41,13 +42,14 @@ void scanBoundary( std::list<Fluid*>& ObstacleList,
 
                     // add neighbours cell ( which is wall or moving wall to the list )
                     if ( flagField[ Neighbour_Cell_Flag ] == WALL ) {
+						
 						Dot_Product = 0.0;
 						Neighbour_Cell_Field = computeFieldIndex(  x + LATTICEVELOCITIES[ i ][ 0 ],
                                                         y + LATTICEVELOCITIES[ i ][ 1 ],
                                                         z + LATTICEVELOCITIES[ i ][ 2 ],
                                                         xlength );
-                        Obstacle* Wall = new StationaryWall( Neighbour_Cell_Field,
-                                                             Current_Cell_Field,
+                        Obstacle* Wall = new StationaryWall( Neighbour_Cell_Field, //Here,Neighbour means wall
+                                                             Current_Cell_Field,   //Here,Current means fluid
                                                              i,
                                                              Dot_Product );
                         aFluidCell->addObstacle( Wall );
@@ -56,17 +58,20 @@ void scanBoundary( std::list<Fluid*>& ObstacleList,
 
 
                     if ( flagField[ Neighbour_Cell_Flag ] == MOVING_WALL ) {
+						
 						Dot_Product = ( wallVelocity[0] * LATTICEVELOCITIES[i][0] )
 									+ ( wallVelocity[1] * LATTICEVELOCITIES[i][1] )
 									+ ( wallVelocity[2] * LATTICEVELOCITIES[i][2] );
+									
+						
 						
 						Neighbour_Cell_Field = computeFieldIndex(  x + LATTICEVELOCITIES[ i ][ 0 ],
                                                         y + LATTICEVELOCITIES[ i ][ 1 ],
                                                         z + LATTICEVELOCITIES[ i ][ 2 ],
                                                         xlength );
 
-                        Obstacle* Wall = new MovingWall( Neighbour_Cell_Field,
-                                                         Current_Cell_Field,
+                        Obstacle* Wall = new MovingWall( Neighbour_Cell_Field,//Here,Neighbour means wall
+                                                         Current_Cell_Field,  //Here,Current means fluid
                                                          i,
                                                          Dot_Product );
                         aFluidCell->addObstacle( Wall );

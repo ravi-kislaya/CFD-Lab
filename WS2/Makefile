@@ -6,12 +6,12 @@ SOURCES=initLB.c visualLB.c boundary.c collision.c streaming.c computeCellValues
 CC=g++
 
 #CFLAGS= -pedantic -Wall -g -fno-omit-frame-pointer #-Werror
-CFLAGS= -pedantic -Wall -O1 #-Werror
+CFLAGS= -pedantic -Wall -O2 #-Werror
 
 
 #MODE=-DDEBUGGING
-#MODE=-DRELEASE
-MODE=-DMLUPS_FLAG
+MODE=-DRELEASE
+#MODE=-DMLUPS_FLAG
 # Linker flags
 # ------------
 LDFLAGS=

@@ -23,9 +23,9 @@ void computeVelocity( const double * const currentCell,
 
 
   for( int Vel_Component = 0 ; Vel_Component < Vel_DOF ; ++Vel_Component ) {
-    velocity[ 0 ] += currentCell[ Vel_Component ]  * LATTICEVELOCITIES[ Vel_Component ][ 0 ];
-    velocity[ 1 ] += currentCell[ Vel_Component ]  * LATTICEVELOCITIES[ Vel_Component ][ 1 ];
-    velocity[ 2 ] += currentCell[ Vel_Component ]  * LATTICEVELOCITIES[ Vel_Component ][ 2 ];
+    velocity[ 0 ] += currentCell[ Vel_Component ] * LATTICEVELOCITIES[ Vel_Component ][ 0 ];
+    velocity[ 1 ] += currentCell[ Vel_Component ] * LATTICEVELOCITIES[ Vel_Component ][ 1 ];
+    velocity[ 2 ] += currentCell[ Vel_Component ] * LATTICEVELOCITIES[ Vel_Component ][ 2 ];
   }
   //printf("%f  %f   %f   \n", velocity[0],velocity[1],velocity[2]);
 
@@ -42,18 +42,18 @@ void computeFeq( const double * const density,
  //CS means Speed of Sound
   double temp1 = 0.0, temp2 = 0.0;
 
- for( int Vel_Component = 0; Vel_Component < Vel_DOF; ++Vel_Component ) {
+ for( register int Vel_Component = 0; Vel_Component < Vel_DOF; ++Vel_Component ) {
 
-   temp1 = 0.0;
-   temp2 = 0.0;
 
-       for( int i = 0; i < Dimensions; ++i ) {
-         //dot product of c and U
-         temp1 += LATTICEVELOCITIES[ Vel_Component ][ i ] * velocity[ i ];
+   temp1 = LATTICEVELOCITIES[ Vel_Component ][ 0 ] * velocity[ 0 ]
+         + LATTICEVELOCITIES[ Vel_Component ][ 1 ] * velocity[ 1 ]
+         + LATTICEVELOCITIES[ Vel_Component ][ 2 ] * velocity[ 2 ];
 
-         //dot product of U and U
-         temp2 += velocity[ i ] * velocity[ i ];
-       }
+   temp2 = velocity[ 0 ] * velocity[ 0 ]
+         + velocity[ 1 ] * velocity[ 1 ]
+         + velocity[ 2 ] * velocity[ 2 ];
+
+
 
    feq[ Vel_Component ] = LATTICEWEIGHTS[ Vel_Component ] * ( *density )
                         * ( 1 + ( InverseCS_Square * temp1 )

@@ -1,17 +1,18 @@
 # Include files
-SOURCES=initLB.c visualLB.c boundary.c collision.c streaming.c computeCellValues.c main.c helper.c DataStructure.c
+SOURCES=initLB.c visualLB.c boundary.c collision.c streaming.c\
+ 		computeCellValues.c main.c helper.c DataStructure.c
 
 # Compiler
 # --------
 CC=g++
 
 #CFLAGS= -pedantic -Wall -g -fno-omit-frame-pointer #-Werror
-CFLAGS= -pedantic -Wall -O2 #-Werror
+CFLAGS= -pedantic -Wall -O2 -funroll-loops #-Werror
 
 
 #MODE=-DDEBUGGING
-MODE=-DRELEASE
-#MODE=-DMLUPS_FLAG
+#MODE=-DRELEASE
+MODE=-DMLUPS_FLAG
 # Linker flags
 # ------------
 LDFLAGS=

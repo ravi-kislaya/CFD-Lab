@@ -64,6 +64,30 @@ int min_int( const int n1, const int n2 )
 /*                             read datafile                               */
 /* ----------------------------------------------------------------------- */
 
+
+int read_parameters( const char *INPUT_FILE_NAME,        /* the name of the data file */
+                     int *xlength,                    /* number of cells along x direction */
+                     double *tau,                        /* relaxation time */
+                     double *U,                          /* lid velocity x-direction */
+                     double *V,                          /* lid velocity y-direction */
+                     double *W,                          /* lid velocity z-direction */
+                     int *timesteps,                     /* number of simulation time steps */
+                     int *timestepsPerPlotting ) {       /* number of visualization time steps */
+
+   read_int( INPUT_FILE_NAME, "xlength", xlength );
+   read_double( INPUT_FILE_NAME, "tau", tau );
+
+   read_double( INPUT_FILE_NAME, "U", U );
+   read_double( INPUT_FILE_NAME, "V", V );
+   read_double( INPUT_FILE_NAME, "W", W );
+
+   read_int( INPUT_FILE_NAME, "timesteps", timesteps );
+   read_int( INPUT_FILE_NAME, "timestepsPerPlotting", timestepsPerPlotting );
+
+   return 1;
+}
+
+
 void errhandler( int nLine, const char *szFile, const char *szString )
 {
     int err = errno;

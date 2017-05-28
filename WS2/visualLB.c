@@ -13,6 +13,7 @@ void writeVtkOutput ( double * const collideField,
                       int xlength ) {
 
     int x = 0, y = 0, z = 0;
+    int TotalLength = xlength + 2;
 
     char szFilename[80];
     FILE *fp = NULL;
@@ -46,7 +47,7 @@ void writeVtkOutput ( double * const collideField,
         for ( y = 1; y <= xlength; ++y ) {
             for ( x = 1; x <= xlength; ++x ) {
 
-                idx = collideField + computeFieldIndex( x, y, z, xlength );
+                idx = collideField + computeFieldIndex( x, y, z, TotalLength );
                 computeDensity ( idx, &density );
 
                 fprintf( fp, "%f\n", density );
@@ -63,15 +64,15 @@ void writeVtkOutput ( double * const collideField,
             for ( x = 1; x <= xlength; ++x ) {
 
                 //idx1 = collideField + computeFlagIndex( x, y, z, xlength );
-				idx = collideField + computeFieldIndex( x, y, z, xlength );
+				idx = collideField + computeFieldIndex( x, y, z, TotalLength );
 
                 computeDensity ( idx, &density);
                 computeVelocity ( idx, &density, velocity);
-				
+
 #ifdef DEBUGGING
 				if(density<0.9 || density>1.1)
 					printf("x %d y %d z %d  %f   \n", x,y,z, density);
-#endif				
+#endif
 
                 fprintf(fp, "%f %f %f\n", velocity [0], velocity [1], velocity [2]);
             }
@@ -104,25 +105,11 @@ void write_vtkHeader( FILE *fp, int xlength ) {
 
 void write_vtkPointCoordinates( FILE *fp, int xlength ){
 
-    //Since we are working with cubes of unit dimensions, dx = dy = dz = 1 / (xlength - 1)
 
-    // TODO: fix coordinates that we're writing to vtk files
-    double dx = 1.0 / (xlength - 1);
-    double dy = 1.0 / (xlength - 1);
-    double dz = 1.0 / (xlength - 1);
-
-    double CoordX = 0;
-    double CoordY = 0;
-    double CoordZ = 0;
-
-    //TODO: I think I can be wrong here. Are the co-ordinates right here?
     for( int z = 1; z <= xlength; ++z )
         for( int y = 1; y <= xlength; ++y ) {
             for( int x = 1; x <= xlength; ++x ) {
               fprintf(fp, "%d %d %d\n", x, y, z );
-              CoordX += dx;
-              CoordY += dy;
-              CoordZ += dz;
         }
     }
 }

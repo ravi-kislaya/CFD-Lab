@@ -8,7 +8,7 @@
 //------------------------------------------------------------------------------
 //                            Wall cell
 //------------------------------------------------------------------------------
-void StationaryWall::treatBoundary( double * Field ) {
+inline void StationaryWall::treatBoundary( double * Field ) {
 
 
 	int Reflected_Vel_Component = 18 - m_VelocityComponent;
@@ -19,8 +19,7 @@ void StationaryWall::treatBoundary( double * Field ) {
                                 = Field[ m_SourceIndex + m_VelocityComponent ];
 }
 
-
-void MovingWall::treatBoundary( double * Field ) {
+inline void MovingWall::treatBoundary( double * Field ) {
 
 	double Density = 0.0;
 	int Reflected_Vel_Component = 18 - m_VelocityComponent;

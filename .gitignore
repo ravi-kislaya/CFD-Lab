@@ -7,3 +7,4 @@ WS1/UnitTest/CMakeFailure/
 WS1/.idea/
 GoogleTestLib/
 WS2/PDFs/
+perf*

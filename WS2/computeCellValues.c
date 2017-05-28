@@ -2,12 +2,11 @@
 #include "LBDefinitions.h"
 #include<stdio.h>
 
-void computeDensity( const double *const currentCell, double *density ){
+void computeDensity( const double *const currentCell, double *density ) {
 
   *density = 0.0;
-
-  for( int Vel_Component = 0 ; Vel_Component < Vel_DOF ; ++Vel_Component ) {
-    *density += currentCell[ Vel_Component ];
+  for( int i = 0; i < Vel_DOF; ++i ) {
+    *density += currentCell[ i ];
   }
 
 }
@@ -22,12 +21,12 @@ void computeVelocity( const double * const currentCell,
   double Inverse_Density = 1.0 / ( *density );
 
 
-  for( int Vel_Component = 0 ; Vel_Component < Vel_DOF ; ++Vel_Component ) {
-    velocity[ 0 ] += currentCell[ Vel_Component ] * LATTICEVELOCITIES[ Vel_Component ][ 0 ];
-    velocity[ 1 ] += currentCell[ Vel_Component ] * LATTICEVELOCITIES[ Vel_Component ][ 1 ];
-    velocity[ 2 ] += currentCell[ Vel_Component ] * LATTICEVELOCITIES[ Vel_Component ][ 2 ];
+  for( int i = 0 ; i < Vel_DOF ; ++i ) {
+    velocity[ 0 ] += currentCell[ i ] * LATTICEVELOCITIES[ i ][ 0 ];
+    velocity[ 1 ] += currentCell[ i ] * LATTICEVELOCITIES[ i ][ 1 ];
+    velocity[ 2 ] += currentCell[ i ] * LATTICEVELOCITIES[ i ][ 2 ];
   }
-  //printf("%f  %f   %f   \n", velocity[0],velocity[1],velocity[2]);
+
 
   velocity[ 0 ] *= Inverse_Density;
   velocity[ 1 ] *= Inverse_Density;
@@ -37,17 +36,17 @@ void computeVelocity( const double * const currentCell,
 
 void computeFeq( const double * const density,
                  const double * const velocity,
-                 double *feq ){
+                 double *feq ) {
 
  //CS means Speed of Sound
   double temp1 = 0.0, temp2 = 0.0;
 
- for( register int Vel_Component = 0; Vel_Component < Vel_DOF; ++Vel_Component ) {
+ for( int i = 0; i < Vel_DOF; ++i ) {
 
 
-   temp1 = LATTICEVELOCITIES[ Vel_Component ][ 0 ] * velocity[ 0 ]
-         + LATTICEVELOCITIES[ Vel_Component ][ 1 ] * velocity[ 1 ]
-         + LATTICEVELOCITIES[ Vel_Component ][ 2 ] * velocity[ 2 ];
+   temp1 = LATTICEVELOCITIES[ i ][ 0 ] * velocity[ 0 ]
+         + LATTICEVELOCITIES[ i ][ 1 ] * velocity[ 1 ]
+         + LATTICEVELOCITIES[ i ][ 2 ] * velocity[ 2 ];
 
    temp2 = velocity[ 0 ] * velocity[ 0 ]
          + velocity[ 1 ] * velocity[ 1 ]
@@ -55,10 +54,9 @@ void computeFeq( const double * const density,
 
 
 
-   feq[ Vel_Component ] = LATTICEWEIGHTS[ Vel_Component ] * ( *density )
-                        * ( 1 + ( InverseCS_Square * temp1 )
-                            + ( 0.5 * temp1 * temp1 * InverseCS_Four )
-                            - ( temp2 * InverseCS_Square * 0.5 ) );
+   feq[ i ] = LATTICEWEIGHTS[ i ] * ( *density ) * ( 1 + ( InverseCS_Square * temp1 )
+                                  + ( 0.5 * temp1 * temp1 * InverseCS_Four )
+                                  - ( temp2 * InverseCS_Square * 0.5 ) );
  }
 
 }

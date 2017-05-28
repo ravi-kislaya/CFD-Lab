@@ -18,7 +18,6 @@
 #include "computeCellValues.h"
 #include "helper.h"
 
-
 int main( int argc, char *argv[] ){
 
 
@@ -60,27 +59,33 @@ int main( int argc, char *argv[] ){
      }
 
 
-
-
   // Allocate all fields
-  int xlength = 50;
+  const char* INPUT_FILE_NAME = argv[1];
+  const char* OUTPUT_FILE_NAME = "./Frames/Cube3D";
+  int xlength = 0;
+  double tau = 0.0;
+  double wallVelocity[ 3 ] = { 0.0 ,0.0, 0.0 };
+  int TimeSteps = 0;
+  int TimeStepsPerPlotting = 0;
+
+
+  read_parameters( INPUT_FILE_NAME,         /* the name of the data file */
+                   &xlength,                /* number of cells along x direction */
+                   &tau,                    /* relaxation time */
+                   &wallVelocity[ 0 ],      /* lid velocity x-direction */
+                   &wallVelocity[ 1 ],      /* lid velocity y-direction */
+                   &wallVelocity[ 2 ],      /* lid velocity z-direction */
+                   &TimeSteps,              /* number of simulation time steps */
+                   &TimeStepsPerPlotting ); /* number of visualization time steps */
+
+
+  // initialize all variables and fields
   int TotalLength = xlength + 2;
   int CellNumber = TotalLength * TotalLength * TotalLength;
 
   double *collideField = ( double* )calloc( Vel_DOF * CellNumber, sizeof( double ) );
   double *streamField = ( double* )calloc( Vel_DOF * CellNumber, sizeof( double ) );
   int *flagField = ( int* )calloc( CellNumber, sizeof(int) );
-
-  double wallVelocity[ 3 ] = { 0.05 ,0.0, 0.0 };
-
-  // Allcocate the list of boundary layer cells
-  std::list<Fluid*> BoundaryList;
-
-
-  const double tau = 1.8;
-  const char* OUTPUT_FILE_NAME = "./Frames/Cube3D";
-  int TimeSteps = 200;
-  int TimeStepsPerPlotting = 10;
 
 
   // initialize all fields
@@ -90,7 +95,11 @@ int main( int argc, char *argv[] ){
                     xlength );
 
 
+  // allcocate the list of boundary layer cells
+  std::list<Fluid*> BoundaryList;
 
+
+  // prepare all boundaries ( stationary and moving walls )
   scanBoundary( BoundaryList,
                 flagField,
                 xlength,
@@ -100,7 +109,7 @@ int main( int argc, char *argv[] ){
    clock_t Begin = clock();
 
 
-
+    // Perform LB method
     double* Swap = NULL;
     for ( int Step = 0; Step < TimeSteps; ++Step ) {
 
@@ -130,6 +139,9 @@ int main( int argc, char *argv[] ){
 
 
 #ifndef MLUPS_FLAG
+        // if the MLUPS_FLAG flag is enabled then we will measure performance
+        // without performing redundant I/O operations
+
         if ( ( Step % TimeStepsPerPlotting ) == 0 ) {
 
             writeVtkOutput( collideField,
@@ -150,12 +162,9 @@ int main( int argc, char *argv[] ){
    double MLUPS = ( CellNumber * TimeSteps ) / ( ConsumedTime * 1e6 );
 
    // display MLUPS number that stands for Mega Lattice Updates Per Second
-   std::cout << "Computational time: " << ConsumedTime << " sec " << std::endl;
-   std::cout << "MLUPS: " << MLUPS << std::endl;
-   std::cout << "Mesh size: " << xlength << " x "
-                              << xlength << " x "
-                              << xlength << std::endl << std::endl;
-
+   printf( "Computational time: %4.6f sec\n",  ConsumedTime );
+   printf( "MLUPS: %4.6f\n", MLUPS );
+   printf( "Mesh size: %d x %d x %d\n\n",  xlength, xlength, xlength );
 
 
     // delete list of obstacles

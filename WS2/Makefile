@@ -13,6 +13,7 @@ CFLAGS= -pedantic -Wall -O2 -funroll-loops
 #MODE=-DDEBUGGING -Werror
 MODE=-DRELEASE -Werror
 #MODE=-DMLUPS_FLAG
+
 # Linker flags
 # ------------
 LDFLAGS=

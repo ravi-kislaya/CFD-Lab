@@ -11,7 +11,7 @@ void initialiseFields( double *collideField,
 
 
 	//Variable declaration
-	int Current_Filed_Cell = 0;
+	int Current_Field_Cell = 0;
 	int Current_Flag_Cell = 0;
 	int TotalLength = xlength + 2;
 
@@ -21,14 +21,14 @@ void initialiseFields( double *collideField,
 		for( int y = 0 ; y <= xlength + 1 ; ++y )  {
 			for( int x = 0 ; x <= xlength + 1 ; ++x ) {
 
-				Current_Filed_Cell = computeFieldIndex( x, y, z, TotalLength );
+				Current_Field_Cell = computeFieldIndex( x, y, z, TotalLength );
 
 		        for( int i = 0 ; i < Vel_DOF ; ++i ) {
 					//Initialization of collideField
-		          	collideField [ Current_Filed_Cell + i ] = LATTICEWEIGHTS[ i ];
+		          	collideField [ Current_Field_Cell + i ] = LATTICEWEIGHTS[ i ];
 
 					//Initialization of streamField
-				  	streamField [ Current_Filed_Cell + i ] = LATTICEWEIGHTS[ i ];
+				  	streamField [ Current_Field_Cell + i ] = LATTICEWEIGHTS[ i ];
 		        }
 
 

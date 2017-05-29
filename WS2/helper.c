@@ -6,6 +6,7 @@
 /* ----------------------------------------------------------------------- */
 /*                             auxiliary functions                         */
 /* ----------------------------------------------------------------------- */
+/* DEBUGGING: this functions overlaps with the function declared in the std library
 int min( int a, int b)
 {
     if( a < b ) return a;
@@ -30,6 +31,20 @@ double fmax( double a, double b)
     return b;
 }
 
+*/
+
+template< class T >
+T min( T a, T b ) {
+    if( a < b ) return a;
+    return b;
+}
+
+template< class T >
+T max( T a, T b ) {
+    if( a > b ) return a;
+    return b;
+}
+
 
 /* ----------------------------------------------------------------------- */
 /*                         local auxiliary functions                       */
@@ -48,6 +63,30 @@ int min_int( const int n1, const int n2 )
 /* ----------------------------------------------------------------------- */
 /*                             read datafile                               */
 /* ----------------------------------------------------------------------- */
+
+
+int read_parameters( const char *INPUT_FILE_NAME,        /* the name of the data file */
+                     int *xlength,                    /* number of cells along x direction */
+                     double *tau,                        /* relaxation time */
+                     double *U,                          /* lid velocity x-direction */
+                     double *V,                          /* lid velocity y-direction */
+                     double *W,                          /* lid velocity z-direction */
+                     int *timesteps,                     /* number of simulation time steps */
+                     int *timestepsPerPlotting ) {       /* number of visualization time steps */
+
+   read_int( INPUT_FILE_NAME, "xlength", xlength );
+   read_double( INPUT_FILE_NAME, "tau", tau );
+
+   read_double( INPUT_FILE_NAME, "U", U );
+   read_double( INPUT_FILE_NAME, "V", V );
+   read_double( INPUT_FILE_NAME, "W", W );
+
+   read_int( INPUT_FILE_NAME, "timesteps", timesteps );
+   read_int( INPUT_FILE_NAME, "timestepsPerPlotting", timestepsPerPlotting );
+
+   return 1;
+}
+
 
 void errhandler( int nLine, const char *szFile, const char *szString )
 {
@@ -90,7 +129,7 @@ void errhandler( int nLine, const char *szFile, const char *szString )
 char* find_string( const char* szFileName, const char *szVarName )
 {
     int nLine = 0;
-    int i;
+    unsigned i;
     FILE *fh = NULL;
 
     static char szBuffer[MAX_LINE_LENGTH];      /* containes the line read  */
@@ -503,3 +542,13 @@ int **read_pgm(const char *filename)
 
     return pic;
 }
+
+
+/* ----------------------------------------------------------------------- */
+/*                      general index calculation                          */
+/* ----------------------------------------------------------------------- */
+
+// function to calculate lexicographical co-ordinates of the lattices in the Flag
+
+
+// function to calculate lexicographical co-ordinates of the lattices in the field

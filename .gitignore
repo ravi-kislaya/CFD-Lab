@@ -3,6 +3,8 @@ Numerical\ Fluid\ Flow\ and\ Heat\ Transfer\ by\ Patankar.pdf
 WS1/UnitTest/CMakeFailure/
 *.swp
 *.orig
+*.o
 WS1/.idea/
 GoogleTestLib/
 WS2/PDFs/
+perf*

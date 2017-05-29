@@ -9,6 +9,18 @@
 #include <string.h>
 #include <float.h>
 #include <time.h>
+#include "LBDefinitions.h"
+
+/* ----------------------------------------------------------------------- */
+/*                      user define functions                              */
+/* ----------------------------------------------------------------------- */
+inline int computeFlagIndex( int x, int y, int z, int TotalLength) {
+    return ( z * TotalLength * TotalLength ) + ( y * TotalLength ) + x;
+}
+// function to calculate lexicographical co-ordinates of the lattices in the field
+inline int computeFieldIndex( int x, int y, int z, int TotalLength ) {
+    return Vel_DOF * ( ( z * TotalLength * TotalLength ) + ( y * TotalLength ) + x );
+}
 
 #ifdef PI
 #undef PI
@@ -27,10 +39,57 @@
 extern clock_t last_timer_reset;
 
 
-int min( int a, int b);
-int max( int a, int b);
-double fmin( double a, double b);
-double fmax( double a, double b);
+int read_parameters( const char* INPUT_FILE_NAME,        /* the name of the data file */
+                     int* xlength,                       /* number of cells along x direction */
+                     double* tau,                        /* relaxation time */
+                     double* U,                          /* lid velocity x-direction */
+                     double* V,                          /* lid velocity y-direction */
+                     double* W,                          /* lid velocity z-direction */
+                     int* timesteps,                     /* number of simulation time steps */
+                     int* timestepsPerPlotting );        /* number of visualization time steps */
+
+
+
+void errhandler( int nLine,
+                 const char *szFile,
+                 const char *szString );
+
+
+char* find_string( const char* szFileName,
+                   const char *szVarName );
+
+
+void read_string( const char* szFileName,
+                  const char* szVarName,
+                  char*   pVariable);
+
+
+void read_int( const char* szFileName,
+               const char* szVarName,
+               int* pVariable);
+
+
+void read_double( const char* szFileName,
+                  const char* szVarName,
+                  double* pVariable);
+
+
+int min_int( const int n1, const int n2 );
+
+
+
+
+// DEBUGGING: this functions overlaps with the function declared in the std library
+//int min( int a, int b);
+//int max( int a, int b);
+//double fmin( double a, double b);
+//double fmax( double a, double b);
+
+template< class T >
+T min( T a, T b );
+
+template< class T >
+T max( T a, T b );
 
 
 /**
@@ -604,4 +663,3 @@ int **read_pgm(const char *filename);
         }
 
 #endif
-

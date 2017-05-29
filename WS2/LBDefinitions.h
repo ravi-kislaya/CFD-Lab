@@ -54,9 +54,9 @@
   // C_S - is the speed of sound which is equal to 1.0 / sqrt ( 3.0 ) = 0.577350269
   static const double C_S = 0.577350269;
   static const int Dimensions = 3;
-  static const int Vel_DOF = 19;
+  static const unsigned Vel_DOF = 19;
   static const double InverseCS_Square = 3.0;
   static const double InverseCS_Four = 9.0;
 
- 
+
 #endif

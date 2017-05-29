@@ -10,7 +10,7 @@ void computePostCollisionDistributions( double *currentCell,
 
   double Inverse_Tau = 1.0 / ( *tau );
 //Solves Equation 13
-  for( int i = 0; i < Vel_DOF; ++i ) {
+  for( unsigned i = 0; i < Vel_DOF; ++i ) {
     currentCell[ i ] -= Inverse_Tau * ( currentCell[ i ] - feq[ i ]  );
   }
 
@@ -19,7 +19,7 @@ void computePostCollisionDistributions( double *currentCell,
 void doCollision( double *collideField,
                   int *flagField,
                   const double * const tau,
-                  int xlength ) {
+                  unsigned xlength ) {
 
 	//Variable declaration
   //TODO : Ask Nicola if we need the pressure distribution
@@ -27,14 +27,14 @@ void doCollision( double *collideField,
   double Density = 0.0;
   double Velocity[ Dimensions ];
   double Feq[ Vel_DOF ];
-  int TotalLength = xlength + 2;
+  unsigned TotalLength = xlength + 2;
 
-  int Current_Cell = 0;
+  unsigned long int Current_Cell = 0;
 
 	//Looping through individual element
-	for( int z = 1; z <= xlength; ++z )  {
-		for( int y = 1; y <= xlength; ++y )  {
-			for( int x = 1; x <= xlength; ++x ) {
+	for( unsigned z = 1; z <= xlength; ++z )  {
+		for( unsigned y = 1; y <= xlength; ++y )  {
+			for( unsigned x = 1; x <= xlength; ++x ) {
 
 				Current_Cell = computeFieldIndex( x, y, z, TotalLength );
 

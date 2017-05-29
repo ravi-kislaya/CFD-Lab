@@ -5,22 +5,23 @@
 void doStreaming( double *collideField,
 	 			  double *streamField,
 				  int *flagField,
-				  int xlength ) {
+				  unsigned xlength ) {
 
 
-	int Fluid_Cell = 0, Neighbour_Cell = 0;
-	int TotalLength = xlength + 2;
+	unsigned long int Fluid_Cell = 0;
+	unsigned long int Neighbour_Cell = 0;
+	unsigned TotalLength = xlength + 2;
 
 
 	//Looping through all fluid element
-	for( int z = 1 ; z <= xlength ; ++z )  {
-		for( int y = 1 ; y <= xlength ; ++y )  {
-			for( int x = 1 ; x <= xlength ; ++x ) {
+	for( unsigned z = 1 ; z <= xlength ; ++z )  {
+		for( unsigned y = 1 ; y <= xlength ; ++y )  {
+			for( unsigned x = 1 ; x <= xlength ; ++x ) {
 
 				Fluid_Cell = computeFieldIndex( x, y, z, TotalLength );
 
 				//Cell wise streaming considering the velocity component
-				for( int Vel_Component = 0; Vel_Component < Vel_DOF; ++Vel_Component ) {
+				for( unsigned Vel_Component = 0; Vel_Component < Vel_DOF; ++Vel_Component ) {
 
 
 					Neighbour_Cell = computeFieldIndex( x + LATTICEVELOCITIES[ Vel_Component ][ 0 ],

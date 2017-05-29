@@ -11,7 +11,7 @@
 inline void StationaryWall::treatBoundary( double * Field ) {
 
 
-	int Reflected_Vel_Component = 18 - m_VelocityComponent;
+	unsigned Reflected_Vel_Component = 18 - m_VelocityComponent;
 
 
 
@@ -22,7 +22,7 @@ inline void StationaryWall::treatBoundary( double * Field ) {
 inline void MovingWall::treatBoundary( double * Field ) {
 
 	double Density = 0.0;
-	int Reflected_Vel_Component = 18 - m_VelocityComponent;
+	unsigned Reflected_Vel_Component = 18 - m_VelocityComponent;
 
 
 	computeDensity( Field + m_SourceIndex, &Density );

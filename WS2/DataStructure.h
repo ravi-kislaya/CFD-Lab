@@ -11,9 +11,9 @@ class Obstacle {
     public:
         Obstacle() : m_SelfIndex( 0 ), m_SourceIndex( 0 ),
 					 m_VelocityComponent( 0 ), m_DotProduct( 0.0 ) {}
-        Obstacle( int SelfIndex,
-                  int getSourceIndex,
-                  int Component,
+        Obstacle( unsigned long int SelfIndex,
+                  unsigned long int getSourceIndex,
+                  unsigned Component,
 				  double DotProduct) : m_SelfIndex( SelfIndex ),
                                     m_SourceIndex( getSourceIndex ),
                                     m_VelocityComponent( Component ),
@@ -24,24 +24,24 @@ class Obstacle {
         virtual void treatBoundary( double * Field ) = 0;
 
 
-        int getSelfIndex() { return m_SelfIndex; }
-        int getSourceIndex() { return m_SourceIndex; }
-		int getVelocityComponent() { return m_VelocityComponent; }
+        unsigned long int getSelfIndex() { return m_SelfIndex; }
+        unsigned long int getSourceIndex() { return m_SourceIndex; }
+		unsigned getVelocityComponent() { return m_VelocityComponent; }
 		double getDotProduct() { return m_DotProduct; }
 
     protected:
-        int m_SelfIndex;
-        int m_SourceIndex;
-        int m_VelocityComponent;
+        unsigned long int m_SelfIndex;
+        unsigned long int m_SourceIndex;
+        unsigned m_VelocityComponent;
 		double m_DotProduct;
 };
 
 
 class StationaryWall : public Obstacle {
     public:
-        StationaryWall( int SelfIndex,
-                        int getSourceIndex,
-                        int Component,
+        StationaryWall( unsigned long int SelfIndex,
+                        unsigned long int getSourceIndex,
+                        unsigned Component,
 						double DotProduct) : Obstacle( SelfIndex,
                                                     getSourceIndex,
                                                     Component,
@@ -53,11 +53,11 @@ class StationaryWall : public Obstacle {
 
 class MovingWall : public Obstacle {
     public:
-        MovingWall( int SelfIndex,
-                    int getSourceIndex,
-                    int Component,
+        MovingWall( unsigned long int SelfIndex,
+                    unsigned long int SourceIndex,
+                    unsigned Component,
 					double DotProduct) : Obstacle( SelfIndex,
-                                                getSourceIndex,
+                                                SourceIndex,
                                                 Component,
 												DotProduct) {}
 
@@ -72,16 +72,16 @@ class MovingWall : public Obstacle {
 class Fluid {
     public:
         Fluid() : m_Coordinate( 0 ) {}
-        Fluid( int Coordinate ) : m_Coordinate( Coordinate ) {}
+        Fluid( unsigned long int Coordinate ) : m_Coordinate( Coordinate ) {}
 
         void addObstacle( Obstacle* Obj );
         void processBoundary( double * Field );
         void deleteObstacles();
         bool isEmpty() { return ObstacleList.empty(); }
-        int getCoodinate() { return m_Coordinate; }
+        unsigned long int getCoodinate() { return m_Coordinate; }
 
     private:
-        int m_Coordinate;
+        unsigned long int m_Coordinate;
         std::list<Obstacle*> ObstacleList;
 
 };

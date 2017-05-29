@@ -14,11 +14,11 @@
 /* ----------------------------------------------------------------------- */
 /*                      user define functions                              */
 /* ----------------------------------------------------------------------- */
-inline int computeFlagIndex( int x, int y, int z, int TotalLength) {
+inline unsigned long int computeFlagIndex( unsigned x, unsigned y, unsigned z, unsigned TotalLength) {
     return ( z * TotalLength * TotalLength ) + ( y * TotalLength ) + x;
 }
 // function to calculate lexicographical co-ordinates of the lattices in the field
-inline int computeFieldIndex( int x, int y, int z, int TotalLength ) {
+inline unsigned long int computeFieldIndex( unsigned x, unsigned y, unsigned z, unsigned TotalLength ) {
     return Vel_DOF * ( ( z * TotalLength * TotalLength ) + ( y * TotalLength ) + x );
 }
 
@@ -39,17 +39,6 @@ inline int computeFieldIndex( int x, int y, int z, int TotalLength ) {
 extern clock_t last_timer_reset;
 
 
-int read_parameters( const char* INPUT_FILE_NAME,        /* the name of the data file */
-                     int* xlength,                       /* number of cells along x direction */
-                     double* tau,                        /* relaxation time */
-                     double* U,                          /* lid velocity x-direction */
-                     double* V,                          /* lid velocity y-direction */
-                     double* W,                          /* lid velocity z-direction */
-                     int* timesteps,                     /* number of simulation time steps */
-                     int* timestepsPerPlotting );        /* number of visualization time steps */
-
-
-
 void errhandler( int nLine,
                  const char *szFile,
                  const char *szString );
@@ -67,6 +56,11 @@ void read_string( const char* szFileName,
 void read_int( const char* szFileName,
                const char* szVarName,
                int* pVariable);
+
+
+void read_unsigned( const char* szFileName,
+                    const char* szVarName,
+                    unsigned* pVariable );
 
 
 void read_double( const char* szFileName,

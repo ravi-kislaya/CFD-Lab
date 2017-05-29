@@ -6,13 +6,13 @@
  *  from visual.c (VTK output for Navier-Stokes solver) and modify it for 3D datasets.
  */
 
-void write_vtkHeader( FILE* fp, int xlength );
+void write_vtkHeader( FILE* fp, unsigned xlength );
 
-void write_vtkPointCoordinates( FILE* fp, int xlength );
+void write_vtkPointCoordinates( FILE* fp, unsigned xlength );
 
 void writeVtkOutput( double * const collideField,
                      const char * filename,
                      unsigned int t,
-                     int xlength );
+                     unsigned xlength );
 
 #endif

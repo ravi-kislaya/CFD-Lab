@@ -10,19 +10,19 @@
 
 void scanBoundary( std::list<Fluid*>& ObstacleList,
                     int* flagField,
-                    int xlength,
+                    unsigned xlength,
                     double* wallVelocity ) {
 
-    int Current_Cell_Flag = 0;
-    int Neighbour_Cell_Flag = 0;
-	int Current_Cell_Field = 0;
-    int Neighbour_Cell_Field = 0;
+    unsigned long int Current_Cell_Flag = 0;
+    unsigned long int Neighbour_Cell_Flag = 0;
+	unsigned long int Current_Cell_Field = 0;
+    unsigned long int Neighbour_Cell_Field = 0;
 	double Dot_Product = 0.0;
-    int TotalLength = xlength + 2;
+    unsigned TotalLength = xlength + 2;
 
-    for( int z = 1 ; z <= xlength; ++z )  {
-        for( int y = 1 ; y <= xlength; ++y )  {
-            for( int x = 1 ; x <= xlength; ++x ) {
+    for( unsigned z = 1 ; z <= xlength; ++z )  {
+        for( unsigned y = 1 ; y <= xlength; ++y )  {
+            for( unsigned x = 1 ; x <= xlength; ++x ) {
 
                 // Compute the current cell
                 Current_Cell_Flag = computeFlagIndex( x, y, z, TotalLength );
@@ -32,7 +32,7 @@ void scanBoundary( std::list<Fluid*>& ObstacleList,
                 Fluid* aFluidCell = new Fluid( Current_Cell_Flag );
 
                 // scan neighbours
-                for ( int i = 0; i < Vel_DOF; ++i ) {
+                for ( unsigned i = 0; i < Vel_DOF; ++i ) {
 
 
                     Neighbour_Cell_Flag = computeFlagIndex(  x + LATTICEVELOCITIES[ i ][ 0 ],
@@ -95,7 +95,7 @@ void scanBoundary( std::list<Fluid*>& ObstacleList,
 void treatBoundary( double *collideField,
                     std::list<Fluid*>& BoundaryLayerList,
                     const double * const wallVelocity,
-                    int xlength ) {
+                    unsigned xlength ) {
 
 
     // iterate through out all boundary layer cells

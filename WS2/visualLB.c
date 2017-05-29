@@ -10,10 +10,10 @@
 void writeVtkOutput ( double * const collideField,
                       const char * filename,
                       unsigned int t,
-                      int xlength ) {
+                      unsigned xlength ) {
 
-    int x = 0, y = 0, z = 0;
-    int TotalLength = xlength + 2;
+    unsigned x = 0, y = 0, z = 0;
+    unsigned TotalLength = xlength + 2;
 
     char szFilename[80];
     FILE *fp = NULL;
@@ -70,8 +70,10 @@ void writeVtkOutput ( double * const collideField,
                 computeVelocity ( idx, &density, velocity);
 
 #ifdef DEBUGGING
-				if(density<0.9 || density>1.1)
-					printf("x %d y %d z %d  %f   \n", x,y,z, density);
+				if( density < 0.9 || density > 1.1)
+					printf( "WARNING: the solution might diverge at the point: ");
+                    printf( "x  = %d; y = %d; z = %d; ", x, y, z );
+                    printf( "Density value is out of the range [ 0.9, 1.1 ]: %f\n" , density );
 #endif
 
                 fprintf(fp, "%f %f %f\n", velocity [0], velocity [1], velocity [2]);
@@ -82,7 +84,7 @@ void writeVtkOutput ( double * const collideField,
 }
 
 
-void write_vtkHeader( FILE *fp, int xlength ) {
+void write_vtkHeader( FILE *fp, unsigned xlength ) {
 
     if( fp == NULL )
     {
@@ -103,12 +105,12 @@ void write_vtkHeader( FILE *fp, int xlength ) {
 }
 
 
-void write_vtkPointCoordinates( FILE *fp, int xlength ){
+void write_vtkPointCoordinates( FILE *fp, unsigned xlength ){
 
 
-    for( int z = 1; z <= xlength; ++z )
-        for( int y = 1; y <= xlength; ++y ) {
-            for( int x = 1; x <= xlength; ++x ) {
+    for( unsigned z = 1; z <= xlength; ++z )
+        for( unsigned y = 1; y <= xlength; ++y ) {
+            for( unsigned x = 1; x <= xlength; ++x ) {
               fprintf(fp, "%d %d %d\n", x, y, z );
         }
     }

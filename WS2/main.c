@@ -62,11 +62,11 @@ int main( int argc, char *argv[] ){
   // Allocate all fields
   const char* INPUT_FILE_NAME = argv[1];
   const char* OUTPUT_FILE_NAME = "./Frames/Cube3D";
-  int xlength = 0;
+  unsigned xlength = 0;
   double tau = 0.0;
   double wallVelocity[ 3 ] = { 0.0 ,0.0, 0.0 };
-  int TimeSteps = 0;
-  int TimeStepsPerPlotting = 0;
+  unsigned TimeSteps = 0;
+  unsigned TimeStepsPerPlotting = 0;
 
 
   read_parameters( INPUT_FILE_NAME,         /* the name of the data file */
@@ -80,8 +80,8 @@ int main( int argc, char *argv[] ){
 
 
   // initialize all variables and fields
-  int TotalLength = xlength + 2;
-  int CellNumber = TotalLength * TotalLength * TotalLength;
+  unsigned TotalLength = xlength + 2;
+  unsigned long int CellNumber = TotalLength * TotalLength * TotalLength;
 
   double *collideField = ( double* )calloc( Vel_DOF * CellNumber, sizeof( double ) );
   double *streamField = ( double* )calloc( Vel_DOF * CellNumber, sizeof( double ) );
@@ -111,7 +111,7 @@ int main( int argc, char *argv[] ){
 
     // Perform LB method
     double* Swap = NULL;
-    for ( int Step = 0; Step < TimeSteps; ++Step ) {
+    for ( unsigned Step = 0; Step < TimeSteps; ++Step ) {
 
 
         doStreaming( collideField,
@@ -164,7 +164,7 @@ int main( int argc, char *argv[] ){
    // display MLUPS number that stands for Mega Lattice Updates Per Second
    printf( "Computational time: %4.6f sec\n",  ConsumedTime );
    printf( "MLUPS: %4.6f\n", MLUPS );
-   printf( "Mesh size: %d x %d x %d\n\n",  xlength, xlength, xlength );
+   printf( "Mesh size: %u x %u x %u\n\n",  xlength, xlength, xlength );
 
 
     // delete list of obstacles

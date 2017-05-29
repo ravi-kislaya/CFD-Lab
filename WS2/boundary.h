@@ -7,13 +7,13 @@
 
 void scanBoundary( std::list<Fluid*>& ObstacleList,
                     int* flagField,
-                    int xlength,
+                    unsigned xlength,
                     double* wallVelocity );
 
 
 void treatBoundary( double *collideField,
                     std::list<Fluid*>& BoundaryLayerList,
                     const double * const wallVelocity,
-                    int xlength );
+                    unsigned xlength );
 
 #endif

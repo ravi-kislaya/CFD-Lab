@@ -2,6 +2,7 @@
 #include "LBDefinitions.h"
 #include<stdio.h>
 
+//Solves Equation 10
 void computeDensity( const double *const currentCell, double *density ) {
 
   *density = 0.0;
@@ -10,7 +11,7 @@ void computeDensity( const double *const currentCell, double *density ) {
   }
 
 }
-
+//Solves Equation 10
 void computeVelocity( const double * const currentCell,
                       const double * const density,
                       double *velocity) {
@@ -38,16 +39,16 @@ void computeFeq( const double * const density,
                  const double * const velocity,
                  double *feq ) {
 
- //CS means Speed of Sound
+ //CS is Speed of Sound
   double temp1 = 0.0, temp2 = 0.0;
-
+// Solves equation 11
  for( int i = 0; i < Vel_DOF; ++i ) {
 
-
+   // temp1 = ci * ui
    temp1 = LATTICEVELOCITIES[ i ][ 0 ] * velocity[ 0 ]
          + LATTICEVELOCITIES[ i ][ 1 ] * velocity[ 1 ]
          + LATTICEVELOCITIES[ i ][ 2 ] * velocity[ 2 ];
-
+   // temp2 = u * u
    temp2 = velocity[ 0 ] * velocity[ 0 ]
          + velocity[ 1 ] * velocity[ 1 ]
          + velocity[ 2 ] * velocity[ 2 ];

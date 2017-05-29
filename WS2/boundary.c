@@ -26,7 +26,7 @@ void scanBoundary( std::list<Fluid*>& ObstacleList,
 
                 // Compute the current cell
                 Current_Cell_Flag = computeFlagIndex( x, y, z, TotalLength );
-				Current_Cell_Field = Vel_DOF * Current_Cell_Flag;
+				Current_Cell_Field = Vel_DOF * computeFlagIndex( x, y, z, TotalLength );
 
                 // Allocate a new fluid cell
                 Fluid* aFluidCell = new Fluid( Current_Cell_Flag );

@@ -9,7 +9,7 @@ void computePostCollisionDistributions( double *currentCell,
                                         const double *const feq ) {
 
   double Inverse_Tau = 1.0 / ( *tau );
-
+//Solves Equation 13
   for( int i = 0; i < Vel_DOF; ++i ) {
     currentCell[ i ] -= Inverse_Tau * ( currentCell[ i ] - feq[ i ]  );
   }

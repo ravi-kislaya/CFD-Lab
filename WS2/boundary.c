@@ -13,10 +13,10 @@ void scanBoundary( std::list<Fluid*>& ObstacleList,
                     unsigned xlength,
                     double* wallVelocity ) {
 
-    unsigned long int Current_Cell_Flag = 0;
-    unsigned long int Neighbour_Cell_Flag = 0;
-	unsigned long int Current_Cell_Field = 0;
-    unsigned long int Neighbour_Cell_Field = 0;
+    unsigned Current_Cell_Flag = 0;
+    unsigned Neighbour_Cell_Flag = 0;
+	unsigned Current_Cell_Field = 0;
+    unsigned Neighbour_Cell_Field = 0;
 	double Dot_Product = 0.0;
     unsigned TotalLength = xlength + 2;
 

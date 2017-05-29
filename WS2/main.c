@@ -81,7 +81,7 @@ int main( int argc, char *argv[] ){
 
   // initialize all variables and fields
   unsigned TotalLength = xlength + 2;
-  unsigned long int CellNumber = TotalLength * TotalLength * TotalLength;
+  unsigned CellNumber = TotalLength * TotalLength * TotalLength;
 
   double *collideField = ( double* )calloc( Vel_DOF * CellNumber, sizeof( double ) );
   double *streamField = ( double* )calloc( Vel_DOF * CellNumber, sizeof( double ) );

@@ -34,8 +34,8 @@ void initialiseFields( double *collideField,
 
 
 	//Variable declaration
-	unsigned long int Current_Field_Cell = 0;
-	unsigned long int Current_Flag_Cell = 0;
+	unsigned Current_Field_Cell = 0;
+	unsigned Current_Flag_Cell = 0;
 	unsigned TotalLength = xlength + 2;
 
 

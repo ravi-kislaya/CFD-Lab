@@ -7,11 +7,11 @@ SOURCES=initLB.c visualLB.c boundary.c collision.c streaming.c\
 CC=g++
 
 #CFLAGS= -pedantic -Wall -g -fno-omit-frame-pointer #-Werror
-CFLAGS= -pedantic -Wall -O2 -funroll-loops -Werror
+CFLAGS= -pedantic -Wall -O2 -funroll-loops
 
 
-#MODE=-DDEBUGGING
-MODE=-DRELEASE
+#MODE=-DDEBUGGING -Werror
+MODE=-DRELEASE -Werror
 #MODE=-DMLUPS_FLAG
 # Linker flags
 # ------------

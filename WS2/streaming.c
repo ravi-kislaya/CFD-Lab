@@ -8,8 +8,8 @@ void doStreaming( double *collideField,
 				  unsigned xlength ) {
 
 
-	unsigned long int Fluid_Cell = 0;
-	unsigned long int Neighbour_Cell = 0;
+	unsigned Fluid_Cell = 0;
+	unsigned Neighbour_Cell = 0;
 	unsigned TotalLength = xlength + 2;
 
 

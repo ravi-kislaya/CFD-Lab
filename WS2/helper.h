@@ -14,11 +14,11 @@
 /* ----------------------------------------------------------------------- */
 /*                      user define functions                              */
 /* ----------------------------------------------------------------------- */
-inline unsigned long int computeFlagIndex( unsigned x, unsigned y, unsigned z, unsigned TotalLength) {
+inline unsigned computeFlagIndex( unsigned x, unsigned y, unsigned z, unsigned TotalLength) {
     return ( z * TotalLength * TotalLength ) + ( y * TotalLength ) + x;
 }
 // function to calculate lexicographical co-ordinates of the lattices in the field
-inline unsigned long int computeFieldIndex( unsigned x, unsigned y, unsigned z, unsigned TotalLength ) {
+inline unsigned computeFieldIndex( unsigned x, unsigned y, unsigned z, unsigned TotalLength ) {
     return Vel_DOF * ( ( z * TotalLength * TotalLength ) + ( y * TotalLength ) + x );
 }
 

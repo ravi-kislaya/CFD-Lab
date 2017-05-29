@@ -29,7 +29,7 @@ void doCollision( double *collideField,
   double Feq[ Vel_DOF ];
   unsigned TotalLength = xlength + 2;
 
-  unsigned long int Current_Cell = 0;
+  unsigned Current_Cell = 0;
 
 	//Looping through individual element
 	for( unsigned z = 1; z <= xlength; ++z )  {

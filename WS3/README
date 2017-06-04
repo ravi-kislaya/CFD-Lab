@@ -1,0 +1,30 @@
+To run the simulation you have to provide just one parameter which is the name
+of a data file.
+
+    ./lbsim <name>
+
+EXAMPLE: /lbsim cavityLBM.dat
+
+HINT: Check spelling of your data file if the simulation doesn't run
+--------------------------------------------------------------------------------
+
+1) Kammi: write visual.c file that defines function writeVTK(). The function
+   should store vtk-files to the "frame" folder
+
+2) Ravil: modify Makefile in order store all object files to the "build" folder
+
+3) Ravil: Adapt "scrip.sh" file
+
+4) Ravil: write functions to update boundaries
+
+5) Ravi:
+
+6) All: write main()
+
+
+--------------------------------------------------------------------------------
+what is left
+treat boundaries
+write vtk: visual.c
+read parameters
+main

@@ -1,0 +1,14 @@
+To run the simulation you have to provide just one parameter which is the name
+of a data file.
+
+    ./lbsim <name>
+
+EXAMPLE: /lbsim cube.data
+
+HINT: Check spelling of your data file if the simulation doesn't run
+--------------------------------------------------------------------------------
+STRUCTURE:
+	1) Build folder contains all object files
+	2) Frame folder contains all vtk files
+	3) Supplementary folder contains additional files that can be relevant 
+		during the examination

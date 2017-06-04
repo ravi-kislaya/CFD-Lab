@@ -14,10 +14,10 @@
 /* ----------------------------------------------------------------------- */
 /*                      user define functions                              */
 /* ----------------------------------------------------------------------- */
-inline int computeFlagIndex( int x, int y, int z, int * xlength ) {
-	int TotalXLength = xlength[0] + 2;
-	int TotalYLength = xlength[1] + 2;
-    return ( z * TotalXLength * TotalYLength ) + ( y * TotalXLength ) + x;
+inline unsigned computeFlagIndex( int x, int y, int z, int * xlength ) {
+   unsigned TotalXLength = xlength[0] + 2;
+   unsigned TotalYLength = xlength[1] + 2;
+   return ( z * TotalXLength *TotalYLength ) + ( y * TotalXLength ) + x;
 }
 // function to calculate lexicographical co-ordinates of the lattices in the field
 inline int computeFieldIndex( int x, int y, int z, int * xlength) {

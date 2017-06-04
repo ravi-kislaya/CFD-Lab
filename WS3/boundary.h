@@ -11,12 +11,11 @@ void scanBoundary( std::list<BoundaryFluid*>& ObstacleList,
                     int* xlength,
                     double* wallVelocity,
 					double* InletVel,
-					double* DeltaDensity );
+					double DeltaDensity );
 
 
 void treatBoundary( double *collideField,
-                    std::list<Fluid*>& BoundaryLayerList,
-                    const double * const wallVelocity,
-                    int xlength );
+                    std::list<BoundaryFluid*>& BoundaryLayerList,
+                    const double * const wallVelocity );
 
 #endif

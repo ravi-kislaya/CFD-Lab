@@ -1,3 +1,6 @@
+#include <list>
+#include "DataStructure.h"
+
 #ifndef _STREAMING_H_
 #define _STREAMING_H_
 

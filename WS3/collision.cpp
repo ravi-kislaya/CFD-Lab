@@ -3,12 +3,15 @@
 #include "helper.h"
 #include <stdio.h>
 
+#include <list>
+#include "DataStructure.h"
+
 
 void computePostCollisionDistributions( double *currentCell,
                                         const double * const tau,
                                         const double *const feq ) {
 
-  
+
   double Inverse_Tau = 1.0 / ( *tau );
 
   for( int i = 0; i < Vel_DOF; ++i ) {
@@ -42,6 +45,6 @@ void doCollision( std::list<Fluid*>& FluidDomain,
 		computeFeq( &Density , Velocity , Feq );
 		computePostCollisionDistributions( ( collideField + Current_Cell ) , tau , Feq );
 
-	}		
-	
+	}
+
 }

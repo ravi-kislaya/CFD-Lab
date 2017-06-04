@@ -14,7 +14,7 @@ void scanBoundary(  std::list<BoundaryFluid*>& ObstacleList,
                     int* xlength,
                     double* wallVelocity,
 					double* InletVel,
-					double* DeltaDensity ) {
+					double DeltaDensity ) {
 
     int Current_Cell_Flag = 0;
     int Neighbour_Cell_Flag = 0;
@@ -31,7 +31,7 @@ void scanBoundary(  std::list<BoundaryFluid*>& ObstacleList,
 				// Compute the current cell
                 Current_Cell_Flag = computeFlagIndex( x, y, z, xlength );
 				Current_Cell_Field = Vel_DOF * Current_Cell_Flag;
-				
+
 				if( flagField[Current_Cell_Flag] == FLUID ) {
 
 					// Allocate a new fluid cell
@@ -47,9 +47,9 @@ void scanBoundary(  std::list<BoundaryFluid*>& ObstacleList,
 																xlength );
 
 						Neighbour[i] = Vel_DOF * Neighbour_Cell_Flag;
-						
+
 						// add neighbours cell ( which is wall or moving wall to the list )
-						
+
 						//No slip
 						if ( flagField[ Neighbour_Cell_Flag ] == WALL ) {
 
@@ -79,7 +79,7 @@ void scanBoundary(  std::list<BoundaryFluid*>& ObstacleList,
 															Dot_Product );
 							aBoundaryFluidCell->addObstacle( Wall );
 						}
-						
+
 						//Inflow
 						if ( flagField[ Neighbour_Cell_Flag ] == INFLOW ) {
 							Dot_Product = 0.0;
@@ -88,15 +88,14 @@ void scanBoundary(  std::list<BoundaryFluid*>& ObstacleList,
 														 Current_Cell_Field,  //Here,Current means fluid
 														 i,
 														 Dot_Product,
-														 Inlet);
-							Wall::InletVelocity[0] = 0.0;//TODO:some global variable from readParameters
-							Wall::InletVelocity[1] = 0.0;//TODO:some global variable from readParameters
-							Wall::InletVelocity[2] = 0.0;//TODO:some global variable from readParameters
+														 InletVel );
+
+
 							aBoundaryFluidCell->addObstacle( Wall );
-							
-							
+
+
 						}
-						
+
 						//Pressure In
 						if ( flagField[ Neighbour_Cell_Flag ] == PRESSURE_IN ) {
 							Dot_Product = 0.0;
@@ -104,13 +103,15 @@ void scanBoundary(  std::list<BoundaryFluid*>& ObstacleList,
 							Obstacle* Wall = new PressureIn( Neighbour_Cell_Field,//Here,Neighbour means wall
 															 Current_Cell_Field,  //Here,Current means fluid
 															 i,
-															 Dot_Product );
-							*(Wall::DeltaDensity) = 0; //TODO:some global variable from readParameters
+															 Dot_Product,
+														     DeltaDensity );
+
+							//TODO:some global variable from readParameters
 							aBoundaryFluidCell->addObstacle( Wall );
-							
-							
+
+
 						}
-						
+
 						//Outflow
 						if ( flagField[ Neighbour_Cell_Flag ] == OUTFLOW ) {
 							Dot_Product = 0.0;
@@ -120,18 +121,18 @@ void scanBoundary(  std::list<BoundaryFluid*>& ObstacleList,
 														  18 - i,
 														  Dot_Product );
 							aBoundaryFluidCell->addObstacle( Wall );
-							
-						}						
+
+						}
 
 					}
-					
+
 					//separate loop for Free Slip
 					for( int i = 0; i < 6; ++i ) {
 						Neighbour_Cell_Flag = computeFlagIndex( x + LATTICEVELOCITIES[ FreeSlipVelocity[i] ][ 0 ],
 																y + LATTICEVELOCITIES[ FreeSlipVelocity[i] ][ 1 ],
 																z + LATTICEVELOCITIES[ FreeSlipVelocity[i] ][ 2 ],
-																TotalLength );
-						
+																xlength );
+
 						if( flagField[ Neighbour_Cell_Flag ] == FREE_SLIP ) {
 							Dot_Product = 0.0;
 							Neighbour_Cell_Field = Vel_DOF * Neighbour_Cell_Flag;
@@ -141,13 +142,13 @@ void scanBoundary(  std::list<BoundaryFluid*>& ObstacleList,
 														   Dot_Product );
 							aBoundaryFluidCell->addObstacle( Wall );
 						}
-						
+
 					}
 
 					//Create and push the Fluid in the Fluid Domain List
 					Fluid* aFluidCell = new Fluid( Neighbour );
 					FluidDomain.push_back( aFluidCell );
-					
+
 					// Delete a fluid cell if there was no obstacle cells
 					if ( aBoundaryFluidCell->isEmpty() == true ) {
 						delete aBoundaryFluidCell;
@@ -166,9 +167,8 @@ void scanBoundary(  std::list<BoundaryFluid*>& ObstacleList,
 
 
 void treatBoundary( double *collideField,
-                    std::list<Fluid*>& BoundaryLayerList,
-                    const double * const wallVelocity,
-                    int xlength ) {
+                    std::list<BoundaryFluid*>& BoundaryLayerList,
+                    const double * const wallVelocity ) {
 
 
     // iterate through out all boundary layer cells

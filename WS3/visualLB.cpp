@@ -11,7 +11,7 @@ void writeVtkOutput ( double * const collideField,
                       const char * filename,
                       unsigned int t,
                       int xlength ) {
-
+/*
     int x = 0, y = 0, z = 0;
     int TotalLength = xlength + 2;
 
@@ -79,11 +79,12 @@ void writeVtkOutput ( double * const collideField,
         }
     }
     fclose(fp);
+    */
 }
 
 
 void write_vtkHeader( FILE *fp, int xlength ) {
-
+/*
     if( fp == NULL )
     {
         char szBuff[80];
@@ -100,16 +101,18 @@ void write_vtkHeader( FILE *fp, int xlength ) {
     fprintf(fp,"DIMENSIONS  %i %i %i \n", xlength, xlength, xlength);
     fprintf(fp,"POINTS %i float\n", xlength * xlength * xlength );
     fprintf(fp,"\n");
+    */
 }
 
 
 void write_vtkPointCoordinates( FILE *fp, int xlength ){
 
-
+/*
     for( int z = 1; z <= xlength; ++z )
         for( int y = 1; y <= xlength; ++y ) {
             for( int x = 1; x <= xlength; ++x ) {
               fprintf(fp, "%d %d %d\n", x, y, z );
         }
     }
+*/
 }

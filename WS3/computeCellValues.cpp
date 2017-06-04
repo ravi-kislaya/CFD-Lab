@@ -57,7 +57,9 @@ void computeFeq( const double * const density,
    feq[ i ] = LATTICEWEIGHTS[ i ] * ( *density ) * ( 1 + ( InverseCS_Square * temp1 )
                                   + ( 0.5 * temp1 * temp1 * InverseCS_Four )
                                   - ( temp2 * InverseCS_Square * 0.5 ) );
- }
+    }
+
+}
 
 void computeSingleFeq( const double * const density,
 					   const double * const velocity,
@@ -65,17 +67,17 @@ void computeSingleFeq( const double * const density,
 					   int Velocity_Component) {
 
 
-	temp1 = LATTICEVELOCITIES[ Velocity_Component ][ 0 ] * velocity[ 0 ]
-          + LATTICEVELOCITIES[ Velocity_Component ][ 1 ] * velocity[ 1 ]
-          + LATTICEVELOCITIES[ Velocity_Component ][ 2 ] * velocity[ 2 ];
+	unsigned temp1 = LATTICEVELOCITIES[ Velocity_Component ][ 0 ] * velocity[ 0 ]
+                   + LATTICEVELOCITIES[ Velocity_Component ][ 1 ] * velocity[ 1 ]
+                   + LATTICEVELOCITIES[ Velocity_Component ][ 2 ] * velocity[ 2 ];
 
-	temp2 = velocity[ 0 ] * velocity[ 0 ]
-          + velocity[ 1 ] * velocity[ 1 ]
-          + velocity[ 2 ] * velocity[ 2 ];
+	unsigned temp2 = velocity[ 0 ] * velocity[ 0 ]
+                   + velocity[ 1 ] * velocity[ 1 ]
+                   + velocity[ 2 ] * velocity[ 2 ];
 
 
 
-	*feq = LATTICEWEIGHTS[ Velocity_Component ] 
+	*feq = LATTICEWEIGHTS[ Velocity_Component ]
 		 * ( *density ) * ( 1 + ( InverseCS_Square * temp1 )
              + ( 0.5 * temp1 * temp1 * InverseCS_Four )
              - ( temp2 * InverseCS_Square * 0.5 ) );

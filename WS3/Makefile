@@ -1,13 +1,13 @@
 # Include files
-SOURCES=initLB.c visualLB.c boundary.c collision.c streaming.c\
- 		computeCellValues.c main.c helper.c DataStructure.c
+SOURCES=initLB.cpp visualLB.cpp boundary.cpp collision.cpp streaming.cpp\
+ 		computeCellValues.cpp main.cpp helper.cpp DataStructure.cpp
 
 # Compiler
 # --------
 CC=g++
 
-#CFLAGS= -pedantic -Wall -g -fno-omit-frame-pointer #-Werror
-CFLAGS= -pedantic -Wall -O2 -funroll-loops #-Werror
+CFLAGS= -pedantic -Wall -g -fno-omit-frame-pointer #-Werror
+#CFLAGS= -pedantic -Wall -O2 -funroll-loops #-Werror
 
 
 #MODE=-DDEBUGGING
@@ -20,7 +20,7 @@ LDFLAGS=
 # ASSEMBLY FOLDER
 FOLDER=./build/
 
-OBJECTS=$(SOURCES:.c=.o)
+OBJECTS=$(SOURCES:.cpp=.o)
 OBJS = $(patsubst %,$(FOLDER)%,$(OBJECTS))
 
 EXECUTABLE=lbsim
@@ -34,5 +34,5 @@ clean:
 	rm -f $(OBJS) $(EXECUTABLE)
 
 
-$(OBJECTS): %.o : %.c
+$(OBJECTS): %.o : %.cpp
 	$(CC) $(CFLAGS) $(MODE) -c $< -o $(FOLDER)$@

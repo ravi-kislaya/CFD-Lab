@@ -1,5 +1,5 @@
 #include <list>
-
+#include "LBDefinitions.h"
 
 #ifndef _DATA_STRUCTURE_H_
 #define _DATA_STRUCTURE_H_
@@ -21,7 +21,7 @@ class Obstacle {
 
 
         virtual ~Obstacle() {}
-        virtual void treatBoundary( double * Field, double * Dummy ) = 0;
+        virtual void treatBoundary( double * Field ) = 0;
 
 
         int getSelfIndex() { return m_SelfIndex; }
@@ -47,7 +47,7 @@ class StationaryWall : public Obstacle {
                                                     Component,
 													DotProduct) {}
 
-        virtual void treatBoundary( double * Field, double * Dummy );
+        virtual void treatBoundary( double * Field );
 };
 
 
@@ -83,20 +83,18 @@ class Inflow : public Obstacle {
                     int getSourceIndex,
                     int Component,
 					double DotProduct,
-					double InletX,
-					double InletY,
-					double InletZ) : Obstacle( SelfIndex,
+					double* Inlet ) : Obstacle( SelfIndex,
                                                 getSourceIndex,
                                                 Component,
 												DotProduct) {
-						InletVelocity[0] = InletX;
-						InletVelocity[1] = InletY;
-						InletVelocity[2] = InletZ;						
+						m_InletVelocity[0] = Inlet[0];
+						m_InletVelocity[1] = Inlet[1];
+						m_InletVelocity[2] = Inlet[2];
 					}
 
         virtual void treatBoundary( double * Field );
 	private:
-		double InletVelocity[ Dimensions ]
+		double m_InletVelocity[ Dimensions ];
 };
 
 class Outflow : public Obstacle {
@@ -114,16 +112,22 @@ class Outflow : public Obstacle {
 
 class PressureIn : public Obstacle {
     public:
-		double * DeltaDensity = NULL;
+
         PressureIn( int SelfIndex,
                     int getSourceIndex,
                     int Component,
-					double DotProduct) : Obstacle( SelfIndex,
+					double DotProduct,
+                    double DeltaDensity) : Obstacle( SelfIndex,
                                                 getSourceIndex,
                                                 Component,
-												DotProduct) {}
+												DotProduct),
+                                         m_DeltaDensity( DeltaDensity ) {}
+
 
         virtual void treatBoundary( double * Field );
+
+    private:
+        double m_DeltaDensity;
 };
 
 
@@ -162,10 +166,10 @@ class Fluid {
 		int getIndex(int Index) {
 			return m_Index[Index];
 		}
-	
+
 	private:
 		int m_Index[Vel_DOF];
-		
+
 };
 
 #endif

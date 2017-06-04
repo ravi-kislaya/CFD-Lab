@@ -62,26 +62,28 @@ int main( int argc, char *argv[] ){
   // Allocate all fields
   const char* INPUT_FILE_NAME = argv[1];
   const char* OUTPUT_FILE_NAME = "./Frames/Cube3D";
-  int xlength = 0; //TODO: change this to array
+  int xlength[ 3 ] = { 10, 10, 10 }; //TODO: change this to array
   double tau = 0.0;
-  double wallVelocity[ 3 ] = { 0.0 ,0.0, 0.0 };
+  double wallVelocity[ 3 ] = { 0.0, 0.0, 0.0 };
   int TimeSteps = 0;
   int TimeStepsPerPlotting = 0;
 
+  double InletVelocity[ 3 ] = { 0.0, 0.0, 0.0 }; //TODO: Delcare this in read parameter as array
+  double DeltaDensity = 0.0; //TODO: Declare this in read parameter as variables
 
-  read_parameters( INPUT_FILE_NAME,         /* the name of the data file */
-                   &xlength,                /* number of cells along x direction */
-                   &tau,                    /* relaxation time */
-                   &wallVelocity[ 0 ],      /* lid velocity x-direction */
-                   &wallVelocity[ 1 ],      /* lid velocity y-direction */
-                   &wallVelocity[ 2 ],      /* lid velocity z-direction */
-                   &TimeSteps,              /* number of simulation time steps */
-                   &TimeStepsPerPlotting ); /* number of visualization time steps */
+
+//  read_parameters( INPUT_FILE_NAME,         /* the name of the data file */
+//                   &xlength,                /* number of cells along x direction */
+//                   &tau,                    /* relaxation time */
+//                   &wallVelocity[ 0 ],      /* lid velocity x-direction */
+//                   &wallVelocity[ 1 ],      /* lid velocity y-direction */
+//                   &wallVelocity[ 2 ],      /* lid velocity z-direction */
+//                   &TimeSteps,              /* number of simulation time steps */
+//                  &TimeStepsPerPlotting ); /* number of visualization time steps */
 
 
   // initialize all variables and fields
-  int TotalLength = xlength + 2;
-  int CellNumber = TotalLength * TotalLength * TotalLength;
+  int CellNumber = (xlength[ 0 ] + 2) * (xlength[ 1 ] + 2) * (xlength[ 2 ] + 2);
 
   double *collideField = ( double* )calloc( Vel_DOF * CellNumber, sizeof( double ) );
   double *streamField = ( double* )calloc( Vel_DOF * CellNumber, sizeof( double ) );
@@ -89,28 +91,28 @@ int main( int argc, char *argv[] ){
 
 
   // initialize all fields
+  /*
   initialiseFields( collideField,
                     streamField,
                     flagField,
                     xlength );
-
+*/
 
   // allcocate the list of boundary layer cells
   std::list<BoundaryFluid*> BoundaryList;
-  
+
   // allocate a list for all fluid
   std::list<Fluid*> FluidDomain;
 
 
   // prepare all boundaries ( stationary and moving walls )
   scanBoundary( BoundaryList,
-				FluidDomain,	
+				FluidDomain,
                 flagField,
                 xlength,
                 wallVelocity,
-				InletVelocity, //TODO: Delcare this in read parameter as array
-				&DeltaDensity //TODO: Declare this in read parameter as variables
-				);
+				InletVelocity,
+				DeltaDensity );
 
 
    clock_t Begin = clock();
@@ -139,8 +141,7 @@ int main( int argc, char *argv[] ){
 
         treatBoundary( collideField,
                        BoundaryList,
-                       wallVelocity,
-                       xlength );
+                       wallVelocity );
 
 
 #ifndef MLUPS_FLAG
@@ -183,19 +184,19 @@ int main( int argc, char *argv[] ){
 
         // delete all fluid cells
         delete (*Iterator);
-		
+
     }
-	
+
 	// delete list of Fluid
 	for ( std::list<Fluid*>::iterator Iterator = FluidDomain.begin();
           Iterator != FluidDomain.end();
           ++ Iterator ) {
-			  
+
         // delete all fluid cells
         delete (*Iterator);
-		
+
     }
-	
+
     // delete flields
     free( collideField );
     free( streamField );

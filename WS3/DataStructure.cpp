@@ -41,30 +41,109 @@ inline void MovingWall::treatBoundary( double * Field ) {
 
 /********************FreeSlip************************************/
 inline void FreeSlip::treatBoundary( double * Field ) {
-	
+
+	unsigned  Reflected_Vel_Component[5] = { 0 };
+	unsigned Source_Vel_Component[5] = { 0 };
+
 	if(m_VelocityComponent == 2) {
-		unsigned int Reflected_Vel_Component[5] = { 16, 18, 14, 17, 15 };
-		unsigned int Source_Vel_Component[5]    = { 2, 4, 0, 3, 1 };
-	}	
+
+		Reflected_Vel_Component[ 0 ] = 16;
+		Reflected_Vel_Component[ 1 ] = 18;
+		Reflected_Vel_Component[ 2 ] = 14;
+		Reflected_Vel_Component[ 3 ] = 17;
+		Reflected_Vel_Component[ 4 ] = 15;
+
+
+		Source_Vel_Component[ 0 ] = 2;
+		Source_Vel_Component[ 1 ] = 4;
+		Source_Vel_Component[ 2 ] = 0;
+		Source_Vel_Component[ 3 ] = 3;
+		Source_Vel_Component[ 4 ] = 1;
+
+	}
+
 	else if(m_VelocityComponent == 6) {
-		unsigned int Reflected_Vel_Component[5] = { 12, 18, 4, 13, 11 };
-		unsigned int Source_Vel_Component[5]    = { 6, 14, 0, 7, 5 };
+
+		Reflected_Vel_Component[ 0 ] = 12;
+		Reflected_Vel_Component[ 1 ] = 18;
+		Reflected_Vel_Component[ 2 ] = 4;
+		Reflected_Vel_Component[ 3 ] = 13;
+		Reflected_Vel_Component[ 4 ] = 11;
+
+
+		Source_Vel_Component[ 0 ] = 6;
+		Source_Vel_Component[ 1 ] = 14;
+		Source_Vel_Component[ 2 ] = 0;
+		Source_Vel_Component[ 3 ] = 7;
+		Source_Vel_Component[ 4 ] = 5;
+
 	}
+
 	else if(m_VelocityComponent == 8) {
-		unsigned int Reflected_Vel_Component[5] = { 10, 13, 7, 17, 3 };
-		unsigned int Source_Vel_Component[5]    = { 8, 11, 5, 15, 1 };
+
+		Reflected_Vel_Component[ 0 ] = 10;
+		Reflected_Vel_Component[ 1 ] = 13;
+		Reflected_Vel_Component[ 2 ] = 7;
+		Reflected_Vel_Component[ 3 ] = 17;
+		Reflected_Vel_Component[ 4 ] = 3;
+
+
+		Source_Vel_Component[ 0 ] = 8;
+		Source_Vel_Component[ 1 ] = 11;
+		Source_Vel_Component[ 2 ] = 5;
+		Source_Vel_Component[ 3 ] = 15;
+		Source_Vel_Component[ 4 ] = 1;
+
 	}
+
 	else if(m_VelocityComponent == 10) {
-		unsigned int Reflected_Vel_Component[5] = { 8, 11, 5, 15, 1 };
-		unsigned int Source_Vel_Component[5]    = { 10, 13, 7, 17, 3 };
+
+		Reflected_Vel_Component[ 0 ] = 8;
+		Reflected_Vel_Component[ 1 ] = 11;
+		Reflected_Vel_Component[ 2 ] = 5;
+		Reflected_Vel_Component[ 3 ] = 15;
+		Reflected_Vel_Component[ 4 ] = 1;
+
+
+		Source_Vel_Component[ 0 ] = 10;
+		Source_Vel_Component[ 1 ] = 13;
+		Source_Vel_Component[ 2 ] = 7;
+		Source_Vel_Component[ 3 ] = 17;
+		Source_Vel_Component[ 4 ] = 3;
+
 	}
+
 	else if(m_VelocityComponent == 12) {
-		unsigned int Reflected_Vel_Component[5] = { 6, 14, 0, 7, 5 };
-		unsigned int Source_Vel_Component[5]    = { 12, 18, 4, 13, 11 };
+
+		Reflected_Vel_Component[ 0 ] = 6;
+		Reflected_Vel_Component[ 1 ] = 0;
+		Reflected_Vel_Component[ 2 ] = 14;
+		Reflected_Vel_Component[ 3 ] = 7;
+		Reflected_Vel_Component[ 4 ] = 5;
+
+
+		Source_Vel_Component[ 0 ] = 12;
+		Source_Vel_Component[ 1 ] = 4;
+		Source_Vel_Component[ 2 ] = 18;
+		Source_Vel_Component[ 3 ] = 13;
+		Source_Vel_Component[ 4 ] = 11;
+
 	}
+
 	else {
-		unsigned int Reflected_Vel_Component[5] = { 2, 4, 0, 3, 1 };
-		unsigned int Source_Vel_Component[5]    = { 16, 18, 14, 17, 15 };
+
+		Reflected_Vel_Component[ 0 ] = 2;
+		Reflected_Vel_Component[ 1 ] = 4;
+		Reflected_Vel_Component[ 2 ] = 0;
+		Reflected_Vel_Component[ 3 ] = 3;
+		Reflected_Vel_Component[ 4 ] = 1;
+
+
+		Source_Vel_Component[ 0 ] = 16;
+		Source_Vel_Component[ 1 ] = 18;
+		Source_Vel_Component[ 2 ] = 14;
+		Source_Vel_Component[ 3 ] = 17;
+		Source_Vel_Component[ 4 ] = 15;
 	}
 
 	for(int i=0; i < 5; ++i) {
@@ -76,42 +155,46 @@ inline void FreeSlip::treatBoundary( double * Field ) {
 
 /********************Inflow************************************/
 inline void Inflow::treatBoundary( double * Field ) {
-	
-	computeSingleFeq( &Density_Reference, InletVelocity, Field + m_SelfIndex, m_VelocityComponent );
-	
-	
+
+	computeSingleFeq( &Density_Reference, m_InletVelocity, Field + m_SelfIndex, m_VelocityComponent );
+
+
 }
 
 /********************PressureIn************************************/
 inline void PressureIn::treatBoundary( double * Field ) {
-	
-	double Density = Density_Reference + DeltaDensity;
-	
+
+	double Density = Density_Reference + m_DeltaDensity;
+
+	double VelocityNeighbourFluid[ Dimensions ] = {0.0};
+	double FeqI = 0.0;
+	double FeqInvI = 0.0;
+
 	computeVelocity( Field+m_SourceIndex, &Density, VelocityNeighbourFluid );
 	computeSingleFeq( &Density, VelocityNeighbourFluid, &FeqI, m_VelocityComponent );
 	computeSingleFeq( &Density, VelocityNeighbourFluid, &FeqInvI, 18 - m_VelocityComponent );
-	
-	Field[m_SelfIndex + m_VelocityComponent] = FeqI + FeqInvI 
+
+	Field[m_SelfIndex + m_VelocityComponent] = FeqI + FeqInvI
 											 - Field[m_SourceIndex + 18 - m_VelocityComponent];
-	
+
 }
 
 /********************Outflow************************************/
 inline void Outflow::treatBoundary( double * Field ) {
-	
+
 	double Density = 0.0;
 	double VelocityNeighbourFluid[ Dimensions ] = {0.0};
 	double FeqI = 0.0;
 	double FeqInvI = 0.0;
-	
+
 	computeDensity( Field + m_SourceIndex, &Density );
 	computeVelocity( Field + m_SourceIndex, &Density, VelocityNeighbourFluid );
 	computeSingleFeq( &Density_Reference, VelocityNeighbourFluid, &FeqI, m_VelocityComponent );
 	computeSingleFeq( &Density_Reference, VelocityNeighbourFluid, &FeqInvI, 18 - m_VelocityComponent );
-	
-	Field[m_SelfIndex + m_VelocityComponent] = FeqI + FeqInvI 
+
+	Field[m_SelfIndex + m_VelocityComponent] = FeqI + FeqInvI
 											 - Field[m_SourceIndex + 18 - m_VelocityComponent];
-	
+
 }
 
 

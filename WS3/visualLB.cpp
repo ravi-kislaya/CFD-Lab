@@ -10,10 +10,10 @@
 void writeVtkOutput ( double * const collideField,
                       const char * filename,
                       unsigned int t,
-                      int xlength ) {
-/*
+                      int* Length ) {
+
     int x = 0, y = 0, z = 0;
-    int TotalLength = xlength + 2;
+
 
     char szFilename[80];
     FILE *fp = NULL;
@@ -27,15 +27,15 @@ void writeVtkOutput ( double * const collideField,
         return;
     }
 
-    write_vtkHeader( fp, xlength );
+    write_vtkHeader( fp, Length );
 
-    write_vtkPointCoordinates(fp, xlength);
+    write_vtkPointCoordinates(fp, Length);
 
-    fprintf(fp, "\nPOINT_DATA %i \n", xlength*xlength*xlength);
+    fprintf(fp, "\nPOINT_DATA %i \n", Length[ 0 ] *Length[ 1 ] *Length[ 2 ] );
 
 
     double density = 0.0;
-    double velocity[3] = {0.0};
+    double velocity[ 3 ] = { 0.0 };
 
     //Computing Density
     fprintf(fp, "SCALARS density float 1 \n");
@@ -43,11 +43,11 @@ void writeVtkOutput ( double * const collideField,
 
     // DEBUGGING: chech computeDensity
     double* idx = 0;
-    for ( z = 1; z <= xlength; ++z ) {
-        for ( y = 1; y <= xlength; ++y ) {
-            for ( x = 1; x <= xlength; ++x ) {
+    for ( z = 1; z <= Length[ 2 ]; ++z ) {
+        for ( y = 1; y <= Length[ 1 ]; ++y ) {
+            for ( x = 1; x <= Length[ 0 ]; ++x ) {
 
-                idx = collideField + computeFieldIndex( x, y, z, TotalLength );
+                idx = collideField + computeFieldIndex( x, y, z, Length );
                 computeDensity ( idx, &density );
 
                 fprintf( fp, "%f\n", density );
@@ -59,18 +59,18 @@ void writeVtkOutput ( double * const collideField,
     //Computing Velocity
     fprintf(fp, "\nVECTORS velocity float \n");
     idx = 0;
-    for ( z = 1; z <= xlength; ++z ) {
-        for( y = 1; y <= xlength; ++y ) {
-            for ( x = 1; x <= xlength; ++x ) {
+    for ( z = 1; z <= Length[ 2 ]; ++z ) {
+        for( y = 1; y <= Length[ 1 ]; ++y ) {
+            for ( x = 1; x <= Length[ 0 ]; ++x ) {
 
-                //idx1 = collideField + computeFlagIndex( x, y, z, xlength );
-				idx = collideField + computeFieldIndex( x, y, z, TotalLength );
+                //idx1 = collideField + computeFlagIndex( x, y, z, Length );
+				idx = collideField + computeFieldIndex( x, y, z, Length );
 
                 computeDensity ( idx, &density);
                 computeVelocity ( idx, &density, velocity);
 
 #ifdef DEBUGGING
-				if(density<0.9 || density>1.1)
+				if( ( density < 0.9 ) || ( density > 1.1 ) )
 					printf("x %d y %d z %d  %f   \n", x,y,z, density);
 #endif
 
@@ -79,12 +79,12 @@ void writeVtkOutput ( double * const collideField,
         }
     }
     fclose(fp);
-    */
+
 }
 
 
-void write_vtkHeader( FILE *fp, int xlength ) {
-/*
+void write_vtkHeader( FILE *fp, int* Length ) {
+
     if( fp == NULL )
     {
         char szBuff[80];
@@ -98,21 +98,21 @@ void write_vtkHeader( FILE *fp, int xlength ) {
     fprintf(fp,"ASCII\n");
     fprintf(fp,"\n");
     fprintf(fp,"DATASET STRUCTURED_GRID\n");
-    fprintf(fp,"DIMENSIONS  %i %i %i \n", xlength, xlength, xlength);
-    fprintf(fp,"POINTS %i float\n", xlength * xlength * xlength );
+    fprintf(fp,"DIMENSIONS  %i %i %i \n", Length[ 0 ], Length[ 1 ], Length[ 2 ]);
+    fprintf(fp,"POINTS %i float\n", Length[ 0 ] * Length[ 1 ] * Length[ 2 ] );
     fprintf(fp,"\n");
-    */
+
 }
 
 
-void write_vtkPointCoordinates( FILE *fp, int xlength ){
+void write_vtkPointCoordinates( FILE *fp, int* Length ){
 
-/*
-    for( int z = 1; z <= xlength; ++z )
-        for( int y = 1; y <= xlength; ++y ) {
-            for( int x = 1; x <= xlength; ++x ) {
+
+    for( int z = 1; z <= Length[ 2 ]; ++z )
+        for( int y = 1; y <= Length[ 1 ]; ++y ) {
+            for( int x = 1; x <= Length[ 0 ]; ++x ) {
               fprintf(fp, "%d %d %d\n", x, y, z );
         }
     }
-*/
+
 }

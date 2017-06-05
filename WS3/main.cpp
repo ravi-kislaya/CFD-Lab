@@ -62,7 +62,7 @@ int main( int argc, char *argv[] ){
   // Allocate all fields
   const char* INPUT_FILE_NAME = argv[1];
   const char* OUTPUT_FILE_NAME = "./Frames/Cube3D";
-  int xlength[ 3 ] = { 10, 10, 10 }; //TODO: change this to array
+  int Length[ 3 ] = { 10, 10, 10 }; //TODO: change this to array
   double tau = 0.0;
   double wallVelocity[ 3 ] = { 0.0, 0.0, 0.0 };
   int TimeSteps = 0;
@@ -72,18 +72,21 @@ int main( int argc, char *argv[] ){
   double DeltaDensity = 0.0; //TODO: Declare this in read parameter as variables
 
 
-//  read_parameters( INPUT_FILE_NAME,         /* the name of the data file */
-//                   &xlength,                /* number of cells along x direction */
-//                   &tau,                    /* relaxation time */
-//                   &wallVelocity[ 0 ],      /* lid velocity x-direction */
-//                   &wallVelocity[ 1 ],      /* lid velocity y-direction */
-//                   &wallVelocity[ 2 ],      /* lid velocity z-direction */
-//                   &TimeSteps,              /* number of simulation time steps */
-//                  &TimeStepsPerPlotting ); /* number of visualization time steps */
+
+    read_parameters( INPUT_FILE_NAME,           /* the name of the data file */
+                       Length,                 /* number of cells along x direction */
+                       &tau,                    /* relaxation time */
+                       wallVelocity,            /* lid velocity along all direction*/
+                       InletVelocity,           /* Inlet velocity along all direction */
+                       &DeltaDensity,           /* density difference */
+                       &TimeSteps,              /* number of simulation time steps */
+                       &TimeStepsPerPlotting ); /* number of visualization time steps */
 
 
   // initialize all variables and fields
-  int CellNumber = (xlength[ 0 ] + 2) * (xlength[ 1 ] + 2) * (xlength[ 2 ] + 2);
+  int CellNumber = ( Length[ 0 ] + 2 )
+                 * ( Length[ 1 ] + 2 )
+                 * ( Length[ 2 ] + 2 );
 
   double *collideField = ( double* )calloc( Vel_DOF * CellNumber, sizeof( double ) );
   double *streamField = ( double* )calloc( Vel_DOF * CellNumber, sizeof( double ) );
@@ -95,7 +98,7 @@ int main( int argc, char *argv[] ){
   initialiseFields( collideField,
                     streamField,
                     flagField,
-                    xlength );
+                    Length );
 */
 
   // allcocate the list of boundary layer cells
@@ -109,7 +112,7 @@ int main( int argc, char *argv[] ){
   scanBoundary( BoundaryList,
 				FluidDomain,
                 flagField,
-                xlength,
+                Length,
                 wallVelocity,
 				InletVelocity,
 				DeltaDensity );
@@ -150,10 +153,10 @@ int main( int argc, char *argv[] ){
 
         if ( ( Step % TimeStepsPerPlotting ) == 0 ) {
 
-            /*writeVtkOutput( collideField,
+            writeVtkOutput( collideField,
                             OUTPUT_FILE_NAME,
                             Step,
-                            xlength );*/
+                            Length );
         }
 #endif
 
@@ -172,7 +175,7 @@ int main( int argc, char *argv[] ){
    // display MLUPS number that stands for Mega Lattice Updates Per Second
    printf( "Computational time: %4.6f sec\n",  ConsumedTime );
    printf( "MLUPS: %4.6f\n", MLUPS );
-   printf( "Mesh size: %d x %d x %d\n\n",  xlength, xlength, xlength );
+   printf( "Mesh size: %d x %d x %d\n\n",  Length[ 0 ], Length[ 1 ], Length[ 2 ] );
 
 
     // delete list of obstacles

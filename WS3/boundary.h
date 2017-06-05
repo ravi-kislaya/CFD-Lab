@@ -8,7 +8,7 @@
 void scanBoundary( std::list<BoundaryFluid*>& ObstacleList,
 					std::list<Fluid*>& FluidDomain,
                     int* flagField,
-                    int* xlength,
+                    int* Length,
                     double* wallVelocity,
 					double* InletVel,
 					double DeltaDensity );

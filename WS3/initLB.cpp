@@ -7,7 +7,7 @@
 void initialiseFields( double *collideField,
 					   double *streamField,
 					   int *flagField,
-					   int *xlength ) {
+					   int *Length ) {
 
 
 	//Variable declaration
@@ -16,11 +16,11 @@ void initialiseFields( double *collideField,
 
 
    //Initialization of collideField
-	for( int z = 0 ; z <= xlength[2] + 1; ++z )  {
-		for( int y = 0 ; y <= xlength[2] + 1 ; ++y )  {
-			for( int x = 0 ; x <= xlength[0] + 1 ; ++x ) {
+	for( int z = 0 ; z <= Length[2] + 1; ++z )  {
+		for( int y = 0 ; y <= Length[2] + 1 ; ++y )  {
+			for( int x = 0 ; x <= Length[0] + 1 ; ++x ) {
 
-				Current_Filed_Cell = computeFieldIndex( x, y, z, xlength );
+				Current_Filed_Cell = computeFieldIndex( x, y, z, Length );
 
 		        for( int i = 0 ; i < Vel_DOF ; ++i ) {
 					//Initialization of collideField
@@ -32,13 +32,13 @@ void initialiseFields( double *collideField,
 
 
 				//Initialization of flagField
-				Current_Flag_Cell = computeFlagIndex( x, y, z, xlength );
+				Current_Flag_Cell = computeFlagIndex( x, y, z, Length );
 
-				if( z == ( xlength[0] + 1 ) ) {
+				if( z == ( Length[0] + 1 ) ) {
 					flagField [ Current_Flag_Cell ] = MOVING_WALL;
 				}
 				else if ( ( x == 0 ) || ( y == 0 ) || ( z == 0 )
-					   || ( x == ( xlength[0] + 1 ) ) || y == ( ( xlength[0] + 1 ) ) ) {
+					   || ( x == ( Length[0] + 1 ) ) || y == ( ( Length[0] + 1 ) ) ) {
 
 					flagField [ Current_Flag_Cell ] = WALL;
 				}

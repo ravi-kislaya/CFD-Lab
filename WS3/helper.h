@@ -14,16 +14,16 @@
 /* ----------------------------------------------------------------------- */
 /*                      user define functions                              */
 /* ----------------------------------------------------------------------- */
-inline int computeFlagIndex( int x, int y, int z, int * xlength ) {
-	int TotalXLength = xlength[0] + 2;
-	int TotalYLength = xlength[1] + 2;
-    return ( z * TotalXLength * TotalYLength ) + ( y * TotalXLength ) + x;
+inline int computeFlagIndex( int x, int y, int z, int * Length ) {
+	int TotalYLengthX = Length[ 0 ] + 2;
+	int TotalYLengthY = Length[ 1 ] + 2;
+    return ( z * TotalYLengthX * TotalYLengthY ) + ( y * TotalYLengthX ) + x;
 }
 // function to calculate lexicographical co-ordinates of the lattices in the field
-inline int computeFieldIndex( int x, int y, int z, int * xlength) {
-	int TotalXLength = xlength[0] + 2; 
-	int TotalYLength = xlength[1] + 2;
-    return Vel_DOF * ( ( z * TotalXLength * TotalYLength ) + ( y * TotalXLength ) + x );
+inline int computeFieldIndex( int x, int y, int z, int * Length) {
+	int TotalYLengthX = Length[ 0 ] + 2;
+	int TotalYLengthY = Length[ 1 ] + 2;
+    return Vel_DOF * ( ( z * TotalYLengthX * TotalYLengthY ) + ( y * TotalYLengthX ) + x );
 }
 
 #ifdef PI
@@ -43,14 +43,14 @@ inline int computeFieldIndex( int x, int y, int z, int * xlength) {
 extern clock_t last_timer_reset;
 
 
-int read_parameters( const char* INPUT_FILE_NAME,        /* the name of the data file */
-                     int* xlength,                       /* number of cells along x direction */
-                     double* tau,                        /* relaxation time */
-                     double* U,                          /* lid velocity x-direction */
-                     double* V,                          /* lid velocity y-direction */
-                     double* W,                          /* lid velocity z-direction */
-                     int* timesteps,                     /* number of simulation time steps */
-                     int* timestepsPerPlotting );        /* number of visualization time steps */
+int read_parameters( const char *INPUT_FILE_NAME,        /* the name of the data file */
+                     int* Length,                       /* number of cells along x direction */
+                     double *tau,                        /* relaxation time */
+                     double *WallVelocity,               /* lid velocity along all direction*/
+                     double *InletVelocity,              /* Inlet velocity along all direction */
+                     double *DeltaDensity,               /* density difference */
+                     int *timesteps,                     /* number of simulation time steps */
+                     int *timestepsPerPlotting );        /* number of visualization time steps */
 
 
 
@@ -175,7 +175,7 @@ void read_double( const char* szFilename, const char* szName, double*  Value);
  * the file has the following format
  *
  *    -----------------------------------------
- *    |  xlength          |  float  |  ASCII  |
+ *    |  Length          |  float  |  ASCII  |
  *    ----------------------------------------|
  *    |  ylength          |  float  |  ASCII  |
  *    ----------------------------------------|
@@ -214,9 +214,9 @@ void read_double( const char* szFilename, const char* szName, double*  Value);
  * @param nrh                 last column
  * @param ncl                 first row
  * @param nch                 last row
- * @param xlength             size of the geometry in x-direction
+ * @param Length             size of the geometry in x-direction
  * @param ylength             size of the geometry in y-direction
- * @param xlength             size of the geometry in x-direction
+ * @param Length             size of the geometry in x-direction
  * @param fFirst              0 == append, else overwrite
  */
 void write_matrix(
@@ -226,7 +226,7 @@ void write_matrix(
   int nrh,
   int ncl,
   int nch,
-  double xlength,
+  double Length,
   double ylength,
   int fFirst
 );
@@ -540,12 +540,12 @@ int **read_pgm(const char *filename);
  *  DUMP_TIMER()      dump time that has passed since the last
  *                    RESET_TIMER()
  */
-#define DUMP_MATRIX_TO_FILE( m, nrl, nrh, ncl, nch, xlength, ylength) \
+#define DUMP_MATRIX_TO_FILE( m, nrl, nrh, ncl, nch, Length, ylength) \
         {  \
            static nCount = 0; \
            char szFileName[100];  \
            sprintf( szFileName, "%s__%d__%s.out", __FILE__, __LINE__, #m); \
-           write_matrix( szFileName, m, nrl, nrh, ncl, nch, xlength, ylength, nCount == 0); \
+           write_matrix( szFileName, m, nrl, nrh, ncl, nch, Length, ylength, nCount == 0); \
            ++nCount; \
         }
 

@@ -66,20 +66,29 @@ int min_int( const int n1, const int n2 )
 
 
 int read_parameters( const char *INPUT_FILE_NAME,        /* the name of the data file */
-                     int *xlength,                    /* number of cells along x direction */
+                     int* Length,                       /* number of cells along x direction */
                      double *tau,                        /* relaxation time */
-                     double *U,                          /* lid velocity x-direction */
-                     double *V,                          /* lid velocity y-direction */
-                     double *W,                          /* lid velocity z-direction */
+                     double *WallVelocity,               /* lid velocity along all direction*/
+                     double *InletVelocity,              /* Inlet velocity along all direction */
+                     double *DeltaDensity,               /* density difference */
                      int *timesteps,                     /* number of simulation time steps */
                      int *timestepsPerPlotting ) {       /* number of visualization time steps */
 
-   read_int( INPUT_FILE_NAME, "xlength", xlength );
+   read_int( INPUT_FILE_NAME, "Length", &Length[ 0 ] );
+   read_int( INPUT_FILE_NAME, "ylength", &Length[ 1 ] );
+   read_int( INPUT_FILE_NAME, "zlength", &Length[ 2 ] );
+
    read_double( INPUT_FILE_NAME, "tau", tau );
 
-   read_double( INPUT_FILE_NAME, "U", U );
-   read_double( INPUT_FILE_NAME, "V", V );
-   read_double( INPUT_FILE_NAME, "W", W );
+   read_double( INPUT_FILE_NAME, "U", &WallVelocity[ 0 ] );
+   read_double( INPUT_FILE_NAME, "V", &WallVelocity[ 1 ] );
+   read_double( INPUT_FILE_NAME, "W", &WallVelocity[ 2 ] );
+
+   read_double( INPUT_FILE_NAME, "Uin", &InletVelocity[ 0 ] );
+   read_double( INPUT_FILE_NAME, "Vin", &InletVelocity[ 1 ] );
+   read_double( INPUT_FILE_NAME, "Win", &InletVelocity[ 2 ] );
+
+   read_double( INPUT_FILE_NAME, "DeltaDensity", DeltaDensity );
 
    read_int( INPUT_FILE_NAME, "timesteps", timesteps );
    read_int( INPUT_FILE_NAME, "timestepsPerPlotting", timestepsPerPlotting );
@@ -268,7 +277,7 @@ void write_matrix( const char* szFileName,     /* filename */
                    int nrh,                    /* last column */
                    int ncl,                    /* first row */
                    int nch,                    /* last row */
-                 double xlength,               /* size of the geometry in */
+                 double Length,               /* size of the geometry in */
                                                /* x-direction */
                  double ylength,               /* size of the geometry in */
                                                /* y-direction  */
@@ -290,7 +299,7 @@ void write_matrix( const char* szFileName,     /* filename */
            ERROR( szBuff );
        }
 
-/*       fprintf( fh,"%f\n%f\n%d\n%d\n%d\n%d\n", xlength, ylength, nrl, nrh, ncl, nch ); */
+/*       fprintf( fh,"%f\n%f\n%d\n%d\n%d\n%d\n", Length, ylength, nrl, nrh, ncl, nch ); */
    }
    else
    {

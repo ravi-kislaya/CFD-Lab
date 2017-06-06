@@ -10,9 +10,9 @@
 void writeVtkOutput ( double * const collideField,
                       const char * filename,
                       unsigned int t,
-                      int* Length ) {
+                      unsigned* Length ) {
 
-    int x = 0, y = 0, z = 0;
+    unsigned x = 0, y = 0, z = 0;
 
 
     char szFilename[80];
@@ -83,7 +83,7 @@ void writeVtkOutput ( double * const collideField,
 }
 
 
-void write_vtkHeader( FILE *fp, int* Length ) {
+void write_vtkHeader( FILE *fp, unsigned* Length ) {
 
     if( fp == NULL )
     {
@@ -105,12 +105,12 @@ void write_vtkHeader( FILE *fp, int* Length ) {
 }
 
 
-void write_vtkPointCoordinates( FILE *fp, int* Length ){
+void write_vtkPointCoordinates( FILE *fp, unsigned* Length ){
 
 
-    for( int z = 1; z <= Length[ 2 ]; ++z )
-        for( int y = 1; y <= Length[ 1 ]; ++y ) {
-            for( int x = 1; x <= Length[ 0 ]; ++x ) {
+    for( unsigned z = 1; z <= Length[ 2 ]; ++z )
+        for( unsigned y = 1; y <= Length[ 1 ]; ++y ) {
+            for( unsigned x = 1; x <= Length[ 0 ]; ++x ) {
               fprintf(fp, "%d %d %d\n", x, y, z );
         }
     }

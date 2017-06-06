@@ -14,16 +14,27 @@
 /* ----------------------------------------------------------------------- */
 /*                      user define functions                              */
 /* ----------------------------------------------------------------------- */
-inline int computeFlagIndex( int x, int y, int z, int * Length ) {
-	int TotalYLengthX = Length[ 0 ] + 2;
-	int TotalYLengthY = Length[ 1 ] + 2;
-    return ( z * TotalYLengthX * TotalYLengthY ) + ( y * TotalYLengthX ) + x;
+inline unsigned computeFlagIndex( unsigned x,
+							 	  unsigned y,
+							 	  unsigned z,
+							 	  unsigned * Length ) {
+
+	int TotalLengthX = Length[ 0 ] + 2;
+	int TotalLengthY = Length[ 1 ] + 2;
+
+    return ( z * TotalLengthX * TotalLengthY ) + ( y * TotalLengthX ) + x;
 }
+
 // function to calculate lexicographical co-ordinates of the lattices in the field
-inline int computeFieldIndex( int x, int y, int z, int * Length) {
-	int TotalYLengthX = Length[ 0 ] + 2;
-	int TotalYLengthY = Length[ 1 ] + 2;
-    return Vel_DOF * ( ( z * TotalYLengthX * TotalYLengthY ) + ( y * TotalYLengthX ) + x );
+inline unsigned computeFieldIndex( unsigned x,
+							  	   unsigned y,
+							  	   unsigned z,
+							  	   unsigned * Length ) {
+
+	int TotalLengthX = Length[ 0 ] + 2;
+	int TotalLengthY = Length[ 1 ] + 2;
+
+    return Vel_DOF * ( ( z * TotalLengthX * TotalLengthY ) + ( y * TotalLengthX ) + x );
 }
 
 #ifdef PI
@@ -44,13 +55,13 @@ extern clock_t last_timer_reset;
 
 
 int read_parameters( const char *INPUT_FILE_NAME,        /* the name of the data file */
-                     int* Length,                       /* number of cells along x direction */
+                     unsigned* Length,                       /* number of cells along x direction */
                      double *tau,                        /* relaxation time */
                      double *WallVelocity,               /* lid velocity along all direction*/
                      double *InletVelocity,              /* Inlet velocity along all direction */
                      double *DeltaDensity,               /* density difference */
-                     int *timesteps,                     /* number of simulation time steps */
-                     int *timestepsPerPlotting );        /* number of visualization time steps */
+                     unsigned *timesteps,                     /* number of simulation time steps */
+                     unsigned *timestepsPerPlotting );        /* number of visualization time steps */
 
 
 
@@ -71,6 +82,11 @@ void read_string( const char* szFileName,
 void read_int( const char* szFileName,
                const char* szVarName,
                int* pVariable);
+
+
+void read_unsigned( const char* szFileName,
+			   		const char* szVarName,
+			   		unsigned* pVariable);
 
 
 void read_double( const char* szFileName,

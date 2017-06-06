@@ -1,39 +1,53 @@
-==16028== Memcheck, a memory error detector
-==16028== Copyright (C) 2002-2015, and GNU GPL'd, by Julian Seward et al.
-==16028== Using Valgrind-3.11.0 and LibVEX; rerun with -h for copyright info
-==16028== Command: ./lbsim cube.data
-==16028== 
-==16028== 
-==16028== Process terminating with default action of signal 2 (SIGINT)
-==16028==    at 0x54C86DE: __write_nocancel (syscall-template.S:84)
-==16028==    by 0x544ABFE: _IO_file_write@@GLIBC_2.2.5 (fileops.c:1263)
-==16028==    by 0x544C408: new_do_write (fileops.c:518)
-==16028==    by 0x544C408: _IO_do_write@@GLIBC_2.2.5 (fileops.c:494)
-==16028==    by 0x544C91A: _IO_file_overflow@@GLIBC_2.2.5 (fileops.c:854)
-==16028==    by 0x5424666: __printf_fp_l (printf_fp.c:1236)
-==16028==    by 0x54210B8: vfprintf (vfprintf.c:1631)
-==16028==    by 0x54E7FD8: __fprintf_chk (fprintf_chk.c:35)
-==16028==    by 0x401DB5: writeVtkOutput(double*, char const*, unsigned int, int) (in /home/ravil/Documents/university/CFD/CFD-Lab/WS2/lbsim)
-==16028==    by 0x40124F: main (in /home/ravil/Documents/university/CFD/CFD-Lab/WS2/lbsim)
-File: cube.data		xlength        = 50
-File: cube.data		tau            = 1.800000
-File: cube.data		U              = 0.050000
-File: cube.data		V              = 0.000000
-File: cube.data		W              = 0.000000
-File: cube.data		timesteps      = 200
-File: cube.data		timestepsPerPlotting= 10
-==16028== 
-==16028== HEAP SUMMARY:
-==16028==     in use at exit: 48,354,320 bytes in 177,622 blocks
-==16028==   total heap usage: 288,262 allocs, 110,640 frees, 52,008,360 bytes allocated
-==16028== 
-==16028== LEAK SUMMARY:
-==16028==    definitely lost: 0 bytes in 0 blocks
-==16028==    indirectly lost: 0 bytes in 0 blocks
-==16028==      possibly lost: 0 bytes in 0 blocks
-==16028==    still reachable: 48,354,320 bytes in 177,622 blocks
-==16028==         suppressed: 0 bytes in 0 blocks
-==16028== Rerun with --leak-check=full to see details of leaked memory
-==16028== 
-==16028== For counts of detected and suppressed errors, rerun with: -v
-==16028== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==23656== Memcheck, a memory error detector
+==23656== Copyright (C) 2002-2015, and GNU GPL'd, by Julian Seward et al.
+==23656== Using Valgrind-3.11.0 and LibVEX; rerun with -h for copyright info
+==23656== Command: ./lbsim cube.data
+==23656== 
+==23656== Invalid write of size 4
+==23656==    at 0x40133A: initialiseFields(double*, double*, int*, unsigned int*) (initLB.cpp:20)
+==23656==    by 0x404323: main (main.cpp:101)
+==23656==  Address 0x5afa220 is 0 bytes after a block of size 212,992 alloc'd
+==23656==    at 0x4C2FB55: calloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==23656==    by 0x4042FB: main (main.cpp:93)
+==23656== 
+
+valgrind: m_mallocfree.c:303 (get_bszB_as_is): Assertion 'bszB_lo == bszB_hi' failed.
+valgrind: Heap block lo/hi size mismatch: lo = 213056, hi = 0.
+This is probably caused by your program erroneously writing past the
+end of a heap block and corrupting heap metadata.  If you fix any
+invalid writes reported by Memcheck, this assertion failure will
+probably go away.  Please try that before reporting this as a bug.
+
+
+host stacktrace:
+==23656==    at 0x38083F48: ??? (in /usr/lib/valgrind/memcheck-amd64-linux)
+==23656==    by 0x38084064: ??? (in /usr/lib/valgrind/memcheck-amd64-linux)
+==23656==    by 0x380841F1: ??? (in /usr/lib/valgrind/memcheck-amd64-linux)
+==23656==    by 0x38091A9C: ??? (in /usr/lib/valgrind/memcheck-amd64-linux)
+==23656==    by 0x3807D673: ??? (in /usr/lib/valgrind/memcheck-amd64-linux)
+==23656==    by 0x3807BF03: ??? (in /usr/lib/valgrind/memcheck-amd64-linux)
+==23656==    by 0x380800DA: ??? (in /usr/lib/valgrind/memcheck-amd64-linux)
+==23656==    by 0x3807B49A: ??? (in /usr/lib/valgrind/memcheck-amd64-linux)
+==23656==    by 0x802DDD245: ???
+==23656==    by 0x802CA9F2F: ???
+
+sched status:
+  running_tid=1
+
+Thread 1: status = VgTs_Runnable (lwpid 23656)
+==23656==    at 0x4013B4: initialiseFields(double*, double*, int*, unsigned int*) (initLB.cpp:44)
+==23656==    by 0x404323: main (main.cpp:101)
+
+
+Note: see also the FAQ in the source distribution.
+It contains workarounds to several common problems.
+In particular, if Valgrind aborted or crashed after
+identifying problems in your program, there's a good chance
+that fixing those problems will prevent Valgrind aborting or
+crashing, especially if it happened in m_mallocfree.c.
+
+If that doesn't help, please report this bug to: www.valgrind.org
+
+In the bug report, send all the above text, the valgrind
+version, and what OS and version you are using.  Thanks.
+

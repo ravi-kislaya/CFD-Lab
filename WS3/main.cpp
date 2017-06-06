@@ -62,11 +62,11 @@ int main( int argc, char *argv[] ){
   // Allocate all fields
   const char* INPUT_FILE_NAME = argv[1];
   const char* OUTPUT_FILE_NAME = "./Frames/Cube3D";
-  int Length[ 3 ] = { 10, 10, 10 }; //TODO: change this to array
+  unsigned Length[ 3 ] = { 10, 10, 10 }; //TODO: change this to array
   double tau = 0.0;
   double wallVelocity[ 3 ] = { 0.0, 0.0, 0.0 };
-  int TimeSteps = 0;
-  int TimeStepsPerPlotting = 0;
+  unsigned TimeSteps = 0;
+  unsigned TimeStepsPerPlotting = 0;
 
   double InletVelocity[ 3 ] = { 0.0, 0.0, 0.0 }; //TODO: Delcare this in read parameter as array
   double DeltaDensity = 0.0; //TODO: Declare this in read parameter as variables
@@ -94,12 +94,12 @@ int main( int argc, char *argv[] ){
 
 
   // initialize all fields
-  /*
+
   initialiseFields( collideField,
                     streamField,
                     flagField,
                     Length );
-*/
+
 
   // allcocate the list of boundary layer cells
   std::list<BoundaryFluid*> BoundaryList;
@@ -107,7 +107,7 @@ int main( int argc, char *argv[] ){
   // allocate a list for all fluid
   std::list<Fluid*> FluidDomain;
 
-
+/*
   // prepare all boundaries ( stationary and moving walls )
   scanBoundary( BoundaryList,
 				FluidDomain,
@@ -116,16 +116,16 @@ int main( int argc, char *argv[] ){
                 wallVelocity,
 				InletVelocity,
 				DeltaDensity );
-
+*/
 
    clock_t Begin = clock();
 
 
     // Perform LB method
     double* Swap = NULL;
-    for ( int Step = 0; Step < TimeSteps; ++Step ) {
+    for ( unsigned Step = 0; Step < TimeSteps; ++Step ) {
 
-
+/*
         doStreaming( collideField,
                      streamField,
                      FluidDomain );
@@ -159,7 +159,7 @@ int main( int argc, char *argv[] ){
                             Length );
         }
 #endif
-
+*/
 
 
     }

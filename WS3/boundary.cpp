@@ -11,7 +11,7 @@
 void scanBoundary(  std::list<BoundaryFluid*>& ObstacleList,
 					std::list<Fluid*>& FluidDomain,
                     int* flagField,
-                    int* xlength,
+                    unsigned* Length,
                     double* wallVelocity,
 					double* InletVel,
 					double DeltaDensity ) {
@@ -24,12 +24,12 @@ void scanBoundary(  std::list<BoundaryFluid*>& ObstacleList,
 	double Dot_Product = 0.0;
 	int FreeSlipVelocity[6] = { 2, 6, 8, 10, 12, 16 };
 
-    for( int z = 0 ; z <= xlength[2]+1; ++z )  {
-        for( int y = 0 ; y <= xlength[1]+1; ++y )  {
-            for( int x = 0 ; x <= xlength[0]+1; ++x ) {
+    for( unsigned z = 0 ; z <= Length[2]+1; ++z )  {
+        for( unsigned y = 0 ; y <= Length[1]+1; ++y )  {
+            for( unsigned x = 0 ; x <= Length[0]+1; ++x ) {
 
 				// Compute the current cell
-                Current_Cell_Flag = computeFlagIndex( x, y, z, xlength );
+                Current_Cell_Flag = computeFlagIndex( x, y, z, Length );
 				Current_Cell_Field = Vel_DOF * Current_Cell_Flag;
 
 				if( flagField[Current_Cell_Flag] == FLUID ) {
@@ -44,7 +44,7 @@ void scanBoundary(  std::list<BoundaryFluid*>& ObstacleList,
 						Neighbour_Cell_Flag = computeFlagIndex( x + LATTICEVELOCITIES[ i ][ 0 ],
 																y + LATTICEVELOCITIES[ i ][ 1 ],
 																z + LATTICEVELOCITIES[ i ][ 2 ],
-																xlength );
+																Length );
 
 						Neighbour[i] = Vel_DOF * Neighbour_Cell_Flag;
 
@@ -131,7 +131,7 @@ void scanBoundary(  std::list<BoundaryFluid*>& ObstacleList,
 						Neighbour_Cell_Flag = computeFlagIndex( x + LATTICEVELOCITIES[ FreeSlipVelocity[i] ][ 0 ],
 																y + LATTICEVELOCITIES[ FreeSlipVelocity[i] ][ 1 ],
 																z + LATTICEVELOCITIES[ FreeSlipVelocity[i] ][ 2 ],
-																xlength );
+																Length );
 
 						if( flagField[ Neighbour_Cell_Flag ] == FREE_SLIP ) {
 							Dot_Product = 0.0;

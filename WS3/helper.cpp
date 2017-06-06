@@ -66,17 +66,17 @@ int min_int( const int n1, const int n2 )
 
 
 int read_parameters( const char *INPUT_FILE_NAME,        /* the name of the data file */
-                     int* Length,                       /* number of cells along x direction */
+                     unsigned* Length,                   /* number of cells along x direction */
                      double *tau,                        /* relaxation time */
                      double *WallVelocity,               /* lid velocity along all direction*/
                      double *InletVelocity,              /* Inlet velocity along all direction */
                      double *DeltaDensity,               /* density difference */
-                     int *timesteps,                     /* number of simulation time steps */
-                     int *timestepsPerPlotting ) {       /* number of visualization time steps */
+                     unsigned *timesteps,                     /* number of simulation time steps */
+                     unsigned *timestepsPerPlotting ) {       /* number of visualization time steps */
 
-   read_int( INPUT_FILE_NAME, "Length", &Length[ 0 ] );
-   read_int( INPUT_FILE_NAME, "ylength", &Length[ 1 ] );
-   read_int( INPUT_FILE_NAME, "zlength", &Length[ 2 ] );
+   read_unsigned( INPUT_FILE_NAME, "xlength", &Length[ 0 ] );
+   read_unsigned( INPUT_FILE_NAME, "ylength", &Length[ 1 ] );
+   read_unsigned( INPUT_FILE_NAME, "zlength", &Length[ 2 ] );
 
    read_double( INPUT_FILE_NAME, "tau", tau );
 
@@ -90,8 +90,8 @@ int read_parameters( const char *INPUT_FILE_NAME,        /* the name of the data
 
    read_double( INPUT_FILE_NAME, "DeltaDensity", DeltaDensity );
 
-   read_int( INPUT_FILE_NAME, "timesteps", timesteps );
-   read_int( INPUT_FILE_NAME, "timestepsPerPlotting", timestepsPerPlotting );
+   read_unsigned( INPUT_FILE_NAME, "timesteps", timesteps );
+   read_unsigned( INPUT_FILE_NAME, "timestepsPerPlotting", timestepsPerPlotting );
 
    return 1;
 }
@@ -243,6 +243,30 @@ void read_int( const char* szFileName, const char* szVarName, int* pVariable)
                                       &("               "[min_int( (int)strlen(szVarName), 15)]),
                                       *pVariable );
 }
+
+
+void read_unsigned( const char* szFileName, const char* szVarName, unsigned* pVariable)
+{
+    char* szValue = NULL;       /* string containing the read variable value */
+
+    if( szVarName  == 0 )  ERROR("null pointer given as varable name" );
+    if( szFileName == 0 )  ERROR("null pointer given as filename" );
+    if( pVariable  == 0 )  ERROR("null pointer given as variable" );
+
+    if( szVarName[0] == '*' )
+        szValue = find_string( szFileName, szVarName +1 );
+    else
+        szValue = find_string( szFileName, szVarName );
+
+    if( sscanf( szValue, "%u", pVariable) == 0)
+        READ_ERROR("wrong format", szVarName, szFileName, 0);
+
+    printf( "File: %s\t\t%s%s= %u\n", szFileName,
+                                      szVarName,
+                                      &("               "[min_int( (unsigned)strlen(szVarName), 15)]),
+                                      *pVariable );
+}
+
 
 void read_double( const char* szFileName, const char* szVarName, double* pVariable)
 {

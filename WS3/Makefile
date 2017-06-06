@@ -10,9 +10,9 @@ CFLAGS= -pedantic -Wall -g -fno-omit-frame-pointer #-Werror
 #CFLAGS= -pedantic -Wall -O2 -funroll-loops #-Werror
 
 
-MODE=-DDEBUGGING
+#MODE=-DDEBUGGING
 #MODE=-DRELEASE
-#MODE=-DMLUPS_FLAG
+MODE=-DMLUPS_FLAG
 # Linker flags
 # ------------
 LDFLAGS=

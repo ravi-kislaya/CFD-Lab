@@ -95,19 +95,19 @@ int main( int argc, char *argv[] ){
 
 
   // initialize all fields
-/*
+
   initialiseFields( collideField,
                     streamField,
                     flagField,
                     IdField,
                     Length );
-*/
 
-initialiseFields_LidDtivenCavity( collideField,
+
+/*initialiseFields_LidDtivenCavity( collideField,
                                   streamField,
                                   flagField,
                                   IdField,
-                                  Length );
+                                  Length );*/
 
   // allcocate the list of boundary layer cells
   std::list<BoundaryFluid*> BoundaryList;

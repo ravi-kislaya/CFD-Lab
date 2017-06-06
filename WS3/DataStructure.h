@@ -151,24 +151,40 @@ class BoundaryFluid {
         std::list<Obstacle*> ObstacleList;
 
 };
+
+
 class Fluid {
 	public:
-		Fluid(){
-			for(int i=0; i < Vel_DOF; ++i) {
+		Fluid(  ) {
+			for( int i = 0; i < Vel_DOF; ++i ) {
 				m_Index[i] = 0;
 			}
 		}
-		Fluid( int * Index ) {
-			for(int i=0; i < Vel_DOF; ++i) {
-				m_Index[i] = Index[i];
+
+		Fluid( int ID, int x, int y, int z, int* Index ) :  m_ID( ID ),
+                                                            m_XCoord( x ),
+                                                            m_YCoord( y ),
+                                                            m_ZCoord( z ) {
+            // Assign all neighbours
+			for( int i = 0; i < Vel_DOF; ++i ) {
+				m_Index[ i ] = Index[ i ];
 			}
 		}
-		int getIndex(int Index) {
-			return m_Index[Index];
-		}
+
+        int getID() { return m_ID; }
+        int getXCoord() { return m_XCoord; }
+        int getYCoord() { return m_YCoord; }
+        int getZCoord() { return m_ZCoord; }
+        int getIndex( int Index ) { return m_Index[ Index ]; }
+        int getIdIndex( int Index ) { return (int)( m_Index[ Index ] / Vel_DOF ); }
 
 	private:
-		int m_Index[Vel_DOF];
+        int m_ID;
+        int m_XCoord;
+        int m_YCoord;
+        int m_ZCoord;
+        int m_Index[ Vel_DOF ];
+
 
 };
 

@@ -1,3 +1,6 @@
+#include "DataStructure.h"
+#include <list>
+
 #ifndef _VISUALLB_H_
 #define _VISUALLB_H_
 
@@ -6,12 +9,24 @@
  *  from visual.c (VTK output for Navier-Stokes solver) and modify it for 3D datasets.
  */
 
-void write_vtkHeader( FILE* fp, unsigned* Length );
+void write_vtkHeader( FILE* fp,
+                      std::list<Fluid*>& FluidDomain,
+                      unsigned* Length );
 
-void write_vtkPointCoordinates( FILE* fp, unsigned* Length );
+void write_vtkPointCoordinates( FILE* fp,
+                                std::list<Fluid*>& FluidDomain,
+                                unsigned* Length );
 
-void writeVtkOutput( double * const collideField,
-                     const char * filename,
+void write_vtkPointElements( FILE* fp,
+                             std::list<Fluid*>& VTKrepresentation,
+                             int* IdField,
+                             unsigned* Length );
+
+void writeVtkOutput( const char * filename,
+                     double* const collideField,
+                     std::list<Fluid*>& FluidDomain,
+                     std::list<Fluid*>& VTKrepresentation,
+                     int* IdField,
                      unsigned int t,
                      unsigned* Length );
 

@@ -8,6 +8,14 @@
 void initialiseFields( double *collideField,
                        double *streamField,
                        int *flagField,
+                       int *IdField,
                        unsigned* Length );
+
+
+void initialiseFields_LidDtivenCavity( double *collideField,
+                                       double *streamField,
+                                       int *flagField,
+                                       int *IdField,
+                                       unsigned* Length );
 
 #endif

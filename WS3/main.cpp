@@ -91,15 +91,23 @@ int main( int argc, char *argv[] ){
   double *collideField = ( double* )calloc( Vel_DOF * CellNumber, sizeof( double ) );
   double *streamField = ( double* )calloc( Vel_DOF * CellNumber, sizeof( double ) );
   int *flagField = ( int* )calloc( CellNumber, sizeof(int) );
+  int *IdField = ( int* )calloc( CellNumber, sizeof( int ) );
 
 
   // initialize all fields
-
+/*
   initialiseFields( collideField,
                     streamField,
                     flagField,
+                    IdField,
                     Length );
+*/
 
+initialiseFields_LidDtivenCavity( collideField,
+                                  streamField,
+                                  flagField,
+                                  IdField,
+                                  Length );
 
   // allcocate the list of boundary layer cells
   std::list<BoundaryFluid*> BoundaryList;
@@ -107,16 +115,20 @@ int main( int argc, char *argv[] ){
   // allocate a list for all fluid
   std::list<Fluid*> FluidDomain;
 
-/*
+  // allocate a list for VTK represenation
+  std::list<Fluid*> VTKrepresentation;
+
   // prepare all boundaries ( stationary and moving walls )
   scanBoundary( BoundaryList,
 				FluidDomain,
+                VTKrepresentation,
                 flagField,
+                IdField,
                 Length,
                 wallVelocity,
 				InletVelocity,
 				DeltaDensity );
-*/
+
 
    clock_t Begin = clock();
 
@@ -125,7 +137,7 @@ int main( int argc, char *argv[] ){
     double* Swap = NULL;
     for ( unsigned Step = 0; Step < TimeSteps; ++Step ) {
 
-/*
+
         doStreaming( collideField,
                      streamField,
                      FluidDomain );
@@ -153,13 +165,16 @@ int main( int argc, char *argv[] ){
 
         if ( ( Step % TimeStepsPerPlotting ) == 0 ) {
 
-            writeVtkOutput( collideField,
-                            OUTPUT_FILE_NAME,
+            writeVtkOutput( OUTPUT_FILE_NAME,
+                            collideField,
+                            FluidDomain,
+                            VTKrepresentation,
+                            IdField,
                             Step,
                             Length );
         }
 #endif
-*/
+
 
 
     }

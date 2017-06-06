@@ -37,6 +37,10 @@ inline unsigned computeFieldIndex( unsigned x,
     return Vel_DOF * ( ( z * TotalLengthX * TotalLengthY ) + ( y * TotalLengthX ) + x );
 }
 
+inline unsigned convertFieldToFlagIndex( unsigned FieldIndex ) {
+	return ( unsigned ) ( FieldIndex / Vel_DOF );
+}
+
 #ifdef PI
 #undef PI
 #endif

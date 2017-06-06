@@ -1,16 +1,25 @@
+#include <list>
+#include <iostream>
+#include <string>
+#include <stdio.h>
+#include <math.h>
+
 #include "helper.h"
 #include "visualLB.h"
 #include "computeCellValues.h"
-#include <stdio.h>
 #include "LBDefinitions.h"
-#include <math.h>
+#include "DataStructure.h"
+
 
 
 //Writes Density and Velocity from the collision field
-void writeVtkOutput ( double * const collideField,
-                      const char * filename,
-                      unsigned int t,
-                      unsigned* Length ) {
+void writeVtkOutput( const char * filename,
+                     double * const collideField,
+                     std::list<Fluid*>& FluidDomain,
+                     std::list<Fluid*>& VTKrepresentation,
+                     int *IdField,
+                     unsigned int t,
+                     unsigned* Length ) {
 
     unsigned x = 0, y = 0, z = 0;
 
@@ -27,63 +36,85 @@ void writeVtkOutput ( double * const collideField,
         return;
     }
 
-    write_vtkHeader( fp, Length );
+//------------------------------------------------------------------------------
+//                   Write the file header and coordinates
+//------------------------------------------------------------------------------
 
-    write_vtkPointCoordinates(fp, Length);
+    write_vtkHeader( fp, FluidDomain, Length );
 
-    fprintf(fp, "\nPOINT_DATA %i \n", Length[ 0 ] *Length[ 1 ] *Length[ 2 ] );
+    write_vtkPointCoordinates( fp, FluidDomain, Length );
+//------------------------------------------------------------------------------
+//                   Write the file header and coordinates
+//------------------------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+    write_vtkPointElements( fp, VTKrepresentation, IdField, Length );
 
 
-    double density = 0.0;
-    double velocity[ 3 ] = { 0.0 };
 
+////////////////////////////////////////////////////////////////////////////////
+    fprintf(fp, "\nPOINT_DATA %lu \n", FluidDomain.size() );
+
+
+
+//------------------------------------------------------------------------------
+//                        Write density to the file
+//------------------------------------------------------------------------------
     //Computing Density
     fprintf(fp, "SCALARS density float 1 \n");
     fprintf(fp, "LOOKUP_TABLE default \n");
+    double Density = 0.0;
 
     // DEBUGGING: chech computeDensity
-    double* idx = 0;
-    for ( z = 1; z <= Length[ 2 ]; ++z ) {
-        for ( y = 1; y <= Length[ 1 ]; ++y ) {
-            for ( x = 1; x <= Length[ 0 ]; ++x ) {
+    double* Index = 0;
+    const double MAXIMUM_DENSITY = 1.1;
+    const double MINIMUM_DENSITY = 0.9;
+    for ( std::list<Fluid*>::iterator Iterator = FluidDomain.begin();
+          Iterator != FluidDomain.end();
+          ++Iterator ) {
 
-                idx = collideField + computeFieldIndex( x, y, z, Length );
-                computeDensity ( idx, &density );
+                Index = collideField + (*Iterator)->getIndex( SELF_INDEX );
+                computeDensity ( Index, &Density );
 
-                fprintf( fp, "%f\n", density );
-            }
-        }
-    }
-
-
-    //Computing Velocity
-    fprintf(fp, "\nVECTORS velocity float \n");
-    idx = 0;
-    for ( z = 1; z <= Length[ 2 ]; ++z ) {
-        for( y = 1; y <= Length[ 1 ]; ++y ) {
-            for ( x = 1; x <= Length[ 0 ]; ++x ) {
-
-                //idx1 = collideField + computeFlagIndex( x, y, z, Length );
-				idx = collideField + computeFieldIndex( x, y, z, Length );
-
-                computeDensity ( idx, &density);
-                computeVelocity ( idx, &density, velocity);
+                fprintf( fp, "%f\n", Density );
 
 #ifdef DEBUGGING
-				if( ( density < 0.9 ) || ( density > 1.1 ) )
-					printf("x %d y %d z %d  %f   \n", x,y,z, density);
+        if( ( Density < MINIMUM_DENSITY ) || ( Density > MAXIMUM_DENSITY ) )
+        printf("x %d y %d z %d  %f   \n", (*Iterator)->getXCoord(),
+                                          (*Iterator)->getYCoord(),
+                                          (*Iterator)->getZCoord(),
+                                          Density);
 #endif
 
-                fprintf(fp, "%f %f %f\n", velocity [0], velocity [1], velocity [2]);
-            }
-        }
+    }
+
+//------------------------------------------------------------------------------
+//                        Write velocity to the file
+//------------------------------------------------------------------------------
+    //Computing Velocity
+    fprintf(fp, "\nVECTORS velocity float \n");
+    double Velocity[ 3 ] = { 0.0 };
+    Index = 0;
+    for ( std::list<Fluid*>::iterator aFluidCell = FluidDomain.begin();
+          aFluidCell != FluidDomain.end();
+          ++aFluidCell ) {
+
+				Index = collideField + (*aFluidCell)->getIndex( SELF_INDEX );
+
+                computeDensity ( Index, &Density );
+                computeVelocity ( Index, &Density, Velocity );
+
+
+                fprintf(fp, "%f %f %f\n", Velocity [0], Velocity [1], Velocity [2]);
     }
     fclose(fp);
 
 }
 
 
-void write_vtkHeader( FILE *fp, unsigned* Length ) {
+void write_vtkHeader( FILE *fp,
+                      std::list<Fluid*>& FluidDomain,
+                      unsigned* Length ) {
 
     if( fp == NULL )
     {
@@ -97,22 +128,116 @@ void write_vtkHeader( FILE *fp, unsigned* Length ) {
     fprintf(fp,"generated by CFD-lab course output \n");
     fprintf(fp,"ASCII\n");
     fprintf(fp,"\n");
-    fprintf(fp,"DATASET STRUCTURED_GRID\n");
-    fprintf(fp,"DIMENSIONS  %i %i %i \n", Length[ 0 ], Length[ 1 ], Length[ 2 ]);
-    fprintf(fp,"POINTS %i float\n", Length[ 0 ] * Length[ 1 ] * Length[ 2 ] );
+    fprintf(fp,"DATASET UNSTRUCTURED_GRID\n");
+    fprintf(fp,"POINTS %i float\n", FluidDomain.size() );
     fprintf(fp,"\n");
 
 }
 
 
-void write_vtkPointCoordinates( FILE *fp, unsigned* Length ){
+void write_vtkPointCoordinates( FILE* fp,
+                                std::list<Fluid*>& FluidDomain,
+                                unsigned* Length ) {
+
+    for ( std::list<Fluid*>::iterator Iterator = FluidDomain.begin();
+          Iterator != FluidDomain.end();
+          ++Iterator ) {
+
+              fprintf(fp, "%d %d %d\n", (*Iterator)->getXCoord(),
+                                        (*Iterator)->getYCoord(),
+                                        (*Iterator)->getZCoord() );
+          }
 
 
-    for( unsigned z = 1; z <= Length[ 2 ]; ++z )
-        for( unsigned y = 1; y <= Length[ 1 ]; ++y ) {
-            for( unsigned x = 1; x <= Length[ 0 ]; ++x ) {
-              fprintf(fp, "%d %d %d\n", x, y, z );
-        }
+}
+
+
+void write_vtkPointElements( FILE* fp,
+                             std::list<Fluid*>& VTKrepresentation,
+                             int* IdField,
+                             unsigned* Length ) {
+    // see the documentation: http://www.vtk.org/data-model/
+    const char CODE_OF_ELEMENT[] = "11";
+    const unsigned NUMBER_OF_POINT_PER_ELEMENT = 8;
+    unsigned nElements = VTKrepresentation.size();
+    unsigned nEntries = ( NUMBER_OF_POINT_PER_ELEMENT + 1 ) * ( nElements );
+
+
+    char Buffer[ 50 ];
+    std::string DELIMITER = " ";
+    std::string Line = "";
+    int DiagonalNeighborIndex = 0;
+
+    // Print all elements
+    fprintf(fp,"\nCELLS %lu %lu\n", nElements, nEntries );
+    for ( std::list<Fluid*>::iterator Element = VTKrepresentation.begin();
+          Element != VTKrepresentation.end();
+          ++Element ) {
+
+              // Print number entries that a line contains
+              sprintf( Buffer, "%lu", NUMBER_OF_POINT_PER_ELEMENT );
+              Line = Buffer + DELIMITER;
+
+              // walk aroun in the cell's neighbor according to VTL_VOXEL = 11
+              // see the documentation: http://www.vtk.org/data-model/
+              // Vertex 0:
+              sprintf( Buffer, "%d",
+                       IdField[ (*Element)->getIdIndex( 9 ) ] );
+              Line += Buffer + DELIMITER;
+
+              // Vertex 1:
+              sprintf( Buffer, "%d",
+                       IdField[ (*Element)->getIdIndex( 10 ) ] );
+              Line += Buffer + DELIMITER;
+
+              // Vertex 2:
+              sprintf( Buffer, "%d",
+                       IdField[ (*Element)->getIdIndex( 12 ) ] );
+              Line += Buffer + DELIMITER;
+
+              // Vertex 3:
+              sprintf( Buffer, "%d",
+                       IdField[ (*Element)->getIdIndex( 13 ) ] );
+              Line += Buffer + DELIMITER;
+
+              // Vertex 4:
+              sprintf( Buffer, "%d",
+                       IdField[ (*Element)->getIdIndex( 16 ) ] );
+              Line += Buffer + DELIMITER;
+
+              // Vertex 5:
+              sprintf( Buffer, "%d",
+                       IdField[ (*Element)->getIdIndex( 17 ) ] );
+              Line += Buffer + DELIMITER;
+
+              // Vertex 6:
+              sprintf( Buffer, "%d",
+                       IdField[ (*Element)->getIdIndex( 18 ) ] );
+              Line += Buffer + DELIMITER;
+
+              // Vertex 7:
+              // Because of the D3Q19 scheme there is no diagonal neighbours
+              // we have to compute it explicitly
+
+              DiagonalNeighborIndex = computeFlagIndex( (*Element)->getXCoord() + 1,
+                                                        (*Element)->getYCoord() + 1,
+                                                        (*Element)->getZCoord() + 1,
+                                                        Length );
+
+              sprintf( Buffer, "%d", IdField[ DiagonalNeighborIndex ] );
+              Line += Buffer;
+
+              // Print given line to the file
+              fprintf(fp, "%s\n", Line.c_str());
     }
 
+    // Print type of the elements
+    fprintf(fp,"\n\CELL_TYPES %lu\n", nElements );
+    for ( std::list<Fluid*>::iterator Element = VTKrepresentation.begin();
+          Element != VTKrepresentation.end();
+          ++Element ) {
+
+            fprintf(fp, "%s\n", CODE_OF_ELEMENT );
+
+    }
 }

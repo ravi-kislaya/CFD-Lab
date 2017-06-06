@@ -60,5 +60,5 @@
   static const double Density_Reference = 1.0;
   static const int SELF_INDEX = 9; //for D3Q19
 
- 
+
 #endif

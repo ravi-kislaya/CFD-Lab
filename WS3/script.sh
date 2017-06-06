@@ -81,7 +81,7 @@ function runValgrind {
 		FILE_NAME=$MEM_CHECK_FILE
 
 		# generate the report
-		valgrind --tool=memcheck ./$EXECUTABLE $1 > $FILE_NAME 2>&1
+		valgrind --tool=memcheck ./$EXECUTABLE $1  #> $FILE_NAME 2>&1
 	fi
 }
 

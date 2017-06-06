@@ -1,32 +1,39 @@
-#include "boundary.h"
-#include "LBDefinitions.h"
 #include <stdlib.h>
-
-#include "DataStructure.h"
 #include <list>
 #include <iostream>
 #include <stdio.h>
+#include <typeinfo>
+
 #include "helper.h"
+#include "boundary.h"
+#include "LBDefinitions.h"
+#include "DataStructure.h"
+
 
 void scanBoundary(  std::list<BoundaryFluid*>& ObstacleList,
 					std::list<Fluid*>& FluidDomain,
+					std::list<Fluid*>& VTKrepresentation,
                     int* flagField,
+					int *IdField,
                     unsigned* Length,
                     double* wallVelocity,
 					double* InletVel,
 					double DeltaDensity ) {
 
+
+	int ID = 0;
     int Current_Cell_Flag = 0;
     int Neighbour_Cell_Flag = 0;
 	int Current_Cell_Field = 0;
     int Neighbour_Cell_Field = 0;
-	int Neighbour[Vel_DOF] = { 0 };
+	int Neighbour[ Vel_DOF ] = { 0 };
 	double Dot_Product = 0.0;
 	int FreeSlipVelocity[6] = { 2, 6, 8, 10, 12, 16 };
 
-    for( unsigned z = 0 ; z <= Length[2]+1; ++z )  {
-        for( unsigned y = 0 ; y <= Length[1]+1; ++y )  {
-            for( unsigned x = 0 ; x <= Length[0]+1; ++x ) {
+
+    for( unsigned z = 0 ; z <= Length[ 2 ] + 1; ++z )  {
+        for( unsigned y = 0 ; y <= Length[ 1 ] + 1; ++y )  {
+            for( unsigned x = 0 ; x <= Length[ 0 ] + 1; ++x ) {
 
 				// Compute the current cell
                 Current_Cell_Flag = computeFlagIndex( x, y, z, Length );
@@ -46,7 +53,7 @@ void scanBoundary(  std::list<BoundaryFluid*>& ObstacleList,
 																z + LATTICEVELOCITIES[ i ][ 2 ],
 																Length );
 
-						Neighbour[i] = Vel_DOF * Neighbour_Cell_Flag;
+						Neighbour[ i ] = Vel_DOF * Neighbour_Cell_Flag;
 
 						// add neighbours cell ( which is wall or moving wall to the list )
 
@@ -146,8 +153,43 @@ void scanBoundary(  std::list<BoundaryFluid*>& ObstacleList,
 					}
 
 					//Create and push the Fluid in the Fluid Domain List
-					Fluid* aFluidCell = new Fluid( Neighbour );
+					Fluid* aFluidCell = new Fluid( ID, x, y, z, Neighbour );
 					FluidDomain.push_back( aFluidCell );
+
+					// Update IdField according the field flag
+					IdField[ Current_Cell_Flag ] = ID;
+
+					// Update ID imediatly after pushing back a new fluid
+					// element into the list
+					++ID;
+
+
+					// add a fluid cell to the represenation list
+					//
+					//	NestZ
+					//	|
+					//	|  NextY
+					//	| /
+					//	|/
+					//	O----------- NextX
+					//  CURRENT CELL
+					//
+					// IMPORTANT: be careful deleting FluidDomain and VTKrepresentation
+					// lists since they contain common pointer
+
+					// TODO: rename variables in such way that it should be readable
+					int NextX = computeFlagIndex( x + 1, y, z, Length );
+					int NextY = computeFlagIndex( x, y + 1, z, Length );
+					int NestZ = computeFlagIndex( x, y, z + 1, Length );
+
+					if ( ( flagField[ NextX ] == FLUID )
+						   && ( flagField[ NextY ] == FLUID )
+					   	   && ( flagField[ NestZ ] == FLUID ) ) {
+
+							  VTKrepresentation.push_back( aFluidCell );
+					}
+
+
 
 					// Delete a fluid cell if there was no obstacle cells
 					if ( aBoundaryFluidCell->isEmpty() == true ) {

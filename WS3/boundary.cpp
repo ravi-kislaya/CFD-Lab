@@ -58,7 +58,7 @@ void scanBoundary(  std::list<BoundaryFluid*>& ObstacleList,
 						// add neighbours cell ( which is wall or moving wall to the list )
 
 						//No slip
-						if ( flagField[ Neighbour_Cell_Flag ] == WALL ) {
+						if ( flagField[ Neighbour_Cell_Flag ] == NO_SLIP ) {
 
 							Dot_Product = 0.0;
 							Neighbour_Cell_Field = Vel_DOF * Neighbour_Cell_Flag;

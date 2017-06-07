@@ -6,22 +6,31 @@
 
 /* initialises the particle distribution functions and the flagfield */
 void initialiseFieldsStep( double *collideField,
-						   double *streamField,
-						   int *flagField,
-						   int *IdField,
+													 double *streamField,
+						   						 int *flagField,
+						   				 		 int *IdField,
                            unsigned* Length );
-						   
-void initialiseFieldsChannel( double *collideField,
-							  double *streamField,
-							  int *flagField,
-						      int *IdField,
-                              unsigned* Length );
+
+void initialiseFields_PlaneShearFlow( double *collideField,
+							  											double *streamField,
+							  											int *flagField,
+						      										int *IdField,
+                              				unsigned* Length );
 
 
-void initialiseFields_LidDtivenCavity( double *collideField,
+void initialiseFields_LidDrivenCavity( double *collideField,
                                        double *streamField,
                                        int *flagField,
                                        int *IdField,
                                        unsigned* Length );
+
+void initialiseFields_TiltedPlate( const char *PLATE_TXT_FILE_NAME
+																	 double *collideField,
+																	 double *streamField,
+																	 int *flagField,
+																	 int *IdField,
+																	 unsigned* Length );
+
+																			 
 
 #endif

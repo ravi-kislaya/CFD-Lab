@@ -48,7 +48,7 @@
                                            };
 
 
-  enum Flags{ FLUID, WALL, MOVING_WALL, FREE_SLIP, INFLOW, PRESSURE_IN, OUTFLOW };
+  enum Flags{ FLUID, NO_SLIP, MOVING_WALL, FREE_SLIP, INFLOW, PRESSURE_IN, OUTFLOW };
 
 
   // C_S - is the speed of sound which is equal to 1.0 / sqrt ( 3.0 ) = 0.577350269

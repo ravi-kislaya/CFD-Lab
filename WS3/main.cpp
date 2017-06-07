@@ -96,11 +96,19 @@ int main( int argc, char *argv[] ){
 
   // initialize all fields
 
-  initialiseFields( collideField,
-                    streamField,
-                    flagField,
-                    IdField,
-                    Length );
+  initialiseFieldsStep( collideField,
+						streamField,
+						flagField,
+						IdField,
+						Length );
+
+  // initialise for channel flow with pressure inlet
+  
+  /*initialiseFieldsChannel( collideField,
+						   streamField,
+						   flagField,
+						   IdField,
+						   Length );*/
 
 
 /*initialiseFields_LidDtivenCavity( collideField,

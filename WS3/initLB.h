@@ -5,11 +5,17 @@
 
 
 /* initialises the particle distribution functions and the flagfield */
-void initialiseFields( double *collideField,
-                       double *streamField,
-                       int *flagField,
-                       int *IdField,
-                       unsigned* Length );
+void initialiseFieldsStep( double *collideField,
+						   double *streamField,
+						   int *flagField,
+						   int *IdField,
+                           unsigned* Length );
+						   
+void initialiseFieldsChannel( double *collideField,
+							  double *streamField,
+							  int *flagField,
+						      int *IdField,
+                              unsigned* Length );
 
 
 void initialiseFields_LidDtivenCavity( double *collideField,

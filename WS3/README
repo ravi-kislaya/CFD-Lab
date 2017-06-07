@@ -10,7 +10,7 @@ HINT: Check spelling of your data file if the simulation doesn't run
 TODO LIST:
 
 1) rename Obstacle class as Boundary
-2) rename all source files as *.cpp
+2) Rename Wall flag to No_Slip
 
 --------------------------------------------------------------------------------
 STRUCTURE:

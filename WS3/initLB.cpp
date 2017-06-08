@@ -1,6 +1,7 @@
 #include "initLB.h"
 #include "LBDefinitions.h"
 #include "helper.h"
+#include <stdio.h>
 #include <iostream>
 
 //TODO: DO final optimization for variables in for loop
@@ -14,100 +15,97 @@
 *  PROBLEM 1 : TiltedPlate
 *
 */
-void initialiseFields_TiltedPlate( const char *PLATE_TXT_FILE_NAME
-																	 double *collideField,
-																	 double *streamField,
-																	 int *flagField,
-																	 int *IdField,
-																	 unsigned* Length ){
+void initialiseFields_TiltedPlate( const char *PLATE_TXT_FILE_NAME ,
+								   double *collideField ,
+								   double *streamField ,
+								   int *flagField ,
+								   int *IdField ,
+								   unsigned* Length ){
 
-		unsigned Current_Field_Cell = 0;
-		// init Fields: collide and stream fields
-		//Initialization of collideField
-		for( unsigned z = 0 ; z <= Length[ 2 ] + 1; ++z )  {
-		 	for( unsigned y = 0 ; y <= Length[ 1 ] + 1 ; ++y )  {
-			 	for( unsigned x = 0 ; x <= Length[ 0 ] + 1 ; ++x ) {
+	unsigned Current_Field_Cell = 0;
+	unsigned Current_Flag_Cell = 0;
+	const int DEFAULT_ID = -1;
+		
+	// init Fields: collide and stream fields
+	//Initialization of collideField
+	// initialize fluid field
+	// IMPORTANT: Flag and ID Fields have the same index pattern.
+	// it means that we can use computeFlagIndex(...) to compute the index
+	// for the ID Field
+		
+	for( unsigned z = 0 ; z <= Length[ 2 ] + 1; ++z )  {
+		 for( unsigned y = 0 ; y <= Length[ 1 ] + 1 ; ++y )  {
+			 for( unsigned x = 0 ; x <= Length[ 0 ] + 1 ; ++x ) {
 
-					Current_Field_Cell = computeFieldIndex( x, y, z, Length );
+				Current_Field_Cell = computeFieldIndex( x, y, z, Length );
+				Current_Flag_Cell  = computeFlagIndex ( x, y, z, Length );
+					
+				flagField[ computeFlagIndex( x, y, z, Length ) ] = FLUID;
+				IdField[ computeFlagIndex( x, y, z, Length ) ] = DEFAULT_ID;
+					
+				for( unsigned i = 0 ; i < Vel_DOF ; ++i ) {
+					//Initialization of collideField
+					collideField [ Current_Field_Cell + i ] = LATTICEWEIGHTS[ i ];
 
-					 for( unsigned i = 0 ; i < Vel_DOF ; ++i ) {
-						 //Initialization of collideField
-						 collideField [ Current_Field_Cell + i ] = LATTICEWEIGHTS[ i ];
-
-						 //Initialization of streamField
-						 streamField [ Current_Field_Cell + i ] = LATTICEWEIGHTS[ i ];
-					 }
-
-			 	}
-		 	}
-		}
-
-
-		//..............................................................................
-
-		// 						Initialize Flag and ID Fields
-		//..............................................................................
-
-		// initialize fluid field
-		// IMPORTANT: Flag and ID Fields have the same index pattern.
-		// it means that we can use computeFlagIndex(...) to compute the index
-		// for the ID Field
-		const int DEFAULT_ID = -1;
-		for ( unsigned z = 0; z < Length[ 2 ] + 2; ++z ) {
-			for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
-				for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
-
-					flagField[ computeFlagIndex( x, y, z, Length ) ] = FLUID;
-					IdField[ computeFlagIndex( x, y, z, Length ) ] = DEFAULT_ID;
-
+					//Initialization of streamField
+					streamField [ Current_Field_Cell + i ] = LATTICEWEIGHTS[ i ];
 				}
+
 			}
 		}
-		//
-		//	   Coordintes:
-		//
-		//	X |
-		//		|   /  Y
-		//		|  /
-		//		| /
-		//		|/
-		//		------------ Z
-		//
-		//
+	}
 
-		// Boundary Condition for Z = 0  is set to INFLOW and Z = Zmax is set to OUTFLOW
-		for (int x = 0; x < Length[0] + 2; ++x) {
-				for (int y = 0; y < Length[1] + 2; ++y) {
-						flagField[ computeFlagIndex( x, y, 0, Length ) ] = INFLOW; //Left
-						flagField[ computeFlagIndex( x, y, Length[2] + 1, Length ) ] = OUTFLOW; //Right
-				}
-		}
-	// Boundary Condition for X = 0 and X = Xmax is set to NO_SLIP
+	//
+	//	   Coordintes:
+	//
+	//	X   |
+	//		|   /  Y
+	//		|  /
+	//		| /
+	//		|/
+	//		------------ Z
+	//
+	//
+
+	// Boundary Condition for Z = 0  is set to INFLOW and Z = Zmax is set to OUTFLOW
+	for (int x = 0; x < Length[0] + 2; ++x) {
 		for (int y = 0; y < Length[1] + 2; ++y) {
-			for (int z = 0; z < Length[2] + 2; ++z) {
-				flagField[ computeFlagIndex( 0, y, z, Length ) ] = NO_SLIP; //Bottom
-				flagField[ computeFlagIndex( Length[0] + 1, y, z, Length ) ] = NO_SLIP; //Top
-			}
+			flagField[ computeFlagIndex( x, y, 0, Length ) ] = INFLOW; //Left
+			flagField[ computeFlagIndex( x, y, Length[2] + 1, Length ) ] = OUTFLOW; //Right
 		}
-		// Boundary Condition for Y = 0 and Y = Ymax is set to FREE_SLIP
-		for (int x = 0; x < Length[0] + 2; ++x) {
-			for (int z = 0; z < Length[2] + 2; ++z) {
-				flagField[computeFlagIndex(x, 0, z, Length)] = FREE_SLIP; //XZ face
-				flagField[computeFlagIndex(x, Length[1] + 1, z, Length)] = FREE_SLIP; //XZ face
-			}
+	}
+	// Boundary Condition for X = 0 and X = Xmax is set to NO_SLIP
+	for (int y = 0; y < Length[1] + 2; ++y) {
+		for (int z = 0; z < Length[2] + 2; ++z) {
+			flagField[ computeFlagIndex( 0, y, z, Length ) ] = NO_SLIP; //Bottom
+			flagField[ computeFlagIndex( Length[0] + 1, y, z, Length ) ] = NO_SLIP; //Top
 		}
-		int **TiltedPlate;
+	}
+	// Boundary Condition for Y = 0 and Y = Ymax is set to FREE_SLIP
+	for (int x = 0; x < Length[0] + 2; ++x) {
+		for (int z = 0; z < Length[2] + 2; ++z) {
+			flagField[computeFlagIndex(x, 0, z, Length)] = FREE_SLIP; //XZ face
+			flagField[computeFlagIndex(x, Length[1] + 1, z, Length)] = FREE_SLIP; //XZ face
+		}
+	}
+	int **TiltedPlate = imatrix( 0, Length[0]+1, 0, Length[2]+1);
 
-		TiltedPlate = read_pgm("lbm_tilted_plate.vtk");
+	
+	TiltedPlate = read_pgm("lbm_tilted_plate.vtk");
 
-		for (int z = 1; z <= Length[2]; ++z) {
-			for (int y = 0; y <= Length[1]; ++y) {
-				for (int x = 1; x <= Length[0]; ++x) {
-					flagField[ computeFlagIndex( x, y, z, Length )] = TiltedPlate[x][z];
+	for (int z = 1; z <= Length[2]; ++z) {
+		for (int y = 1; y <= Length[1]; ++y) {
+			for (int x = 1; x <= Length[0]; ++x) {
+				if(TiltedPlate[x][z] == 1){
+					printf("Bhai Sahab \n");
+					flagField[ computeFlagIndex( x, y, z, Length )] = NO_SLIP;
 				}
 			}
 		}
-		free(TiltedPlate);
+	}
+	
+    free_imatrix(TiltedPlate, 0, Length[0]+1, 0, Length[2]+1);
+	
 		// ***********************************************************************************************************
 						/*Ravil's implementation, which I didn't understand
 						
@@ -274,8 +272,8 @@ void initialiseFields_PlaneShearFlow( double *collideField,
 	// initialised walls
 	for ( unsigned z = 0; z < Length[ 2 ] + 2; ++z ) {
 		for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
-			flagField[ computeFlagIndex( 0, y, z, Length ) ] = NO_SLIP;
-			flagField[ computeFlagIndex( Length[ 0 ] + 1, y, z, Length ) ] = NO_SLIP;
+			flagField[ computeFlagIndex( 0, y, z, Length ) ] = FREE_SLIP;
+			flagField[ computeFlagIndex( Length[ 0 ] + 1, y, z, Length ) ] = FREE_SLIP;
 		}
 	}
 
@@ -488,7 +486,7 @@ void initialiseFields_LidDrivenCavity( double *collideField,
 	for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
 		for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
 			flagField[ computeFlagIndex( x, y, 0, Length ) ] = NO_SLIP;
-			flagField[ computeFlagIndex( x, y, Length[ 2 ] + 1, Length ) ] = MOVING_NO_SLIP;
+			flagField[ computeFlagIndex( x, y, Length[ 2 ] + 1, Length ) ] = MOVING_WALL;
 		}
 	}
 

@@ -93,7 +93,7 @@ void scanBoundary(  std::list<BoundaryFluid*>& ObstacleList,
 							Neighbour_Cell_Field = Vel_DOF * Neighbour_Cell_Flag;
 							Obstacle* Wall = new Inflow( Neighbour_Cell_Field,//Here,Neighbour means wall
 														 Current_Cell_Field,  //Here,Current means fluid
-														 i,
+														 18 - i,
 														 Dot_Product,
 														 InletVel );
 

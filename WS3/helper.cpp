@@ -531,6 +531,7 @@ int **read_pgm(const char *filename)
     /* read # of gray levels */
     if(fgets(line,sizeof line,input));
     sscanf(line,"%d\n",&levels);
+	
 
     /* allocate memory for image */
     pic = imatrix(0,xsize+2,0,ysize+2);

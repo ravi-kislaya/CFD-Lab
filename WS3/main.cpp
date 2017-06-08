@@ -62,6 +62,7 @@ int main( int argc, char *argv[] ){
   // Allocate all fields
   const char* INPUT_FILE_NAME = argv[1];
   const char* OUTPUT_FILE_NAME = "./Frames/Cube3D";
+  const char *PLATE_TXT_FILE_NAME = "lbm_tilted_plate.vtk";
   unsigned Length[ 3 ] = { 10, 10, 10 }; //TODO: change this to array
   double tau = 0.0;
   double wallVelocity[ 3 ] = { 0.0, 0.0, 0.0 };
@@ -95,16 +96,24 @@ int main( int argc, char *argv[] ){
 
 
   // initialize all fields
+  
+  //initialise with tilted plate
+  initialiseFields_TiltedPlate( PLATE_TXT_FILE_NAME,
+									 collideField,
+									 streamField,
+									 flagField,
+									 IdField,
+									 Length );
 
-  initialiseFieldsStep( collideField,
+  /*initialiseFields_Step( collideField,
 						streamField,
 						flagField,
 						IdField,
-						Length );
+						Length );*/
 
   // initialise for channel flow with pressure inlet
   
-  /*initialiseFieldsChannel( collideField,
+  /*initialiseFields_PlaneShearFlow( collideField,
 						   streamField,
 						   flagField,
 						   IdField,

@@ -67,11 +67,11 @@ void computeSingleFeq( const double * const density,
 					   int Velocity_Component) {
 
 
-	unsigned temp1 = LATTICEVELOCITIES[ Velocity_Component ][ 0 ] * velocity[ 0 ]
+	double temp1 = LATTICEVELOCITIES[ Velocity_Component ][ 0 ] * velocity[ 0 ]
                    + LATTICEVELOCITIES[ Velocity_Component ][ 1 ] * velocity[ 1 ]
                    + LATTICEVELOCITIES[ Velocity_Component ][ 2 ] * velocity[ 2 ];
 
-	unsigned temp2 = velocity[ 0 ] * velocity[ 0 ]
+	double temp2 = velocity[ 0 ] * velocity[ 0 ]
                    + velocity[ 1 ] * velocity[ 1 ]
                    + velocity[ 2 ] * velocity[ 2 ];
 

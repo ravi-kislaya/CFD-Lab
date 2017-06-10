@@ -178,13 +178,25 @@ void scanBoundary(  std::list<BoundaryFluid*>& ObstacleList,
 					// lists since they contain common pointer
 
 					// TODO: rename variables in such way that it should be readable
-					int NextX = computeFlagIndex( x + 1, y, z, Length );
-					int NextY = computeFlagIndex( x, y + 1, z, Length );
-					int NestZ = computeFlagIndex( x, y, z + 1, Length );
 
-					if ( ( flagField[ NextX ] == FLUID )
-						   && ( flagField[ NextY ] == FLUID )
-					   	   && ( flagField[ NestZ ] == FLUID ) ) {
+					int Index = 0;
+					int isItDrawable = true;
+					for ( int dz = 0; dz < 2; ++dz ) {
+						for ( int dy = 0; dy < 2; ++dy ) {
+							for ( int dx = 0; dx < 2; ++dx ) {
+
+								Index = computeFlagIndex( x + dx,
+														  y + dy,
+														  z + dz,
+														  Length );
+
+								isItDrawable *= flagField[ Index ] == FLUID;
+							}
+						}
+					}
+
+
+					if ( isItDrawable == true ) {
 
 							  VTKrepresentation.push_back( aFluidCell );
 					}

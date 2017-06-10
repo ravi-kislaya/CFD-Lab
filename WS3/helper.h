@@ -9,6 +9,8 @@
 #include <string.h>
 #include <float.h>
 #include <time.h>
+#include <string>
+
 #include "LBDefinitions.h"
 
 /* ----------------------------------------------------------------------- */
@@ -40,6 +42,15 @@ inline unsigned computeFieldIndex( unsigned x,
 inline unsigned convertFieldToFlagIndex( unsigned FieldIndex ) {
 	return ( unsigned ) ( FieldIndex / Vel_DOF );
 }
+
+
+void allocateFields( double** collideField,
+					 double** streamField,
+				   	 int** flagField,
+				  	 int** IdField,
+				  	 unsigned* Length );
+
+void getLengthFromString( unsigned* Length, std::string String );
 
 #ifdef PI
 #undef PI

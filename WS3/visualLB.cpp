@@ -21,8 +21,6 @@ void writeVtkOutput( const char * filename,
                      unsigned int t,
                      unsigned* Length ) {
 
-    unsigned x = 0, y = 0, z = 0;
-
 
     char szFilename[80];
     FILE *fp = NULL;

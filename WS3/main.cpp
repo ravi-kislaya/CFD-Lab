@@ -18,31 +18,69 @@
 #include "computeCellValues.h"
 #include "helper.h"
 
+// the following possible simulation flags has to be set up:
+//     -fcavity
+//     -fstep
+//     -fchannel
+//     -fplate
 int main( int argc, char *argv[] ){
 
+//******************************************************************************
+//                          CHECK INPUT PARAMETERS
+//******************************************************************************
+    const unsigned NUMBER_OF_MODES = 4;
+    static const char* MODES[ NUMBER_OF_MODES ] = { "-fcavity",
+                                                    "-fstep",
+                                                    "-fchannel",
+                                                    "-fplate" };
 
-    // check the correctness of the input parameters
-     //
-     // stop the execution if:
-     //
-     // 1. the number of input parameters is not equal to two
-     //    ( including both the program name and the name of the input data file )
-     //
-     // 2. there is no such file at the project folder
-     //
-     if ( argc == 2 ) {
+     if ( argc >= 3 ) {
 
-         // check if it's possible to open the file
-         FILE* file;
-         file = fopen( argv[1], "r" );
+         // check if it's possible to open the data file
+         FILE* DataFile;
+         DataFile = fopen( argv[1], "r" );
 
          // Abort execution if it's not possible to open the file
-         if ( file == 0 ) {
-             printf( "\nERROR: The file comtaining the input data doesn't exsist\n\n" );
+         if ( DataFile == 0 ) {
+             printf( "\nERROR: The file comtaining the input data does not exsist\n\n" );
              printf( "HINT:   Check the file spelling or its existence and try again\n\n");
-
              return -1;
          }
+
+         // check a mode was selected right
+         int aWrongModeProvided = true;
+         for ( unsigned i = 0; i < NUMBER_OF_MODES; ++i ) {
+                aWrongModeProvided *= strcmp( argv[2], MODES[ i ] );
+         }
+
+         if ( aWrongModeProvided ) {
+             printf( "\nERROR: The provided mode does not exsist\n\n" );
+             printf( "HINT: Check the mode spelling and try again\n\n");
+             return -1;
+         }
+
+         // Check the consistence of vtk files if the plane mode was selected
+         if( !strcmp( argv[2], MODES[ NUMBER_OF_MODES - 1  ] ) ) {
+             if ( argc == 4 ) {
+                 // check if it's possible to open a vtk file
+                 FILE* VtkFile;
+                 VtkFile = fopen( argv[3], "r" );
+
+                 if ( VtkFile == 0 ) {
+                     printf( "\nERROR: The file comtaining the mesh does not exsist\n\n" );
+                     printf( "HINT:   Check the file spelling or its existence and try again\n\n");
+                     return -1;
+
+                 }
+
+             }
+             else {
+                 printf( "\nERROR: The number of input parameters is wrong\n\n" );
+                 printf( "Example: ./lbsim cube.dat -fstep\n\n" );
+                 return -1;
+             }
+         }
+
 
      }
      else {
@@ -50,81 +88,87 @@ int main( int argc, char *argv[] ){
          // Abort execution if the number of input parameters is wrong
          printf( "\nERROR: The number of input parameters is wrong\n\n" );
 
-         printf( "HINT:   You've probably forgot to pass the input file" );
-         printf( " as a parameter\n" );
-         printf( "\tor you've passed more than one parameter\n\n" );
+         printf( "HINT: Look at the README file to find out how to run the program" );
 
-         printf( "Example: ./sim cavity100.dat\n\n" );
+         printf( "Example: ./lbsim cube.dat -fstep\n\n" );
          return -1;
      }
 
 
-  // Allocate all fields
+
+//******************************************************************************
+//                          PERFORM COMPUTATION
+//******************************************************************************
+
+  // Define basics variables
   const char* INPUT_FILE_NAME = argv[1];
-  const char* OUTPUT_FILE_NAME = "./Frames/Cube3D";
-  const char *PLATE_TXT_FILE_NAME = "lbm_tilted_plate.vtk";
-  unsigned Length[ 3 ] = { 10, 10, 10 }; //TODO: change this to array
+  const char* OUTPUT_FILE_NAME = "./Frames/RESULT";
+  unsigned Length[ 3 ] = { 0, 0, 0 };
   double tau = 0.0;
   double wallVelocity[ 3 ] = { 0.0, 0.0, 0.0 };
   unsigned TimeSteps = 0;
   unsigned TimeStepsPerPlotting = 0;
 
-  double InletVelocity[ 3 ] = { 0.0, 0.0, 0.0 }; //TODO: Delcare this in read parameter as array
-  double DeltaDensity = 0.0; //TODO: Declare this in read parameter as variables
+  double InletVelocity[ 3 ] = { 0.0, 0.0, 0.0 };
+  double DeltaDensity = 0.0;
+
+
+  read_parameters( INPUT_FILE_NAME,         /* the name of the data file */
+                   Length,                  /* number of cells along x direction */
+                   &tau,                    /* relaxation time */
+                   wallVelocity,            /* lid velocity along all direction*/
+                   InletVelocity,           /* Inlet velocity along all direction */
+                   &DeltaDensity,           /* density difference */
+                   &TimeSteps,              /* number of simulation time steps */
+                   &TimeStepsPerPlotting ); /* number of visualization time steps */
 
 
 
-    read_parameters( INPUT_FILE_NAME,           /* the name of the data file */
-                       Length,                 /* number of cells along x direction */
-                       &tau,                    /* relaxation time */
-                       wallVelocity,            /* lid velocity along all direction*/
-                       InletVelocity,           /* Inlet velocity along all direction */
-                       &DeltaDensity,           /* density difference */
-                       &TimeSteps,              /* number of simulation time steps */
-                       &TimeStepsPerPlotting ); /* number of visualization time steps */
+  double *collideField = 0;
+  double *streamField = 0;
+  int *flagField = 0;
+  int *IdField = 0;
 
 
-  // initialize all variables and fields
-  int CellNumber = ( Length[ 0 ] + 2 )
-                 * ( Length[ 1 ] + 2 )
-                 * ( Length[ 2 ] + 2 );
+  // initialize all fields according to the give flag
+  if ( !strcmp( argv[2], MODES[ 0 ] ) ) {
 
-  double *collideField = ( double* )calloc( Vel_DOF * CellNumber, sizeof( double ) );
-  double *streamField = ( double* )calloc( Vel_DOF * CellNumber, sizeof( double ) );
-  int *flagField = ( int* )calloc( CellNumber, sizeof(int) );
-  int *IdField = ( int* )calloc( CellNumber, sizeof( int ) );
+      initialiseFields_LidDrivenCavity( &collideField,
+                                        &streamField,
+                                        &flagField,
+                                        &IdField,
+                                        Length );
 
+  }
+  else if ( !strcmp( argv[2], MODES[ 1 ] ) ) {
+      initialiseFields_Step( &collideField,
+                             &streamField,
+                             &flagField,
+                             &IdField,
+                             Length );
 
-  // initialize all fields
-  
-  //initialise with tilted plate
-  initialiseFields_TiltedPlate( PLATE_TXT_FILE_NAME,
-									 collideField,
-									 streamField,
-									 flagField,
-									 IdField,
-									 Length );
+  }
+  else if( !strcmp( argv[2], MODES[ 2 ] ) ) {
 
-  /*initialiseFields_Step( collideField,
-						streamField,
-						flagField,
-						IdField,
-						Length );*/
-
-  // initialise for channel flow with pressure inlet
-  
-  /*initialiseFields_PlaneShearFlow( collideField,
-						   streamField,
-						   flagField,
-						   IdField,
-						   Length );*/
+      initialiseFields_PlaneShearFlow( &collideField,
+                                        &streamField,
+                                        &flagField,
+                                        &IdField,
+                                        Length );
 
 
-/*initialiseFields_LidDtivenCavity( collideField,
-                                  streamField,
-                                  flagField,
-                                  IdField,
-                                  Length );*/
+  }
+  else if( !strcmp( argv[2], MODES[ 3 ] ) ) {
+
+      initialiseFields_TiltedPlate( argv[3],
+                                    &collideField,
+      			                    &streamField,
+      			                    &flagField,
+      			                    &IdField,
+      			                    Length );
+
+  }
+
 
   // allcocate the list of boundary layer cells
   std::list<BoundaryFluid*> BoundaryList;
@@ -154,7 +198,7 @@ int main( int argc, char *argv[] ){
     double* Swap = NULL;
     for ( unsigned Step = 0; Step < TimeSteps; ++Step ) {
 
-
+/*
         doStreaming( collideField,
                      streamField,
                      FluidDomain );
@@ -174,7 +218,7 @@ int main( int argc, char *argv[] ){
         treatBoundary( collideField,
                        BoundaryList,
                        wallVelocity );
-
+*/
 
 #ifndef MLUPS_FLAG
         // if the MLUPS_FLAG flag is enabled then we will measure performance
@@ -202,12 +246,12 @@ int main( int argc, char *argv[] ){
    // display the output information
    clock_t End = clock();
    double ConsumedTime = (double)( End - Begin ) / CLOCKS_PER_SEC;
-   double MLUPS = ( CellNumber * TimeSteps ) / ( ConsumedTime * 1e6 );
+   double MLUPS = ( FluidDomain.size() * TimeSteps ) / ( ConsumedTime * 1e6 );
 
    // display MLUPS number that stands for Mega Lattice Updates Per Second
    printf( "Computational time: %4.6f sec\n",  ConsumedTime );
    printf( "MLUPS: %4.6f\n", MLUPS );
-   printf( "Mesh size: %d x %d x %d\n\n",  Length[ 0 ], Length[ 1 ], Length[ 2 ] );
+   printf( "Number of lattices: %d\n\n", FluidDomain.size() );
 
 
     // delete list of obstacles

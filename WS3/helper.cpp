@@ -1,37 +1,56 @@
 #include <ctype.h>
 #include <errno.h>
 #include <stdio.h>
+#include <string>
+#include <vector>
+#include <iostream>
 #include "helper.h"
 
 /* ----------------------------------------------------------------------- */
 /*                             auxiliary functions                         */
 /* ----------------------------------------------------------------------- */
-/* DEBUGGING: this functions overlaps with the function declared in the std library
-int min( int a, int b)
-{
-    if( a < b ) return a;
-    return b;
+void allocateFields( double** collideField,
+					 double** streamField,
+				   	 int** flagField,
+				  	 int** IdField,
+				  	 unsigned* Length ) {
+
+    int CellNumber = ( Length[ 0 ] + 2 )
+                    * ( Length[ 1 ] + 2 )
+                    * ( Length[ 2 ] + 2 );
+				
+    *collideField = ( double* ) calloc( Vel_DOF * CellNumber, sizeof( double ) );
+    *streamField = ( double* ) calloc( Vel_DOF * CellNumber, sizeof( double ) );
+    *flagField = ( int* ) calloc( CellNumber, sizeof(int) );
+    *IdField = ( int* ) calloc( CellNumber, sizeof( int ) );
+
 }
 
-int max( int a, int b)
-{
-    if( a > b ) return a;
-    return b;
+
+void getLengthFromString( unsigned* Length, std::string String ) {
+	std::string Buffer = "";
+	const char DELIMITER = ' ';
+
+	std::vector<std::string> Container;
+    for( std::string::iterator Character = String.begin();
+		 Character != String.end();
+		 ++Character ) {
+
+		if ( ( *Character ) == DELIMITER ) {
+			Container.push_back( Buffer );
+			Buffer = "";
+		}
+
+		Buffer += ( *Character );
+    }
+	Container.push_back( Buffer );
+
+    Length[ 0 ] = atoi( Container[ 0 ].c_str() );
+	Length[ 2 ] = atoi( Container[ 1 ].c_str() );
+	Length[ 1 ] = atoi( Container[ 2 ].c_str() );
+
 }
 
-double fmin( double a, double b)
-{
-    if( a < b ) return a;
-    return b;
-}
-
-double fmax( double a, double b)
-{
-    if( a > b ) return a;
-    return b;
-}
-
-*/
 
 template< class T >
 T min( T a, T b ) {
@@ -531,7 +550,7 @@ int **read_pgm(const char *filename)
     /* read # of gray levels */
     if(fgets(line,sizeof line,input));
     sscanf(line,"%d\n",&levels);
-	
+
 
     /* allocate memory for image */
     pic = imatrix(0,xsize+2,0,ysize+2);

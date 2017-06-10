@@ -1,421 +1,37 @@
+#include <stdio.h>
+#include <iostream>
+#include <string>
+#include <fstream>
+#include <iostream>
+#include <list>
+#include <algorithm>
+
 #include "initLB.h"
 #include "LBDefinitions.h"
 #include "helper.h"
-#include <stdio.h>
-#include <iostream>
 
 //TODO: DO final optimization for variables in for loop
 
-//##############################################################################
-// 					Initialize Stream and Collide Fields
-//##############################################################################
-
-/*
+/*******************************************************************************
 *
-*  PROBLEM 1 : TiltedPlate
+*  						PROBLEM 1 : LID DRIVEN CAVITY
 *
-*/
-void initialiseFields_TiltedPlate( const char *PLATE_TXT_FILE_NAME ,
-								   double *collideField ,
-								   double *streamField ,
-								   int *flagField ,
-								   int *IdField ,
-								   unsigned* Length ){
-
-	unsigned Current_Field_Cell = 0;
-	unsigned Current_Flag_Cell = 0;
-	const int DEFAULT_ID = -1;
-		
-	// init Fields: collide and stream fields
-	//Initialization of collideField
-	// initialize fluid field
-	// IMPORTANT: Flag and ID Fields have the same index pattern.
-	// it means that we can use computeFlagIndex(...) to compute the index
-	// for the ID Field
-		
-	for( unsigned z = 0 ; z <= Length[ 2 ] + 1; ++z )  {
-		 for( unsigned y = 0 ; y <= Length[ 1 ] + 1 ; ++y )  {
-			 for( unsigned x = 0 ; x <= Length[ 0 ] + 1 ; ++x ) {
-
-				Current_Field_Cell = computeFieldIndex( x, y, z, Length );
-				Current_Flag_Cell  = computeFlagIndex ( x, y, z, Length );
-					
-				flagField[ computeFlagIndex( x, y, z, Length ) ] = FLUID;
-				IdField[ computeFlagIndex( x, y, z, Length ) ] = DEFAULT_ID;
-					
-				for( unsigned i = 0 ; i < Vel_DOF ; ++i ) {
-					//Initialization of collideField
-					collideField [ Current_Field_Cell + i ] = LATTICEWEIGHTS[ i ];
-
-					//Initialization of streamField
-					streamField [ Current_Field_Cell + i ] = LATTICEWEIGHTS[ i ];
-				}
-
-			}
-		}
-	}
-
-	//
-	//	   Coordintes:
-	//
-	//	X   |
-	//		|   /  Y
-	//		|  /
-	//		| /
-	//		|/
-	//		------------ Z
-	//
-	//
-
-	// Boundary Condition for Z = 0  is set to INFLOW and Z = Zmax is set to OUTFLOW
-	for (int x = 0; x < Length[0] + 2; ++x) {
-		for (int y = 0; y < Length[1] + 2; ++y) {
-			flagField[ computeFlagIndex( x, y, 0, Length ) ] = INFLOW; //Left
-			flagField[ computeFlagIndex( x, y, Length[2] + 1, Length ) ] = OUTFLOW; //Right
-		}
-	}
-	// Boundary Condition for X = 0 and X = Xmax is set to NO_SLIP
-	for (int y = 0; y < Length[1] + 2; ++y) {
-		for (int z = 0; z < Length[2] + 2; ++z) {
-			flagField[ computeFlagIndex( 0, y, z, Length ) ] = NO_SLIP; //Bottom
-			flagField[ computeFlagIndex( Length[0] + 1, y, z, Length ) ] = NO_SLIP; //Top
-		}
-	}
-	// Boundary Condition for Y = 0 and Y = Ymax is set to FREE_SLIP
-	for (int x = 0; x < Length[0] + 2; ++x) {
-		for (int z = 0; z < Length[2] + 2; ++z) {
-			flagField[computeFlagIndex(x, 0, z, Length)] = FREE_SLIP; //XZ face
-			flagField[computeFlagIndex(x, Length[1] + 1, z, Length)] = FREE_SLIP; //XZ face
-		}
-	}
-	int **TiltedPlate = imatrix( 0, Length[0]+1, 0, Length[2]+1);
-
-	
-	TiltedPlate = read_pgm("lbm_tilted_plate.vtk");
-
-	for (int z = 1; z <= Length[2]; ++z) {
-		for (int y = 1; y <= Length[1]; ++y) {
-			for (int x = 1; x <= Length[0]; ++x) {
-				if(TiltedPlate[x][z] == 1){
-					printf("Bhai Sahab \n");
-					flagField[ computeFlagIndex( x, y, z, Length )] = NO_SLIP;
-				}
-			}
-		}
-	}
-	
-    free_imatrix(TiltedPlate, 0, Length[0]+1, 0, Length[2]+1);
-	
-		// ***********************************************************************************************************
-						/*Ravil's implementation, which I didn't understand
-						
-						// initialize the obstacle
-						std::ifstream file("lbm_tilted_plate.txt");
-						std::string str;
-						std::list<std::string> List;
-						const char DELIMITER = ' ';
-						while (std::getline(file, str))
-						{
-						  //TODO: Consider to avoid computing the full length of the string
-							str.erase( std::remove( str.begin(), str.end(), DELIMITER ), str.end() ) ;
-							List.push_back(str);
-						
-						
-						}
-						file.close();
-						
-						int Length[ 3 ] = { 0 };
-						
-						Length[ 0 ] = ( *List.begin() ).size() + 2;
-						Length[ 1 ] = 3;
-						Length[ 2 ] = List.size() + 2;
-						
-						cout << "x direction: " << Length[ 0 ] << endl;
-						cout << "y direction: " << Length[ 1 ] << endl;
-						cout << "z direction: " << Length[ 2 ] << endl;
-						
-						
-						
-						unsigned StringCounter = 0;
-						unsigned CharCounter = 0;
-						for( std::list<std::string>::iterator aString = List.begin();
-							 aString != List.end();
-							++aString ) {
-						
-							for ( std::string::iterator it = (*aString).begin();
-								  it != (*aString).end(); ++it ) {
-													if (*it == 1){
-														flagField[ computeFlagIndex( x, y, z, Length ) ] = NO_SLIP;
-														++CharCounter;
-													}
-							}
-							CharCounter = 0;
-							++StringCounter;
-						}
-						
-						// The values for Boundary Z = 0 set to Inflow and Zmax plane set to Outflow
-						for (int x = 0; x <= Length[0] + 2; ++x) {
-								for (int y = 0; y <= Length[1] + 2; ++y) {
-										flagField[ computeFlagIndex( x, y, 0, Length ) ] = INFLOW; //Left
-										flagField[ computeFlagIndex( x, y, Length[0][2] + 2, Length ) ] = OUTFLOW; //Right
-								}
-						}
-						// The values for Boundary on X = 0 and Xmax plane set to NO_SLIP
-							for (int y = 0; y <= Length[0][1] + 2; ++y) {
-								for (int z = 0; z <= Length[0][2] + 2; ++z) {
-									flagField[ computeFlagIndex( 0, y, z, Length ) ] = NO_SLIP; //Bottom
-									flagField[ computeFlagIndex( Length[0] + 2, y, z, Length ) ] = NO_SLIP; //Top
-								}
-							}
-							// The values for Boundary on Y = 0 and Ymax plane set to FREE_SLIP
-							for (int x = 0; x <= Length[0][0] + 2; ++x) {
-								for (int z = 0; z <= Length[0][2] + 2; ++z) {
-									flagField[computeFlagIndex( x, 0, z, Length)] = FREE_SLIP; //XZ face
-									flagField[computeFlagIndex( x, Length[0][1] + 2, z, Length )] = FREE_SLIP; //XZ face
-								}
-							} */
-
-}
-
-/*
-*
-*  PROBLEM 2 : Plane Shear Flow
-*
-*/
-
-void initialiseFields_PlaneShearFlow( double *collideField,
-					   double *streamField,
-					   int *flagField,
-					   int *IdField,
-					   unsigned *Length ) {
-
-//..............................................................................
-// 					Initialize Stream and Collide Fields
-//..............................................................................
-
-  unsigned Current_Field_Cell = 0;
-
-  // init Fields: collide and stream fields
-  //Initialization of collideField
-  for( unsigned z = 0 ; z <= Length[ 2 ] + 1; ++z )  {
-	 for( unsigned y = 0 ; y <= Length[ 1 ] + 1 ; ++y )  {
-		 for( unsigned x = 0 ; x <= Length[ 0 ] + 1 ; ++x ) {
-
-			 Current_Field_Cell = computeFieldIndex( x, y, z, Length );
-
-			 for( unsigned i = 0 ; i < Vel_DOF ; ++i ) {
-				 //Initialization of collideField
-				 collideField [ Current_Field_Cell + i ] = LATTICEWEIGHTS[ i ];
-
-				 //Initialization of streamField
-				 streamField [ Current_Field_Cell + i ] = LATTICEWEIGHTS[ i ];
-			 }
-
-		 }
-	 }
- }
-
-
- //..............................................................................
-
-// 						Initialize Flag and ID Fields
-//..............................................................................
-
-	// initialize fluid field
-	// IMPORTANT: Flag and ID Fields have the same index pattern.
-	// it means that we can use computeFlagIndex(...) to compute the index
-	// for the ID Field
-	const int DEFAULT_ID = -1;
-	for ( unsigned z = 0; z < Length[ 2 ] + 2; ++z ) {
-		for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
-			for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
-
-				flagField[ computeFlagIndex( x, y, z, Length ) ] = FLUID;
-				IdField[ computeFlagIndex( x, y, z, Length ) ] = DEFAULT_ID;
-
-			}
-		}
-	}
-
-
-	//
-	//	   Coordintes:
-	//
-	//	X |
-	//		|   /  Y
-	//		|  /
-	//		| /
-	//		|/
-	//		------------ Z
-	//
-	//
-
-
-	// initialize outlet
-	for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
-		for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
-
-			flagField[ computeFlagIndex( x, y, Length[ 2 ] + 1, Length) ] = OUTFLOW;
-		}
-	}
-
-
-	// initialize inlet
-	for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
-		for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
-
-			flagField[ computeFlagIndex( x, y, 0, Length) ] = PRESSURE_IN;
-		}
-	}
-
-
-	// initialised walls
-	for ( unsigned z = 0; z < Length[ 2 ] + 2; ++z ) {
-		for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
-			flagField[ computeFlagIndex( 0, y, z, Length ) ] = FREE_SLIP;
-			flagField[ computeFlagIndex( Length[ 0 ] + 1, y, z, Length ) ] = FREE_SLIP;
-		}
-	}
-
-
-	for ( unsigned z = 0; z < Length[ 2 ] + 2; ++z ) {
-		for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
-			flagField[ computeFlagIndex( x, 0, z, Length ) ] = NO_SLIP;
-			flagField[ computeFlagIndex( x, Length[ 1 ] + 1, z, Length ) ] = NO_SLIP;
-		}
-	}
-
-}
-/*
-*
-*  PROBLEM 3 : Step
-*
-*/
-void initialiseFields_Step( double *collideField,
-					   double *streamField,
-					   int *flagField,
-					   int *IdField,
-					   unsigned *Length ) {
-
-//..............................................................................
-// 					Initialize Stream and Collide Fields
-//..............................................................................
-
-  unsigned Current_Field_Cell = 0;
-
-  // init Fields: collide and stream fields
-  //Initialization of collideField
-  for( unsigned z = 0 ; z <= Length[ 2 ] + 1; ++z )  {
-	 for( unsigned y = 0 ; y <= Length[ 1 ] + 1 ; ++y )  {
-		 for( unsigned x = 0 ; x <= Length[ 0 ] + 1 ; ++x ) {
-
-			 Current_Field_Cell = computeFieldIndex( x, y, z, Length );
-
-			 for( unsigned i = 0 ; i < Vel_DOF ; ++i ) {
-				 //Initialization of collideField
-				 collideField [ Current_Field_Cell + i ] = LATTICEWEIGHTS[ i ];
-
-				 //Initialization of streamField
-				 streamField [ Current_Field_Cell + i ] = LATTICEWEIGHTS[ i ];
-			 }
-
-		 }
-	 }
- }
-
-
- //..............................................................................
-
-// 						Initialize Flag and ID Fields
-//..............................................................................
-
-	// initialize fluid field
-	// IMPORTANT: Flag and ID Fields have the same index pattern.
-	// it means that we can use computeFlagIndex(...) to compute the index
-	// for the ID Field
-	const int DEFAULT_ID = -1;
-	for ( unsigned z = 0; z < Length[ 2 ] + 2; ++z ) {
-		for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
-			for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
-
-				flagField[ computeFlagIndex( x, y, z, Length ) ] = FLUID;
-				IdField[ computeFlagIndex( x, y, z, Length ) ] = DEFAULT_ID;
-
-			}
-		}
-	}
-
-
-	//
-	//	   Coordintes:
-	//
-	//	X |
-	//		|   /  Y
-	//		|  /
-	//		| /
-	//		|/
-	//		------------ Z
-	//
-	//
-
-
-	// initialize outlet
-	for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
-		for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
-
-			flagField[ computeFlagIndex( x, y, Length[ 2 ] + 1, Length) ] = OUTFLOW;
-		}
-	}
-
-
-	// initialize inlet
-	for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
-		for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
-
-			flagField[ computeFlagIndex( x, y, 0, Length) ] = INFLOW;
-		}
-	}
-
-
-	// initialised walls
-	for ( unsigned z = 0; z < Length[ 2 ] + 2; ++z ) {
-		for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
-			flagField[ computeFlagIndex( 0, y, z, Length ) ] = NO_SLIP;
-			flagField[ computeFlagIndex( Length[ 0 ] + 1, y, z, Length ) ] = NO_SLIP;
-		}
-	}
-
-
-	for ( unsigned z = 0; z < Length[ 2 ] + 2; ++z ) {
-		for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
-			flagField[ computeFlagIndex( x, 0, z, Length ) ] = NO_SLIP;
-			flagField[ computeFlagIndex( x, Length[ 1 ] + 1, z, Length ) ] = NO_SLIP;
-		}
-	}
-
-
-	unsigned HalfLength = 0.5 * Length[ 0 ];
-
-	// initialize step
-	for ( unsigned z = 0; z <= HalfLength; ++z ) {
-		for ( unsigned y = 0; y <= Length[ 1 ] + 1; ++y ) {
-			for ( unsigned x = 0; x <= HalfLength; ++x ) {
-
-				flagField[ computeFlagIndex( x, y, z, Length ) ] = NO_SLIP;
-
-			}
-		}
-	}
-}
-
-
-
-
-void initialiseFields_LidDrivenCavity( double *collideField,
-                                       double *streamField,
-                                       int *flagField,
-                                       int *IdField,
+*******************************************************************************/
+void initialiseFields_LidDrivenCavity( double **collideField,
+                                       double **streamField,
+                                       int **flagField,
+                                       int **IdField,
                                        unsigned* Length ) {
+
+//..............................................................................
+// 						Allocate the fields in memory
+//..............................................................................
+
+allocateFields( collideField,
+				streamField,
+				flagField,
+				IdField,
+				Length );
 
 //..............................................................................
 // 					Initialize Stream and Collide Fields
@@ -433,10 +49,11 @@ void initialiseFields_LidDrivenCavity( double *collideField,
 
 				for( unsigned i = 0 ; i < Vel_DOF ; ++i ) {
 					//Initialization of collideField
-					collideField [ Current_Field_Cell + i ] = LATTICEWEIGHTS[ i ];
+					(*collideField) [ Current_Field_Cell + i ] = LATTICEWEIGHTS[ i ];
 
 					//Initialization of streamField
-					streamField [ Current_Field_Cell + i ] = LATTICEWEIGHTS[ i ];
+					(*streamField) [ Current_Field_Cell + i ] = LATTICEWEIGHTS[ i ];
+
 				}
 
 			}
@@ -457,8 +74,8 @@ void initialiseFields_LidDrivenCavity( double *collideField,
 		for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
 			for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
 
-					flagField[ computeFlagIndex( x, y, z, Length ) ] = FLUID;
-					IdField[ computeFlagIndex( x, y, z, Length ) ] = DEFAULT_ID;
+					( *flagField )[ computeFlagIndex( x, y, z, Length ) ] = FLUID;
+					( *IdField )[ computeFlagIndex( x, y, z, Length ) ] = DEFAULT_ID;
 
 			}
 		}
@@ -467,8 +84,8 @@ void initialiseFields_LidDrivenCavity( double *collideField,
 	// initialised walls: ZY plaту
 	for ( unsigned z = 0; z < Length[ 2 ] + 2; ++z ) {
 		for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
-			flagField[ computeFlagIndex( 0, y, z, Length ) ] = NO_SLIP;
-			flagField[ computeFlagIndex( Length[ 0 ] + 1, y, z, Length ) ] = NO_SLIP;
+			( *flagField )[ computeFlagIndex( 0, y, z, Length ) ] = NO_SLIP;
+			( *flagField )[ computeFlagIndex( Length[ 0 ] + 1, y, z, Length ) ] = NO_SLIP;
 		}
 	}
 
@@ -476,8 +93,8 @@ void initialiseFields_LidDrivenCavity( double *collideField,
 	// initialised walls: XZ plaту
 	for ( unsigned z = 0; z < Length[ 2 ] + 2; ++z ) {
 		for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
-			flagField[ computeFlagIndex( x, 0, z, Length ) ] = NO_SLIP;
-			flagField[ computeFlagIndex( x, Length[ 1 ] + 1, z, Length ) ] = NO_SLIP;
+			( *flagField )[ computeFlagIndex( x, 0, z, Length ) ] = NO_SLIP;
+			( *flagField )[ computeFlagIndex( x, Length[ 1 ] + 1, z, Length ) ] = NO_SLIP;
 		}
 	}
 
@@ -485,10 +102,509 @@ void initialiseFields_LidDrivenCavity( double *collideField,
 	// initialised walls: YX plaту
 	for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
 		for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
-			flagField[ computeFlagIndex( x, y, 0, Length ) ] = NO_SLIP;
-			flagField[ computeFlagIndex( x, y, Length[ 2 ] + 1, Length ) ] = MOVING_WALL;
+			( *flagField )[ computeFlagIndex( x, y, 0, Length ) ] = NO_SLIP;
+			( *flagField )[ computeFlagIndex( x, y, Length[ 2 ] + 1, Length ) ] = MOVING_WALL;
+		}
+	}
+}
+
+
+/*******************************************************************************
+*
+*  								PROBLEM 2 : STEP
+*
+*******************************************************************************/
+void initialiseFields_Step( double **collideField,
+					   double **streamField,
+					   int **flagField,
+					   int **IdField,
+					   unsigned *Length ) {
+
+
+//..............................................................................
+// 						Allocate the fields in memory
+//..............................................................................
+
+allocateFields( collideField,
+				streamField,
+				flagField,
+				IdField,
+				Length );
+
+//..............................................................................
+// 					Initialize Stream and Collide Fields
+//..............................................................................
+
+  unsigned Current_Field_Cell = 0;
+
+  // init Fields: collide and stream fields
+  //Initialization of collideField
+  for( unsigned z = 0 ; z <= Length[ 2 ] + 1; ++z )  {
+	 for( unsigned y = 0 ; y <= Length[ 1 ] + 1 ; ++y )  {
+		 for( unsigned x = 0 ; x <= Length[ 0 ] + 1 ; ++x ) {
+
+			 Current_Field_Cell = computeFieldIndex( x, y, z, Length );
+
+			 for( unsigned i = 0 ; i < Vel_DOF ; ++i ) {
+				 //Initialization of collideField
+				 ( *collideField ) [ Current_Field_Cell + i ] = LATTICEWEIGHTS[ i ];
+
+				 //Initialization of streamField
+				 ( *streamField ) [ Current_Field_Cell + i ] = LATTICEWEIGHTS[ i ];
+			 }
+
+		 }
+	 }
+ }
+
+
+ //..............................................................................
+
+// 						Initialize Flag and ID Fields
+//..............................................................................
+
+	// initialize fluid field
+	// IMPORTANT: Flag and ID Fields have the same index pattern.
+	// it means that we can use computeFlagIndex(...) to compute the index
+	// for the ID Field
+	const int DEFAULT_ID = -1;
+	for ( unsigned z = 0; z < Length[ 2 ] + 2; ++z ) {
+		for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
+			for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
+
+				( *flagField )[ computeFlagIndex( x, y, z, Length ) ] = FLUID;
+				( *IdField )[ computeFlagIndex( x, y, z, Length ) ] = DEFAULT_ID;
+
+			}
 		}
 	}
 
+
+	//
+	//	   Coordintes:
+	//
+	//	  X |
+	//		|   /  Y
+	//		|  /
+	//		| /
+	//		|/
+	//		------------ Z
+	//
+	//
+
+
+	// initialize outlet
+	for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
+		for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
+
+			( *flagField )[ computeFlagIndex( x, y, Length[ 2 ] + 1, Length) ] = OUTFLOW;
+		}
+	}
+
+
+	// initialize inlet
+	for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
+		for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
+
+			( *flagField )[ computeFlagIndex( x, y, 0, Length) ] = INFLOW;
+		}
+	}
+
+
+	// initialised walls
+	for ( unsigned z = 0; z < Length[ 2 ] + 2; ++z ) {
+		for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
+			( *flagField )[ computeFlagIndex( 0, y, z, Length ) ] = NO_SLIP;
+			( *flagField )[ computeFlagIndex( Length[ 0 ] + 1, y, z, Length ) ] = NO_SLIP;
+		}
+	}
+
+
+	for ( unsigned z = 0; z < Length[ 2 ] + 2; ++z ) {
+		for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
+			( *flagField )[ computeFlagIndex( x, 0, z, Length ) ] = NO_SLIP;
+			( *flagField )[ computeFlagIndex( x, Length[ 1 ] + 1, z, Length ) ] = NO_SLIP;
+		}
+	}
+
+
+	unsigned HalfLength = 0.5 * Length[ 0 ];
+
+	// initialize step
+	for ( unsigned z = 0; z <= HalfLength; ++z ) {
+		for ( unsigned y = 0; y <= Length[ 1 ] + 1; ++y ) {
+			for ( unsigned x = 0; x <= HalfLength; ++x ) {
+
+				( *flagField )[ computeFlagIndex( x, y, z, Length ) ] = NO_SLIP;
+
+			}
+		}
+	}
+}
+
+
+/*******************************************************************************
+*
+*  						PROBLEM 3: Plane Shear Flow
+*
+********************************************************************************/
+
+void initialiseFields_PlaneShearFlow( double **collideField,
+					   double **streamField,
+					   int **flagField,
+					   int **IdField,
+					   unsigned *Length ) {
+
+
+
+//..............................................................................
+// 						Allocate the fields in memory
+//..............................................................................
+
+allocateFields( collideField,
+				streamField,
+				flagField,
+				IdField,
+				Length );
+
+//..............................................................................
+// 					Initialize Stream and Collide Fields
+//..............................................................................
+
+  unsigned Current_Field_Cell = 0;
+
+  // init Fields: collide and stream fields
+  //Initialization of collideField
+  for( unsigned z = 0 ; z <= Length[ 2 ] + 1; ++z )  {
+	 for( unsigned y = 0 ; y <= Length[ 1 ] + 1 ; ++y )  {
+		 for( unsigned x = 0 ; x <= Length[ 0 ] + 1 ; ++x ) {
+
+			 Current_Field_Cell = computeFieldIndex( x, y, z, Length );
+
+			 for( unsigned i = 0 ; i < Vel_DOF ; ++i ) {
+				 //Initialization of collideField
+				 ( *collideField ) [ Current_Field_Cell + i ] = LATTICEWEIGHTS[ i ];
+
+				 //Initialization of streamField
+				 ( *streamField ) [ Current_Field_Cell + i ] = LATTICEWEIGHTS[ i ];
+			 }
+
+		 }
+	 }
+ }
+
+
+ //..............................................................................
+
+// 						Initialize Flag and ID Fields
+//..............................................................................
+
+	// initialize fluid field
+	// IMPORTANT: Flag and ID Fields have the same index pattern.
+	// it means that we can use computeFlagIndex(...) to compute the index
+	// for the ID Field
+	const int DEFAULT_ID = -1;
+	for ( unsigned z = 0; z < Length[ 2 ] + 2; ++z ) {
+		for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
+			for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
+
+				( *flagField )[ computeFlagIndex( x, y, z, Length ) ] = FLUID;
+				( *IdField )[ computeFlagIndex( x, y, z, Length ) ] = DEFAULT_ID;
+
+			}
+		}
+	}
+
+
+	//
+	//	   Coordintes:
+	//
+	//	  X |
+	//		|   /  Y
+	//		|  /
+	//		| /
+	//		|/
+	//		------------ Z
+	//
+	//
+
+
+	// initialize outlet
+	for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
+		for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
+
+			( *flagField )[ computeFlagIndex( x, y, Length[ 2 ] + 1, Length) ] = OUTFLOW;
+		}
+	}
+
+
+	// initialize inlet
+	for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
+		for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
+
+			( *flagField )[ computeFlagIndex( x, y, 0, Length) ] = INFLOW;
+		}
+	}
+
+
+	// initialised walls
+	for ( unsigned z = 0; z < Length[ 2 ] + 2; ++z ) {
+		for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
+			( *flagField )[ computeFlagIndex( 0, y, z, Length ) ] = NO_SLIP;
+			( *flagField )[ computeFlagIndex( Length[ 0 ] + 1, y, z, Length ) ] = NO_SLIP;
+		}
+	}
+
+
+	for ( unsigned z = 0; z < Length[ 2 ] + 2; ++z ) {
+		for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
+			( *flagField )[ computeFlagIndex( x, 0, z, Length ) ] = NO_SLIP;
+			( *flagField )[ computeFlagIndex( x, Length[ 1 ] + 1, z, Length ) ] = NO_SLIP;
+		}
+	}
+}
+
+
+
+/*******************************************************************************
+*
+*  						PROBLEM 4: TiltedPlate
+*
+********************************************************************************/
+void initialiseFields_TiltedPlate( const char *PLATE_TXT_FILE_NAME,
+								   double **collideField,
+								   double **streamField,
+								   int **flagField,
+								   int **IdField,
+								   unsigned* Length ) {
+
+  // initialize the obstacle
+  std::ifstream File( PLATE_TXT_FILE_NAME );
+
+  std::string String = "";
+  std::string HEADER_END = "#LOOKUP_TABLE default";
+  const char DELIMITER = ' ';
+
+  // READ HEADER OF THE FILE
+  do {
+     std::getline( File, String );
+  } while ( String != HEADER_END );
+
+  // read parameters
+  std::getline( File, String );
+  getLengthFromString( Length, String );
+
+  // allocate the momory
+  allocateFields( collideField,
+  			  	  streamField,
+  				  flagField,
+  				  IdField,
+  				  Length );
+
+
+
+    const int DEFAULT_ID = -1;
+    unsigned Current_Field_Cell = 0;
+	// init Fields: collide and stream fields
+	//Initialization of collideField
+	for( unsigned z = 0 ; z < Length[ 2 ] + 2; ++z )  {
+		for( unsigned y = 0 ; y < Length[ 1 ] + 2 ; ++y )  {
+			for( unsigned x = 0 ; x < Length[ 0 ] + 2 ; ++x ) {
+
+                ( *IdField )[ computeFlagIndex( x, y, z, Length ) ] = DEFAULT_ID;
+
+				Current_Field_Cell = computeFieldIndex( x, y, z, Length );
+				for( unsigned i = 0 ; i < Vel_DOF ; ++i ) {
+					//Initialization of collideField
+					(*collideField) [ Current_Field_Cell + i ] = LATTICEWEIGHTS[ i ];
+
+					//Initialization of streamField
+					(*streamField) [ Current_Field_Cell + i ] = LATTICEWEIGHTS[ i ];
+
+				}
+
+			}
+		}
+    }
+
+
+
+
+  // read the file and fill in the flag field
+  unsigned int NUMBER_OF_LINE = Length[ 2 ];
+  unsigned int NUMBER_OF_CARACTER = Length[ 0 ];
+  int FLAG = FLUID;
+
+  int LineCounter = 0;
+  int  CharacterCounter = 0;
+  char Buff = 0;
+
+    while ( !File.eof() ) {
+
+      getline (File,String);
+
+      for ( std::string::iterator it = String.begin(); it < String.end(); ++it ) {
+
+               if ( ( *it ) == '0' ) {
+                   FLAG = FLUID;
+                   ++CharacterCounter;
+               }
+               else if ( ( *it ) == '1' ) {
+                   ++CharacterCounter;
+                   FLAG = NO_SLIP;
+
+               }
+               else if ( ( *it ) == ' ' ) {
+                   continue;
+               }
+
+
+               for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y  ) {
+               (*flagField ) [ computeFlagIndex( CharacterCounter + 1,
+                                                 y,
+                                                 LineCounter + 1,
+                                                 Length ) ] = FLAG;
+               }
+        }
+
+        CharacterCounter = 0;
+        ++LineCounter;
+    }
+
+
+
+
+  // initialised XY: INLET AND OUTLET
+  for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
+      for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
+          ( *flagField )[ computeFlagIndex( x, y, 0, Length ) ] = INFLOW;
+          ( *flagField )[ computeFlagIndex( x, y, Length[ 2 ] + 1, Length ) ] = OUTFLOW;
+      }
+  }
+
+  // initialised ZX: INLET AND OUTLET
+  for ( unsigned z = 0; z < Length[ 2 ] + 2; ++z ) {
+      for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
+          ( *flagField )[ computeFlagIndex( x, 0, z, Length ) ] = FREE_SLIP;
+          ( *flagField )[ computeFlagIndex( x, Length[ 1 ] + 1, z, Length ) ] = FREE_SLIP;
+      }
+  }
+
+
+  // initialised ZY: INLET AND OUTLET
+  for ( unsigned z = 0; z < Length[ 2 ] + 2; ++z ) {
+      for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
+          ( *flagField )[ computeFlagIndex( 0, y, z, Length ) ] = NO_SLIP;
+          ( *flagField )[ computeFlagIndex( Length[ 0 ] + 1, y, z, Length ) ] = NO_SLIP;
+      }
+  }
+}
+
+
+//==============================================================================
+//==============================================================================
+//==============================================================================
+//==============================    TEST    ====================================
+//==============================================================================
+//==============================================================================
+//==============================================================================
+
+void testField( double **collideField,
+                double **streamField,
+                int **flagField,
+                int **IdField,
+                unsigned* Length ) {
+
+    Length[ 0 ] = 10;
+    Length[ 1 ] = 2;
+    Length[ 2 ] = 10;
+
+
+    allocateFields( collideField,
+    				streamField,
+    				flagField,
+    				IdField,
+    				Length );
+
+//..............................................................................
+// 					Initialize Stream and Collide Fields
+//..............................................................................
+
+	unsigned Current_Field_Cell = 0;
+
+	// init Fields: collide and stream fields
+	//Initialization of collideField
+	for( unsigned z = 0 ; z < Length[ 2 ] + 2; ++z )  {
+		for( unsigned y = 0 ; y < Length[ 1 ] + 2 ; ++y )  {
+			for( unsigned x = 0 ; x < Length[ 0 ] + 2 ; ++x ) {
+
+				Current_Field_Cell = computeFieldIndex( x, y, z, Length );
+
+				for( unsigned i = 0 ; i < Vel_DOF ; ++i ) {
+					//Initialization of collideField
+					(*collideField) [ Current_Field_Cell + i ] = LATTICEWEIGHTS[ i ];
+
+					//Initialization of streamField
+					(*streamField) [ Current_Field_Cell + i ] = LATTICEWEIGHTS[ i ];
+
+				}
+
+			}
+		}
+	}
+
+
+//..............................................................................
+// 						Initialize Flag and ID Fields
+//..............................................................................
+
+// initialize fluid field
+// IMPORTANT: Flag and ID Fields have the same index pattern.
+// it means that we can use computeFlagIndex(...) to compute the index
+// for the ID Field
+	const int DEFAULT_ID = -1;
+	for ( unsigned z = 0; z < Length[ 2 ] + 2; ++z ) {
+		for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
+			for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
+
+					( *flagField )[ computeFlagIndex( x, y, z, Length ) ] = FLUID;
+					( *IdField )[ computeFlagIndex( x, y, z, Length ) ] = DEFAULT_ID;
+
+			}
+		}
+	}
+
+     // initialised XY: INLET AND OUTLET
+     for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
+         for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
+             ( *flagField )[ computeFlagIndex( x, y, 0, Length ) ] = NO_SLIP;
+             ( *flagField )[ computeFlagIndex( x, y, Length[ 2 ] + 1, Length ) ] = NO_SLIP;
+         }
+     }
+
+     // initialised ZX: INLET AND OUTLET
+     for ( unsigned z = 0; z < Length[ 2 ] + 2; ++z ) {
+         for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
+             ( *flagField )[ computeFlagIndex( x, 0, z, Length ) ] = NO_SLIP;
+             ( *flagField )[ computeFlagIndex( x, Length[ 1 ] + 1, z, Length ) ] = NO_SLIP;
+         }
+     }
+
+
+     // initialised ZY: INLET AND OUTLET
+     for ( unsigned z = 0; z < Length[ 2 ] + 2; ++z ) {
+         for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
+             ( *flagField )[ computeFlagIndex( 0, y, z, Length ) ] = NO_SLIP;
+             ( *flagField )[ computeFlagIndex( Length[ 0 ] + 1, y, z, Length ) ] = NO_SLIP;
+         }
+    }
+
+
+     // initialised ZY: INLET AND OUTLET
+     //for ( unsigned z = 0; z < Length[ 2 ] + 2; ++z ) {
+         for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
+             ( *flagField )[ computeFlagIndex( 5, y, 5, Length ) ] = NO_SLIP;
+         }
+    //}
 
 }

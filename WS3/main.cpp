@@ -67,7 +67,7 @@ int main( int argc, char *argv[] ){
                  VtkFile = fopen( argv[3], "r" );
 
                  if ( VtkFile == 0 ) {
-                     printf( "\nERROR: The file comtaining the mesh does not exsist\n\n" );
+                     printf( "\nERROR: The file containing the mesh does not exsist\n\n" );
                      printf( "HINT:   Check the file spelling or its existence and try again\n\n");
                      return -1;
 
@@ -198,7 +198,7 @@ int main( int argc, char *argv[] ){
     double* Swap = NULL;
     for ( unsigned Step = 0; Step < TimeSteps; ++Step ) {
 
-/*
+
         doStreaming( collideField,
                      streamField,
                      FluidDomain );
@@ -218,7 +218,7 @@ int main( int argc, char *argv[] ){
         treatBoundary( collideField,
                        BoundaryList,
                        wallVelocity );
-*/
+
 
 #ifndef MLUPS_FLAG
         // if the MLUPS_FLAG flag is enabled then we will measure performance

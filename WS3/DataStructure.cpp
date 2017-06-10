@@ -156,7 +156,11 @@ inline void FreeSlip::treatBoundary( double * Field ) {
 /********************Inflow************************************/
 inline void Inflow::treatBoundary( double * Field ) {
 
-	computeSingleFeq( &Density_Reference, m_InletVelocity, Field + m_SelfIndex, m_VelocityComponent );
+	double Density = 1.0;		 
+ 	double TempF = 0.0;
+ 	computeDensity( Field + m_SourceIndex, &Density );		
+ 	computeSingleFeq( &Density, m_InletVelocity, &TempF, m_VelocityComponent );		
+ 	Field[m_SelfIndex + m_VelocityComponent] = TempF;
 
 
 }

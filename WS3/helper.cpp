@@ -3,10 +3,12 @@
 #include <stdio.h>
 #include <string>
 #include <vector>
+#include <list>
 #include <iostream>
 #include <string>
 
 #include "helper.h"
+#include "DataStructure.h"
 
 /* ----------------------------------------------------------------------- */
 /*                             auxiliary functions                         */
@@ -95,74 +97,102 @@ int read_parameters( const char *INPUT_FILE_NAME,        /* the name of the data
                      unsigned *timesteps,                     /* number of simulation time steps */
                      unsigned *timestepsPerPlotting ) {       /* number of visualization time steps */
 
-   read_unsigned( INPUT_FILE_NAME, "xlength", &Length[ 0 ] );
-   read_unsigned( INPUT_FILE_NAME, "ylength", &Length[ 1 ] );
-   read_unsigned( INPUT_FILE_NAME, "zlength", &Length[ 2 ] );
+   int TempLength[ 3 ] = { 0 };
+   read_int( INPUT_FILE_NAME, "xlength", &TempLength[ 0 ] );
+   read_int( INPUT_FILE_NAME, "ylength", &TempLength[ 1 ] );
+   read_int( INPUT_FILE_NAME, "zlength", &TempLength[ 2 ] );
 
-   int *TempTime = NULL;
-
-	if (   ( Length[ 0 ] <= 0 )
-		|| ( Length[ 1 ] <= 0 )
-		|| ( Length[ 2 ] <= 0 ) ) {
+   if (   ( TempLength[ 0 ] <= 1 )
+		|| ( TempLength[ 1 ] <= 1 )
+		|| ( TempLength[ 2 ] <= 1 ) ) {
 		std::string Error = "ERROR: provided geometrical parameters are wrong";
 		throw Error;
 	}
+	else {
+		Length[ 0 ] = ( unsigned )TempLength[ 0 ];
+		Length[ 1 ] = ( unsigned )TempLength[ 1 ];
+		Length[ 2 ] = ( unsigned )TempLength[ 2 ];
+	}
+
 
    read_double( INPUT_FILE_NAME, "tau", tau );
-
-   if ( *tau <= 0.5 || *tau >= 2.0 ) {
+   if ( ( *tau ) <= 0.5 || ( *tau >= 2.0 ) ) {
 	   std::string Error = "ERROR: tau should be between greater than 0.5 and  less than 2.0";
 	   throw Error;
    }
+
+   double VelocityMagnitude = 0.0;
 
    read_double( INPUT_FILE_NAME, "U", &WallVelocity[ 0 ] );
    read_double( INPUT_FILE_NAME, "V", &WallVelocity[ 1 ] );
    read_double( INPUT_FILE_NAME, "W", &WallVelocity[ 2 ] );
 
-   if (   ( WallVelocity[ 0 ] >= 0.1 )
-	   || ( WallVelocity[ 1 ] >= 0.1 )
-	   || ( WallVelocity[ 2 ] >= 0.1 ) ) {
-	   std::string Error = "Wall Velocity should be small, LBM fails at high Mach Number";
+   VelocityMagnitude = WallVelocity[ 0 ] * WallVelocity[ 0 ]
+					 + WallVelocity[ 1 ] * WallVelocity[ 1 ]
+					 + WallVelocity[ 2 ] * WallVelocity[ 2 ];
+   if ( VelocityMagnitude >= 0.01 ) {
+	   std::string Error = "ERROR: Lid Velocity should be small, LBM fails at high Mach Number";
 	   throw Error;
    }
+
 
    read_double( INPUT_FILE_NAME, "Uin", &InletVelocity[ 0 ] );
    read_double( INPUT_FILE_NAME, "Vin", &InletVelocity[ 1 ] );
    read_double( INPUT_FILE_NAME, "Win", &InletVelocity[ 2 ] );
 
-   if (   ( InletVelocity[ 0 ] >= 0.1 )
-	   || ( InletVelocity[ 1 ] >= 0.1 )
-	   || ( InletVelocity[ 2 ] >= 0.1 ) ) {
-	   std::string Error = "Inlet Velocity should be small, LBM fails at high Mach Number";
+   VelocityMagnitude = InletVelocity[ 0 ] * InletVelocity[ 0 ]
+   					 + InletVelocity[ 1 ] * InletVelocity[ 1 ]
+   					 + InletVelocity[ 2 ] * InletVelocity[ 2 ];
+
+   if ( VelocityMagnitude >= 0.01 ) {
+	   std::string Error = "ERROR: Inlet Velocity should be small, LBM fails at high Mach Number";
 	   throw Error;
    }
+
 
    read_double( INPUT_FILE_NAME, "DeltaDensity", DeltaDensity );
-
-   if ( *DeltaDensity > 0.05 ) {
-	   std::string Error = "Delta Density should be small, LBM fails at high Mach Number";
+   if ( ( *DeltaDensity ) > 0.05 ) {
+	   std::string Error = "ERROR: Delta Density should be small, LBM fails at high Mach Number";
 	   throw Error;
    }
 
-   read_int( INPUT_FILE_NAME, "timesteps", TempTime );
-
-   if ( *TempTime < 0 ) {
-	   std::string Error = "Time Steps cannot be negative";
+   int TemporaryVariable = 0;
+   read_int( INPUT_FILE_NAME, "timesteps", &TemporaryVariable );
+   if ( TemporaryVariable <= 0 ) {
+	   std::string Error = "ERROR: Time Steps cannot be negative";
 	   throw Error;
    }
-
-   *timesteps = *TempTime;
-
-   read_int( INPUT_FILE_NAME, "timestepsPerPlotting", TempTime );
-
-   if ( *TempTime < 0 ) {
-	   std::string Error = "Time Steps Per Plotting cannot be negative";
-	   throw Error;
+   else {
+		( *timesteps ) = TemporaryVariable;
    }
 
-   *timestepsPerPlotting = *TempTime;
+
+   read_int( INPUT_FILE_NAME, "timestepsPerPlotting", &TemporaryVariable );
+
+   if ( TemporaryVariable <= 0 ) {
+	   std::string Error = "ERROR: Time Steps Per Plotting cannot be negative";
+	   throw Error;
+   }
+   else {
+	 	( *timestepsPerPlotting ) = ( TemporaryVariable );
+   }
+
 
    return 1;
+}
+
+
+void copyToVector( std::list<Fluid*> &aList, std::vector<Fluid*> &aVector ) {
+
+	aVector.resize( aList.size() );
+
+	unsigned Counter = 0;
+	for ( std::list<Fluid*>::iterator Iterator = aList.begin();
+ 		  Iterator != aList.end();
+ 		  ++Iterator, ++Counter ) {
+		aVector[ Counter ] = ( *Iterator );
+	}
+
 }
 
 

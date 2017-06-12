@@ -3,7 +3,7 @@
 #include "helper.h"
 #include <stdio.h>
 
-#include <list>
+#include <vector>
 #include "DataStructure.h"
 
 
@@ -20,7 +20,7 @@ void computePostCollisionDistributions( double *currentCell,
 
 }
 
-void doCollision( std::list<Fluid*>& FluidDomain,
+void doCollision( std::vector<Fluid*>& FluidDomain,
 				  double *collideField,
                   const double * const tau ) {
 
@@ -33,7 +33,7 @@ void doCollision( std::list<Fluid*>& FluidDomain,
   int Current_Cell = 0;
 
 	//Looping through all fluid element
-	for ( std::list<Fluid*>::iterator aFluidCell = FluidDomain.begin();
+	for ( std::vector<Fluid*>::iterator aFluidCell = FluidDomain.begin();
           aFluidCell != FluidDomain.end();
           ++aFluidCell ) {
 

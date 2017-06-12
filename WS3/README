@@ -9,18 +9,17 @@ following possible simulation flags has to be set up:
      -fchannel  :    Pressure Driven shear flow in channel
      -fplate    :    Flow around Tilted Plate
 
-EXAMPLE: /lbsim cube.data -fstep
+EXAMPLE:
+	in general: 
+		./lbsim step.data -fstep
 	
-	for tilted plate
-		 /lbsim cube.data -fstep lbm_tilted_plate.vtk
+	for tilted plate:
+		 ./lbsim plate.data -fplate lbm_tilted_plate.vtk
 
 HINT: Check spelling of your data file if the simulation doesn't run
 --------------------------------------------------------------------------------
 TODO LIST:
 
-1) Error Handling
-2) Simple Profiling
-3) Simple Refactoring (remove all debugging variables if they exist )
 4) Documentation of code and questions of assignment
 5) Theory Part of the assignment
 

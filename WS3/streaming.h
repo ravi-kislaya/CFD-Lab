@@ -1,4 +1,4 @@
-#include <list>
+#include <vector>
 #include "DataStructure.h"
 
 #ifndef _STREAMING_H_
@@ -9,6 +9,6 @@
  */
 void doStreaming( double *collideField,
                   double *streamField,
-                  std::list<Fluid*>& FluidDomain );
+                  std::vector<Fluid*>& FluidDomain );
 
 #endif

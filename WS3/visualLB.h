@@ -10,11 +10,11 @@
  */
 
 void write_vtkHeader( FILE* fp,
-                      std::list<Fluid*>& FluidDomain,
+                      std::vector<Fluid*>& FluidDomain,
                       unsigned* Length );
 
 void write_vtkPointCoordinates( FILE* fp,
-                                std::list<Fluid*>& FluidDomain,
+                                std::vector<Fluid*>& FluidDomain,
                                 unsigned* Length );
 
 void write_vtkPointElements( FILE* fp,
@@ -24,7 +24,7 @@ void write_vtkPointElements( FILE* fp,
 
 void writeVtkOutput( const char * filename,
                      double* const collideField,
-                     std::list<Fluid*>& FluidDomain,
+                     std::vector<Fluid*>& FluidDomain,
                      std::list<Fluid*>& VTKrepresentation,
                      int* IdField,
                      unsigned int t,

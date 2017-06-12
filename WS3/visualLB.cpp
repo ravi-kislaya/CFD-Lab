@@ -1,3 +1,4 @@
+#include <vector>
 #include <list>
 #include <iostream>
 #include <string>
@@ -15,7 +16,7 @@
 //Writes Density and Velocity from the collision field
 void writeVtkOutput( const char * filename,
                      double * const collideField,
-                     std::list<Fluid*>& FluidDomain,
+                     std::vector<Fluid*>& FluidDomain,
                      std::list<Fluid*>& VTKrepresentation,
                      int *IdField,
                      unsigned int t,
@@ -72,7 +73,7 @@ void writeVtkOutput( const char * filename,
 
 
     double* Index = 0;
-    for ( std::list<Fluid*>::iterator Iterator = FluidDomain.begin();
+    for ( std::vector<Fluid*>::iterator Iterator = FluidDomain.begin();
           Iterator != FluidDomain.end();
           ++Iterator ) {
 
@@ -93,12 +94,12 @@ void writeVtkOutput( const char * filename,
 
 //------------------------------------------------------------------------------
 //                        Write velocity to the file
-//------------------------------------------------------------------------------
+//--------------------------------------------------------#include <vector>----------------------
     //Computing Velocity
     fprintf(fp, "\nVECTORS velocity float \n");
     double Velocity[ 3 ] = { 0.0 };
     Index = 0;
-    for ( std::list<Fluid*>::iterator aFluidCell = FluidDomain.begin();
+    for ( std::vector<Fluid*>::iterator aFluidCell = FluidDomain.begin();
           aFluidCell != FluidDomain.end();
           ++aFluidCell ) {
 
@@ -116,7 +117,7 @@ void writeVtkOutput( const char * filename,
 
 
 void write_vtkHeader( FILE *fp,
-                      std::list<Fluid*>& FluidDomain,
+                      std::vector<Fluid*>& FluidDomain,
                       unsigned* Length ) {
 
     if( fp == NULL )
@@ -139,10 +140,10 @@ void write_vtkHeader( FILE *fp,
 
 
 void write_vtkPointCoordinates( FILE* fp,
-                                std::list<Fluid*>& FluidDomain,
+                                std::vector<Fluid*>& FluidDomain,
                                 unsigned* Length ) {
 
-    for ( std::list<Fluid*>::iterator Iterator = FluidDomain.begin();
+    for ( std::vector<Fluid*>::iterator Iterator = FluidDomain.begin();
           Iterator != FluidDomain.end();
           ++Iterator ) {
 

@@ -1,18 +1,18 @@
 #include "streaming.h"
 #include "LBDefinitions.h"
 #include "helper.h"
-#include <list>
+#include <vector>
 #include "DataStructure.h"
 
 void doStreaming( double *collideField,
 	 			  double *streamField,
-				  std::list<Fluid*>& FluidDomain ) {
+				  std::vector<Fluid*>& FluidDomain ) {
 
 
 	int Fluid_Cell = 0, Neighbour_Cell = 0;
 
 	//Looping through all fluid element
-	for ( std::list<Fluid*>::iterator aFluidCell = FluidDomain.begin();
+	for ( std::vector<Fluid*>::iterator aFluidCell = FluidDomain.begin();
           aFluidCell != FluidDomain.end();
           ++aFluidCell ) {
 

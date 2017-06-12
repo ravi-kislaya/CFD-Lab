@@ -123,7 +123,6 @@ void initialiseFields_Step( double **collideField,
 //..............................................................................
 // 						Allocate the fields in memory
 //..............................................................................
-
 allocateFields( collideField,
 				streamField,
 				flagField,

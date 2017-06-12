@@ -21,8 +21,8 @@ void computeFeq( const double * const density,
                  double *feq );
 
 void computeSingleFeq( const double * const density,
-                 const double * const velocity,
-                 double *feq,
-				 int Velocity_Component );
-				 
+                       const double * const velocity,
+                       double *feq,
+				       int Velocity_Component );
+
 #endif

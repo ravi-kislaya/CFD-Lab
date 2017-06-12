@@ -2,7 +2,7 @@
 #define _COLLISION_H_
 
 #include "computeCellValues.h"
-#include <list>
+#include <vector>
 #include "DataStructure.h"
 
 /** computes the post-collision distribution functions according to the BGK update rule and
@@ -16,7 +16,7 @@ void computePostCollisionDistributions( double *currentCell,
 /** carries out the whole local collision process. Computes density and velocity and
  *  equilibrium distributions. Carries out BGK update.
  */
-void doCollision( std::list<Fluid*>& FluidDomain,
+void doCollision( std::vector<Fluid*>& FluidDomain,
                   double *collideField,
                   const double * const tau );
 #endif

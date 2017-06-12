@@ -3,6 +3,7 @@
 
 #include <time.h>
 #include <list>
+#include <vector>
 #include <iostream>
 #include <stdio.h>
 #include <string>
@@ -134,17 +135,8 @@ int main( int argc, char *argv[] ){
   int *IdField = 0;
 
 
-  // allcocate the list of boundary layer cells
-  std::list<BoundaryFluid*> BoundaryList;
+  try {
 
-  // allocate a list for all fluid
-  std::list<Fluid*> FluidDomain;
-
-  // allocate a list for VTK represenation
-  std::list<Fluid*> VTKrepresentation;
-
-
-  try{
       read_parameters( INPUT_FILE_NAME,         /* the name of the data file */
                        Length,                  /* number of cells along x direction */
                        &tau,                    /* relaxation time */
@@ -153,10 +145,20 @@ int main( int argc, char *argv[] ){
                        &DeltaDensity,           /* density difference */
                        &TimeSteps,              /* number of simulation time steps */
                        &TimeStepsPerPlotting ); /* number of visualization time steps */
+  }
+  catch( std::string Error ) {
+    std::cout << Error << std::endl;
+    return - 1;
+  }
+  catch( ... ) {
+    std::cout << "Unexpected error" << std::endl;
+    return - 1;
+  }
+
 
 
       // Lid driven cavity mode
-      if ( !strcmp( argv[2], MODES[ 0 ] ) ) {
+      if ( !strcmp( argv[ 2 ], MODES[ 0 ] ) ) {
 
           initialiseFields_LidDrivenCavity( &collideField,
                                             &streamField,
@@ -170,8 +172,9 @@ int main( int argc, char *argv[] ){
       else if ( !strcmp( argv[ 2 ], MODES[ 1 ] ) ) {
 
           if ( Length[ 0 ] >= Length[ 2 ] ) {
-            std::string Error = "ERROR: zLength cannot be less or equal then xLength";
-            throw Error;
+            std::cout << "ERROR: zLength cannot be less or equal then xLength "
+                      << "in the fstep mode" << std::endl;
+            return -1;
           }
 
           initialiseFields_Step( &collideField,
@@ -208,9 +211,19 @@ int main( int argc, char *argv[] ){
 
       }
 
+    // allcocate the list of boundary layer cells
+    std::list<BoundaryFluid*> BoundaryList;
+
+    // allocate a list for all fluid
+    std::list<Fluid*> FluidDomainList;
+
+    // allocate a list for VTK represenation
+    std::list<Fluid*> VTKrepresentation;
+
+
       // prepare all boundaries ( stationary and moving walls )
       scanBoundary( BoundaryList,
-    				FluidDomain,
+    				FluidDomainList,
                     VTKrepresentation,
                     flagField,
                     IdField,
@@ -218,6 +231,10 @@ int main( int argc, char *argv[] ){
                     wallVelocity,
     				InletVelocity,
     				DeltaDensity );
+
+
+       std::vector<Fluid*> FluidDomain;
+       copyToVector( FluidDomainList, FluidDomain );
 
 
        clock_t Begin = clock();
@@ -266,27 +283,19 @@ int main( int argc, char *argv[] ){
 #endif
 
 
-
         }
 
 
-       // display the output information
-       clock_t End = clock();
-       double ConsumedTime = (double)( End - Begin ) / CLOCKS_PER_SEC;
-       double MLUPS = ( FluidDomain.size() * TimeSteps ) / ( ConsumedTime * 1e6 );
+    // display the output information
+    clock_t End = clock();
+    double ConsumedTime = (double)( End - Begin ) / CLOCKS_PER_SEC;
+    double MLUPS = ( FluidDomain.size() * TimeSteps ) / ( ConsumedTime * 1e6 );
 
-       // display MLUPS number that stands for Mega Lattice Updates Per Second
-       std::cout << "Computational time: " <<  ConsumedTime << " sec" << std::endl;
-       std::cout << "MLUPS: " <<  MLUPS << std::endl;
-       std::cout << "Number of lattices: " <<  (int)FluidDomain.size() << std::endl;
+    // display MLUPS number that stands for Mega Lattice Updates Per Second
+    std::cout << "Computational time: " <<  ConsumedTime << " sec" << std::endl;
+    std::cout << "MLUPS: " <<  MLUPS << std::endl;
+    std::cout << "Number of lattices: " <<  (int)FluidDomain.size() << std::endl;
 
-    }
-    catch( std::string Error ) {
-        std::cout << Error << std::endl;
-    }
-    catch( ... ) {
-        std::cout << "Unexpected error" << std::endl;
-    }
 
 
     // delete list of obstacles
@@ -302,7 +311,7 @@ int main( int argc, char *argv[] ){
     }
 
 	// delete list of Fluid
-	for ( std::list<Fluid*>::iterator Iterator = FluidDomain.begin();
+	for ( std::vector<Fluid*>::iterator Iterator = FluidDomain.begin();
           Iterator != FluidDomain.end();
           ++ Iterator ) {
 

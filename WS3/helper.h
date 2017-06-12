@@ -9,9 +9,13 @@
 #include <string.h>
 #include <float.h>
 #include <time.h>
+
 #include <string>
+#include <vector>
+#include <list>
 
 #include "LBDefinitions.h"
+#include "DataStructure.h"
 
 /* ----------------------------------------------------------------------- */
 /*                      user define functions                              */
@@ -51,6 +55,8 @@ void allocateFields( double** collideField,
 				  	 unsigned* Length );
 
 void getLengthFromString( unsigned* Length, std::string String );
+void copyToVector( std::list<Fluid*> &aList, std::vector<Fluid*> &aVector );
+
 
 #ifdef PI
 #undef PI

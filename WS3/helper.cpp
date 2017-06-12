@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <string>
+
 #include "helper.h"
 
 /* ----------------------------------------------------------------------- */
@@ -18,7 +20,7 @@ void allocateFields( double** collideField,
     int CellNumber = ( Length[ 0 ] + 2 )
                     * ( Length[ 1 ] + 2 )
                     * ( Length[ 2 ] + 2 );
-				
+
     *collideField = ( double* ) calloc( Vel_DOF * CellNumber, sizeof( double ) );
     *streamField = ( double* ) calloc( Vel_DOF * CellNumber, sizeof( double ) );
     *flagField = ( int* ) calloc( CellNumber, sizeof(int) );
@@ -97,20 +99,68 @@ int read_parameters( const char *INPUT_FILE_NAME,        /* the name of the data
    read_unsigned( INPUT_FILE_NAME, "ylength", &Length[ 1 ] );
    read_unsigned( INPUT_FILE_NAME, "zlength", &Length[ 2 ] );
 
+   int *TempTime = NULL;
+
+	if (   ( Length[ 0 ] <= 0 )
+		|| ( Length[ 1 ] <= 0 )
+		|| ( Length[ 2 ] <= 0 ) ) {
+		std::string Error = "ERROR: provided geometrical parameters are wrong";
+		throw Error;
+	}
+
    read_double( INPUT_FILE_NAME, "tau", tau );
+
+   if ( *tau <= 0.5 || *tau >= 2.0 ) {
+	   std::string Error = "ERROR: tau should be between greater than 0.5 and  less than 2.0";
+	   throw Error;
+   }
 
    read_double( INPUT_FILE_NAME, "U", &WallVelocity[ 0 ] );
    read_double( INPUT_FILE_NAME, "V", &WallVelocity[ 1 ] );
    read_double( INPUT_FILE_NAME, "W", &WallVelocity[ 2 ] );
 
+   if (   ( WallVelocity[ 0 ] >= 0.1 )
+	   || ( WallVelocity[ 1 ] >= 0.1 )
+	   || ( WallVelocity[ 2 ] >= 0.1 ) ) {
+	   std::string Error = "Wall Velocity should be small, LBM fails at high Mach Number";
+	   throw Error;
+   }
+
    read_double( INPUT_FILE_NAME, "Uin", &InletVelocity[ 0 ] );
    read_double( INPUT_FILE_NAME, "Vin", &InletVelocity[ 1 ] );
    read_double( INPUT_FILE_NAME, "Win", &InletVelocity[ 2 ] );
 
+   if (   ( InletVelocity[ 0 ] >= 0.1 )
+	   || ( InletVelocity[ 1 ] >= 0.1 )
+	   || ( InletVelocity[ 2 ] >= 0.1 ) ) {
+	   std::string Error = "Inlet Velocity should be small, LBM fails at high Mach Number";
+	   throw Error;
+   }
+
    read_double( INPUT_FILE_NAME, "DeltaDensity", DeltaDensity );
 
-   read_unsigned( INPUT_FILE_NAME, "timesteps", timesteps );
-   read_unsigned( INPUT_FILE_NAME, "timestepsPerPlotting", timestepsPerPlotting );
+   if ( *DeltaDensity > 0.05 ) {
+	   std::string Error = "Delta Density should be small, LBM fails at high Mach Number";
+	   throw Error;
+   }
+
+   read_int( INPUT_FILE_NAME, "timesteps", TempTime );
+
+   if ( *TempTime < 0 ) {
+	   std::string Error = "Time Steps cannot be negative";
+	   throw Error;
+   }
+
+   *timesteps = *TempTime;
+
+   read_int( INPUT_FILE_NAME, "timestepsPerPlotting", TempTime );
+
+   if ( *TempTime < 0 ) {
+	   std::string Error = "Time Steps Per Plotting cannot be negative";
+	   throw Error;
+   }
+
+   *timestepsPerPlotting = *TempTime;
 
    return 1;
 }

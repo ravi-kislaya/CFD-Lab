@@ -10,7 +10,6 @@
 #include "LBDefinitions.h"
 #include "helper.h"
 
-//TODO: DO final optimization for variables in for loop
 
 /*******************************************************************************
 *
@@ -358,8 +357,8 @@ allocateFields( collideField,
 
 	for ( unsigned z = 0; z < Length[ 2 ] + 2; ++z ) {
 		for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
-			( *flagField )[ computeFlagIndex( x, 0, z, Length ) ] = NO_SLIP;
-			( *flagField )[ computeFlagIndex( x, Length[ 1 ] + 1, z, Length ) ] = NO_SLIP;
+			( *flagField )[ computeFlagIndex( x, 0, z, Length ) ] = FREE_SLIP;
+			( *flagField )[ computeFlagIndex( x, Length[ 1 ] + 1, z, Length ) ] = FREE_SLIP;
 		}
 	}
 }
@@ -383,7 +382,6 @@ void initialiseFields_TiltedPlate( const char *PLATE_TXT_FILE_NAME,
 
   std::string String = "";
   std::string HEADER_END = "#LOOKUP_TABLE default";
-  const char DELIMITER = ' ';
 
   // READ HEADER OF THE FILE
   do {
@@ -393,6 +391,16 @@ void initialiseFields_TiltedPlate( const char *PLATE_TXT_FILE_NAME,
   // read parameters
   std::getline( File, String );
   getLengthFromString( Length, String );
+
+  unsigned yLENGTH_MINIMUM = 2;
+  if ( Length[ 1 ] < yLENGTH_MINIMUM ) {
+    std::cout << "WARNING: the minimum yLength value must be " << yLENGTH_MINIMUM << std::endl;
+    std::cout << "the corresponding value will be automatically reassigned to the minimum value\n"
+              << "since the provided yLength is less than required"
+              << std::endl;
+
+    Length[ 1 ] = yLENGTH_MINIMUM;
+  }
 
   // allocate the momory
   allocateFields( collideField,
@@ -431,13 +439,11 @@ void initialiseFields_TiltedPlate( const char *PLATE_TXT_FILE_NAME,
 
 
   // read the file and fill in the flag field
-  unsigned int NUMBER_OF_LINE = Length[ 2 ];
-  unsigned int NUMBER_OF_CARACTER = Length[ 0 ];
+  const char DELIMITER = ' ';
   int FLAG = FLUID;
 
   int LineCounter = 0;
   int  CharacterCounter = 0;
-  char Buff = 0;
 
     while ( !File.eof() ) {
 
@@ -454,7 +460,7 @@ void initialiseFields_TiltedPlate( const char *PLATE_TXT_FILE_NAME,
                    FLAG = NO_SLIP;
 
                }
-               else if ( ( *it ) == ' ' ) {
+               else if ( ( *it ) == DELIMITER ) {
                    continue;
                }
 
@@ -498,113 +504,4 @@ void initialiseFields_TiltedPlate( const char *PLATE_TXT_FILE_NAME,
           ( *flagField )[ computeFlagIndex( Length[ 0 ] + 1, y, z, Length ) ] = NO_SLIP;
       }
   }
-}
-
-
-//==============================================================================
-//==============================================================================
-//==============================================================================
-//==============================    TEST    ====================================
-//==============================================================================
-//==============================================================================
-//==============================================================================
-
-void testField( double **collideField,
-                double **streamField,
-                int **flagField,
-                int **IdField,
-                unsigned* Length ) {
-
-    Length[ 0 ] = 10;
-    Length[ 1 ] = 2;
-    Length[ 2 ] = 10;
-
-
-    allocateFields( collideField,
-    				streamField,
-    				flagField,
-    				IdField,
-    				Length );
-
-//..............................................................................
-// 					Initialize Stream and Collide Fields
-//..............................................................................
-
-	unsigned Current_Field_Cell = 0;
-
-	// init Fields: collide and stream fields
-	//Initialization of collideField
-	for( unsigned z = 0 ; z < Length[ 2 ] + 2; ++z )  {
-		for( unsigned y = 0 ; y < Length[ 1 ] + 2 ; ++y )  {
-			for( unsigned x = 0 ; x < Length[ 0 ] + 2 ; ++x ) {
-
-				Current_Field_Cell = computeFieldIndex( x, y, z, Length );
-
-				for( unsigned i = 0 ; i < Vel_DOF ; ++i ) {
-					//Initialization of collideField
-					(*collideField) [ Current_Field_Cell + i ] = LATTICEWEIGHTS[ i ];
-
-					//Initialization of streamField
-					(*streamField) [ Current_Field_Cell + i ] = LATTICEWEIGHTS[ i ];
-
-				}
-
-			}
-		}
-	}
-
-
-//..............................................................................
-// 						Initialize Flag and ID Fields
-//..............................................................................
-
-// initialize fluid field
-// IMPORTANT: Flag and ID Fields have the same index pattern.
-// it means that we can use computeFlagIndex(...) to compute the index
-// for the ID Field
-	const int DEFAULT_ID = -1;
-	for ( unsigned z = 0; z < Length[ 2 ] + 2; ++z ) {
-		for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
-			for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
-
-					( *flagField )[ computeFlagIndex( x, y, z, Length ) ] = FLUID;
-					( *IdField )[ computeFlagIndex( x, y, z, Length ) ] = DEFAULT_ID;
-
-			}
-		}
-	}
-
-     // initialised XY: INLET AND OUTLET
-     for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
-         for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
-             ( *flagField )[ computeFlagIndex( x, y, 0, Length ) ] = NO_SLIP;
-             ( *flagField )[ computeFlagIndex( x, y, Length[ 2 ] + 1, Length ) ] = NO_SLIP;
-         }
-     }
-
-     // initialised ZX: INLET AND OUTLET
-     for ( unsigned z = 0; z < Length[ 2 ] + 2; ++z ) {
-         for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
-             ( *flagField )[ computeFlagIndex( x, 0, z, Length ) ] = NO_SLIP;
-             ( *flagField )[ computeFlagIndex( x, Length[ 1 ] + 1, z, Length ) ] = NO_SLIP;
-         }
-     }
-
-
-     // initialised ZY: INLET AND OUTLET
-     for ( unsigned z = 0; z < Length[ 2 ] + 2; ++z ) {
-         for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
-             ( *flagField )[ computeFlagIndex( 0, y, z, Length ) ] = NO_SLIP;
-             ( *flagField )[ computeFlagIndex( Length[ 0 ] + 1, y, z, Length ) ] = NO_SLIP;
-         }
-    }
-
-
-     // initialised ZY: INLET AND OUTLET
-     //for ( unsigned z = 0; z < Length[ 2 ] + 2; ++z ) {
-         for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
-             ( *flagField )[ computeFlagIndex( 5, y, 5, Length ) ] = NO_SLIP;
-         }
-    //}
-
 }

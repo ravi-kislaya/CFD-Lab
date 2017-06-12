@@ -25,7 +25,6 @@ void doCollision( std::list<Fluid*>& FluidDomain,
                   const double * const tau ) {
 
 	//Variable declaration
-  //TODO : Ask Nicola if we need the pressure distribution
 
   double Density = 0.0;
   double Velocity[ Dimensions ];

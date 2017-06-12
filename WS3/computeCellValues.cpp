@@ -1,6 +1,5 @@
 #include "computeCellValues.h"
 #include "LBDefinitions.h"
-#include<stdio.h>
 
 void computeDensity( const double *const currentCell, double *density ) {
 

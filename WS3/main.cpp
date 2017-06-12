@@ -5,6 +5,7 @@
 #include <list>
 #include <iostream>
 #include <stdio.h>
+#include <string>
 
 
 #include "LBDefinitions.h"
@@ -34,6 +35,7 @@ int main( int argc, char *argv[] ){
                                                     "-fchannel",
                                                     "-fplate" };
 
+    try {
      if ( argc >= 3 ) {
 
          // check if it's possible to open the data file
@@ -42,9 +44,10 @@ int main( int argc, char *argv[] ){
 
          // Abort execution if it's not possible to open the file
          if ( DataFile == 0 ) {
-             printf( "\nERROR: The file comtaining the input data does not exsist\n\n" );
-             printf( "HINT:   Check the file spelling or its existence and try again\n\n");
-             return -1;
+             std::string Error = "";
+             Error = "ERROR: The file comtaining the input data does not exsist\n";
+             Error.append( "HINT:   Check the file spelling or its existence and try again" );
+             throw Error;
          }
 
          // check a mode was selected right
@@ -54,9 +57,10 @@ int main( int argc, char *argv[] ){
          }
 
          if ( aWrongModeProvided ) {
-             printf( "\nERROR: The provided mode does not exsist\n\n" );
-             printf( "HINT: Check the mode spelling and try again\n\n");
-             return -1;
+             std::string Error = "";
+             Error = "ERROR: The provided mode does not exsist\n";
+             Error.append( "HINT: Check the mode spelling and try again" );
+             throw Error;
          }
 
          // Check the consistence of vtk files if the plane mode was selected
@@ -67,32 +71,40 @@ int main( int argc, char *argv[] ){
                  VtkFile = fopen( argv[3], "r" );
 
                  if ( VtkFile == 0 ) {
-                     printf( "\nERROR: The file containing the mesh does not exsist\n\n" );
-                     printf( "HINT:   Check the file spelling or its existence and try again\n\n");
-                     return -1;
-
+                    std::string Error = "";
+                    Error = "ERROR: The file containing the mesh does not exsist\n";
+                    Error.append( "HINT: Check the file spelling or its existence and try again" );
+                     throw Error;
                  }
 
              }
+
              else {
-                 printf( "\nERROR: The number of input parameters is wrong\n\n" );
-                 printf( "Example: ./lbsim cube.dat -fstep\n\n" );
-                 return -1;
+                std::string Error = "";
+                Error = "ERROR: The number of input parameters is wrong\n";
+                Error.append( "Example: ./lbsim cube.dat -fstep" );
+                throw Error;
              }
          }
 
-
      }
      else {
-
-         // Abort execution if the number of input parameters is wrong
-         printf( "\nERROR: The number of input parameters is wrong\n\n" );
-
-         printf( "HINT: Look at the README file to find out how to run the program" );
-
-         printf( "Example: ./lbsim cube.dat -fstep\n\n" );
-         return -1;
+            // Abort execution if the number of input parameters is wrong
+            std::string Error = "";
+            Error = "ERROR: The number of input parameters is wrong\n";
+            Error.append( "HINT: Look at the README file to find out how to run the program\n" );
+            Error.append( "Example: ./lbsim cube.dat -fstep" );
+            throw Error;
      }
+    }
+    catch( std::string Error ) {
+        std::cout << Error << std::endl;
+        return -1;
+    }
+    catch ( ... ) {
+        std::cout << "Unexpected error" << std::endl;
+        return -1;
+    }
 
 
 
@@ -102,7 +114,11 @@ int main( int argc, char *argv[] ){
 
   // Define basics variables
   const char* INPUT_FILE_NAME = argv[1];
+
+#ifndef MLUPS_FLAG
   const char* OUTPUT_FILE_NAME = "./Frames/RESULT";
+#endif
+
   unsigned Length[ 3 ] = { 0, 0, 0 };
   double tau = 0.0;
   double wallVelocity[ 3 ] = { 0.0, 0.0, 0.0 };
@@ -112,62 +128,10 @@ int main( int argc, char *argv[] ){
   double InletVelocity[ 3 ] = { 0.0, 0.0, 0.0 };
   double DeltaDensity = 0.0;
 
-
-  read_parameters( INPUT_FILE_NAME,         /* the name of the data file */
-                   Length,                  /* number of cells along x direction */
-                   &tau,                    /* relaxation time */
-                   wallVelocity,            /* lid velocity along all direction*/
-                   InletVelocity,           /* Inlet velocity along all direction */
-                   &DeltaDensity,           /* density difference */
-                   &TimeSteps,              /* number of simulation time steps */
-                   &TimeStepsPerPlotting ); /* number of visualization time steps */
-
-
-
   double *collideField = 0;
   double *streamField = 0;
   int *flagField = 0;
   int *IdField = 0;
-
-
-  // initialize all fields according to the give flag
-  if ( !strcmp( argv[2], MODES[ 0 ] ) ) {
-
-      initialiseFields_LidDrivenCavity( &collideField,
-                                        &streamField,
-                                        &flagField,
-                                        &IdField,
-                                        Length );
-
-  }
-  else if ( !strcmp( argv[2], MODES[ 1 ] ) ) {
-      initialiseFields_Step( &collideField,
-                             &streamField,
-                             &flagField,
-                             &IdField,
-                             Length );
-
-  }
-  else if( !strcmp( argv[2], MODES[ 2 ] ) ) {
-
-      initialiseFields_PlaneShearFlow( &collideField,
-                                        &streamField,
-                                        &flagField,
-                                        &IdField,
-                                        Length );
-
-
-  }
-  else if( !strcmp( argv[2], MODES[ 3 ] ) ) {
-
-      initialiseFields_TiltedPlate( argv[3],
-                                    &collideField,
-      			                    &streamField,
-      			                    &flagField,
-      			                    &IdField,
-      			                    Length );
-
-  }
 
 
   // allcocate the list of boundary layer cells
@@ -179,79 +143,150 @@ int main( int argc, char *argv[] ){
   // allocate a list for VTK represenation
   std::list<Fluid*> VTKrepresentation;
 
-  // prepare all boundaries ( stationary and moving walls )
-  scanBoundary( BoundaryList,
-				FluidDomain,
-                VTKrepresentation,
-                flagField,
-                IdField,
-                Length,
-                wallVelocity,
-				InletVelocity,
-				DeltaDensity );
+
+  try{
+      read_parameters( INPUT_FILE_NAME,         /* the name of the data file */
+                       Length,                  /* number of cells along x direction */
+                       &tau,                    /* relaxation time */
+                       wallVelocity,            /* lid velocity along all direction*/
+                       InletVelocity,           /* Inlet velocity along all direction */
+                       &DeltaDensity,           /* density difference */
+                       &TimeSteps,              /* number of simulation time steps */
+                       &TimeStepsPerPlotting ); /* number of visualization time steps */
 
 
-   clock_t Begin = clock();
+      // Lid driven cavity mode
+      if ( !strcmp( argv[2], MODES[ 0 ] ) ) {
+
+          initialiseFields_LidDrivenCavity( &collideField,
+                                            &streamField,
+                                            &flagField,
+                                            &IdField,
+                                            Length );
+
+      }
+
+      // Flow over a step mode
+      else if ( !strcmp( argv[ 2 ], MODES[ 1 ] ) ) {
+
+          if ( Length[ 0 ] >= Length[ 2 ] ) {
+            std::string Error = "ERROR: zLength cannot be less or equal then xLength";
+            throw Error;
+          }
+
+          initialiseFields_Step( &collideField,
+                                 &streamField,
+                                 &flagField,
+                                 &IdField,
+                                 Length );
+
+      }
+
+      // Plane Shear Flow mode
+      else if( !strcmp( argv[ 2 ], MODES[ 2 ] ) ) {
+
+          initialiseFields_PlaneShearFlow( &collideField,
+                                            &streamField,
+                                            &flagField,
+                                            &IdField,
+                                            Length );
 
 
-    // Perform LB method
-    double* Swap = NULL;
-    for ( unsigned Step = 0; Step < TimeSteps; ++Step ) {
+      }
+
+      // Tilted Plate mode
+      else if( !strcmp( argv[ 2 ], MODES[ 3 ] ) ) {
 
 
-        doStreaming( collideField,
-                     streamField,
-                     FluidDomain );
+
+          initialiseFields_TiltedPlate( argv[ 3 ],
+                                        &collideField,
+          			                    &streamField,
+          			                    &flagField,
+          			                    &IdField,
+          			                    Length );
+
+      }
+
+      // prepare all boundaries ( stationary and moving walls )
+      scanBoundary( BoundaryList,
+    				FluidDomain,
+                    VTKrepresentation,
+                    flagField,
+                    IdField,
+                    Length,
+                    wallVelocity,
+    				InletVelocity,
+    				DeltaDensity );
 
 
-        Swap = collideField;
-        collideField = streamField;
-        streamField = Swap;
-		Swap = NULL;
+       clock_t Begin = clock();
 
 
-        doCollision( FluidDomain,
-					 collideField,
-                     &tau);
+        // Perform LB method
+        double* Swap = NULL;
+        for ( unsigned Step = 0; Step < TimeSteps; ++Step ) {
 
 
-        treatBoundary( collideField,
-                       BoundaryList,
-                       wallVelocity );
+            doStreaming( collideField,
+                         streamField,
+                         FluidDomain );
+
+
+            Swap = collideField;
+            collideField = streamField;
+            streamField = Swap;
+    		Swap = NULL;
+
+
+            doCollision( FluidDomain,
+    					 collideField,
+                         &tau);
+
+
+            treatBoundary( collideField,
+                           BoundaryList,
+                           wallVelocity );
 
 
 #ifndef MLUPS_FLAG
-        // if the MLUPS_FLAG flag is enabled then we will measure performance
-        // without performing redundant I/O operations
+            // if the MLUPS_FLAG flag is enabled then we will measure performance
+            // without performing redundant I/O operations
 
-        if ( ( Step % TimeStepsPerPlotting ) == 0 ) {
+            if ( ( Step % TimeStepsPerPlotting ) == 0 ) {
 
-            writeVtkOutput( OUTPUT_FILE_NAME,
-                            collideField,
-                            FluidDomain,
-                            VTKrepresentation,
-                            IdField,
-                            Step,
-                            Length );
-        }
+                writeVtkOutput( OUTPUT_FILE_NAME,
+                                collideField,
+                                FluidDomain,
+                                VTKrepresentation,
+                                IdField,
+                                Step,
+                                Length );
+            }
 #endif
 
 
 
+        }
+
+
+       // display the output information
+       clock_t End = clock();
+       double ConsumedTime = (double)( End - Begin ) / CLOCKS_PER_SEC;
+       double MLUPS = ( FluidDomain.size() * TimeSteps ) / ( ConsumedTime * 1e6 );
+
+       // display MLUPS number that stands for Mega Lattice Updates Per Second
+       std::cout << "Computational time: " <<  ConsumedTime << " sec" << std::endl;
+       std::cout << "MLUPS: " <<  MLUPS << std::endl;
+       std::cout << "Number of lattices: " <<  (int)FluidDomain.size() << std::endl;
+
     }
-
-
-
-
-   // display the output information
-   clock_t End = clock();
-   double ConsumedTime = (double)( End - Begin ) / CLOCKS_PER_SEC;
-   double MLUPS = ( FluidDomain.size() * TimeSteps ) / ( ConsumedTime * 1e6 );
-
-   // display MLUPS number that stands for Mega Lattice Updates Per Second
-   printf( "Computational time: %4.6f sec\n",  ConsumedTime );
-   printf( "MLUPS: %4.6f\n", MLUPS );
-   printf( "Number of lattices: %d\n\n", FluidDomain.size() );
+    catch( std::string Error ) {
+        std::cout << Error << std::endl;
+    }
+    catch( ... ) {
+        std::cout << "Unexpected error" << std::endl;
+    }
 
 
     // delete list of obstacles

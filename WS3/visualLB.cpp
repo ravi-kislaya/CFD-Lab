@@ -64,9 +64,14 @@ void writeVtkOutput( const char * filename,
     double Density = 0.0;
 
     // DEBUGGING: chech computeDensity
-    double* Index = 0;
+
+#ifdef DEBUGGING
     const double MAXIMUM_DENSITY = 1.1;
     const double MINIMUM_DENSITY = 0.9;
+#endif
+
+
+    double* Index = 0;
     for ( std::list<Fluid*>::iterator Iterator = FluidDomain.begin();
           Iterator != FluidDomain.end();
           ++Iterator ) {
@@ -127,7 +132,7 @@ void write_vtkHeader( FILE *fp,
     fprintf(fp,"ASCII\n");
     fprintf(fp,"\n");
     fprintf(fp,"DATASET UNSTRUCTURED_GRID\n");
-    fprintf(fp,"POINTS %i float\n", FluidDomain.size() );
+    fprintf(fp,"POINTS %d float\n", (int)FluidDomain.size() );
     fprintf(fp,"\n");
 
 }
@@ -167,13 +172,13 @@ void write_vtkPointElements( FILE* fp,
     int DiagonalNeighborIndex = 0;
 
     // Print all elements
-    fprintf(fp,"\nCELLS %lu %lu\n", nElements, nEntries );
+    fprintf(fp,"\nCELLS %u %u\n", nElements, nEntries );
     for ( std::list<Fluid*>::iterator Element = VTKrepresentation.begin();
           Element != VTKrepresentation.end();
           ++Element ) {
 
               // Print number entries that a line contains
-              sprintf( Buffer, "%lu", NUMBER_OF_POINT_PER_ELEMENT );
+              sprintf( Buffer, "%u", NUMBER_OF_POINT_PER_ELEMENT );
               Line = Buffer + DELIMITER;
 
               // walk aroun in the cell's neighbor according to VTL_VOXEL = 11
@@ -230,7 +235,7 @@ void write_vtkPointElements( FILE* fp,
     }
 
     // Print type of the elements
-    fprintf(fp,"\n\CELL_TYPES %lu\n", nElements );
+    fprintf(fp,"\nCELL_TYPES %u\n", nElements );
     for ( std::list<Fluid*>::iterator Element = VTKrepresentation.begin();
           Element != VTKrepresentation.end();
           ++Element ) {

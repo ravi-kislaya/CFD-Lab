@@ -173,8 +173,10 @@ inline void PressureIn::treatBoundary( double * Field ) {
 	double VelocityNeighbourFluid[ Dimensions ] = {0.0};
 	double FeqI = 0.0;
 	double FeqInvI = 0.0;
+	double TempDensity = 0.0;
 
-	computeVelocity( Field+m_SourceIndex, &Density, VelocityNeighbourFluid );
+	computeDensity( Field + m_SourceIndex, &TempDensity );
+	computeVelocity( Field+m_SourceIndex, &TempDensity, VelocityNeighbourFluid );
 	computeSingleFeq( &Density, VelocityNeighbourFluid, &FeqI, m_VelocityComponent );
 	computeSingleFeq( &Density, VelocityNeighbourFluid, &FeqInvI, 18 - m_VelocityComponent );
 

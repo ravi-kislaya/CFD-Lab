@@ -340,7 +340,7 @@ allocateFields( collideField,
 	for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
 		for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
 
-			( *flagField )[ computeFlagIndex( x, y, 0, Length) ] = INFLOW;
+			( *flagField )[ computeFlagIndex( x, y, 0, Length) ] = PRESSURE_IN;
 		}
 	}
 
@@ -389,7 +389,8 @@ void initialiseFields_TiltedPlate( const char *PLATE_TXT_FILE_NAME,
 
   // read parameters
   std::getline( File, String );
-  getLengthFromString( Length, String );
+  unsigned TempLength[ Dimensions ] = { 0 };
+  getLengthFromString( TempLength, String );
 
   unsigned yLENGTH_MINIMUM = 2;
   if ( Length[ 1 ] < yLENGTH_MINIMUM ) {
@@ -400,6 +401,8 @@ void initialiseFields_TiltedPlate( const char *PLATE_TXT_FILE_NAME,
 
     Length[ 1 ] = yLENGTH_MINIMUM;
   }
+  Length[0] = TempLength[0];
+  Length[2] = TempLength[2];
 
   // allocate the momory
   allocateFields( collideField,

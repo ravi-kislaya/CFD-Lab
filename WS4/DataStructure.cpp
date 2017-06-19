@@ -2,7 +2,10 @@
 #include "helper.h"
 #include "computeCellValues.h"
 #include "LBDefinitions.h"
+
 #include <list>
+#include <iostream>
+#include <stdlib.h>
 
 
 
@@ -156,10 +159,10 @@ inline void FreeSlip::treatBoundary( double * Field ) {
 /********************Inflow************************************/
 inline void Inflow::treatBoundary( double * Field ) {
 
-	double Density = 1.0;		 
+	double Density = 1.0;
  	double TempF = 0.0;
- 	computeDensity( Field + m_SourceIndex, &Density );		
- 	computeSingleFeq( &Density, m_InletVelocity, &TempF, m_VelocityComponent );		
+ 	computeDensity( Field + m_SourceIndex, &Density );
+ 	computeSingleFeq( &Density, m_InletVelocity, &TempF, m_VelocityComponent );
  	Field[m_SelfIndex + m_VelocityComponent] = TempF;
 
 
@@ -233,4 +236,87 @@ void BoundaryFluid::deleteObstacles() {
 //------------------------------------------------------------------------------
 //                            Boundary Buffer
 //------------------------------------------------------------------------------
+BoundaryBuffer::BoundaryBuffer() : m_Field( 0 ),
+								   m_Protocol( 0 ),
+								   m_Index( -1 ),
+ 								   m_BufferSize( 0 ) {
+	for ( int i = 0; i < Dimensions; ++i ) {
+		m_Length[ i ] = 0;
+	}
+}
 
+BoundaryBuffer::~BoundaryBuffer() {
+	if ( m_Protocol != 0 ) {
+		delete m_Protocol;
+	}
+}
+
+// inline DEBUGGING
+void BoundaryBuffer::addBufferElement( unsigned Index ) {
+	BufferElements.push_back( Index );
+	++m_BufferSize;
+}
+
+
+// inline DEBUGGING
+void BoundaryBuffer::setDomainLength( unsigned* Length ) {
+	for ( int i = 0; i < Dimensions; ++i ) {
+		m_Length[ i ] = Length[ i ];
+	}
+}
+
+int BoundaryBuffer::generateProtocol() {
+
+// ............................ GUARDS: BEGINING ...............................
+
+	if ( m_Index == -1 ) {
+		std::cout << "\tERROR: you've tried to generate the protocol" << std::endl;
+		std::cout << "\twithout initializing the buffer index" << std::endl;
+		std::cout << "\tERROR SOURCE: DataStructure.cpp -> generateProtocol()" << std::endl;
+#ifdef TEST
+		return -1;
+#else
+		exit( EXIT_FAILURE ); // DEBUGGING
+#endif
+	}
+
+
+	bool isLengthInitialized = true;
+	for ( int i = 0; i < Dimensions; ++i )
+		isLengthInitialized *= m_Length[ i ];
+	if ( isLengthInitialized == false ) {
+		std::cout << "\tERROR: you've tried to generate the protocol" << std::endl;
+		std::cout << "\twithout initializing geometry parameters" << std::endl;
+		std::cout << "\tERROR SOURCE: DataStructure.cpp -> generateProtocol()" << std::endl;
+#ifdef TEST
+		return -1;
+#else
+		exit( EXIT_FAILURE ); // DEBUGGING
+#endif
+
+	}
+
+
+	if ( m_Field == 0 ) {
+		std::cout << "\tERROR: you've tried to generate the protocol" << std::endl;
+		std::cout << "\twithout initializing the field" << std::endl;
+		std::cout << "\tERROR SOURCE: DataStructure.cpp -> generateProtocol()" << std::endl;
+#ifdef TEST
+		return -1;
+#else
+		exit( EXIT_FAILURE ); // DEBUGGING
+#endif
+	}
+
+
+// .............................. GUARDS: END .................................
+
+	// skip that part if the buffer size is equal to zero without
+	// throwing an error
+	if ( this->getBufferSize() == 0 )
+		return 1;
+
+	m_Protocol = new double[ this->getProtocolSize() ];
+
+	return 1;
+}

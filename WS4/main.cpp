@@ -133,15 +133,6 @@ int main( int argc, char *argv[] ){
   double *streamField = 0;
   int *flagField = 0;
   int *IdField = 0;
-  
-  // Boundary Buffer Scheme:
-  // index 0: +x direction
-  // index 1: -x direction
-  // index 2: +y direction
-  // index 3: -y direction
-  // index 4: +z direction
-  // index 5: -z direction
-  BoundaryBuffer* BoundaryBufferArray[ MAX_COMMUNICATION_FACES ];
 
 
   try {
@@ -165,9 +156,25 @@ int main( int argc, char *argv[] ){
   }
 
 
+  // Boundary Buffer Scheme:
+  // index 0: +x direction
+  // index 1: -x direction
+  // index 2: +y direction
+  // index 3: -y direction
+  // index 4: +z direction
+  // index 5: -z direction
+  BoundaryBuffer BoundaryBufferArray[ MAX_COMMUNICATION_FACES ];
+
+  // init all buffers
+  for ( int i = 0; i < MAX_COMMUNICATION_FACES; ++i ) {
+    BoundaryBufferArray[ i ].setIndex( i );
+    BoundaryBufferArray[ i ].setDomainLength( Length );
+    BoundaryBufferArray[ i ].setField( collideField );
+  }
+
 
       // Lid driven cavity mode
-      if ( !strcmp( argv[ 2 ], MODES[ 0 ] ) ) {
+    if ( !strcmp( argv[ 2 ], MODES[ 0 ] ) ) {
 
           initialiseFields_LidDrivenCavity( &collideField,
                                             &streamField,
@@ -228,8 +235,8 @@ int main( int argc, char *argv[] ){
 
     // allocate a list for VTK represenation
     std::list<Fluid*> VTKrepresentation;
-	
-	
+
+
 
 
       // prepare all boundaries ( stationary and moving walls )

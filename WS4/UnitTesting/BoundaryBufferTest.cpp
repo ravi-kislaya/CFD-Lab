@@ -14,6 +14,20 @@ void printPassedMessage( std::string FunctionName );
 void printErrorMessage( std::string FunctionName );
 template <class T, class D>
 void printHintMessage( T Target, D ComputedData );
+void InitXY( double* Field,
+             unsigned* Length,
+             unsigned Offset,
+             BoundaryBuffer& aBuffer );
+
+void InitXZ( double* Field,
+             unsigned* Length,
+             unsigned Offset,
+             BoundaryBuffer& aBuffer );
+
+void InitYZ( double* Field,
+             unsigned* Length,
+             unsigned Offset,
+             BoundaryBuffer& aBuffer );
 
 
 
@@ -100,37 +114,25 @@ int main () {
 
 
 //..............................  TEST  ........................................
+    // CHECK Z direction
+    //BBInstance.setIndex( 4 );
+    //InitXY( TestCollideField, Length, 1, BBInstance );
 
-    // Prepare a layer to be transfered
-    unsigned Current_Field_Cell = 0;
-    double TEST_VALUE = 777;
-    for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
-        for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
+    //BBInstance.setIndex( 5 );
+    //InitXY( TestCollideField, Length, Length[ 2 ], BBInstance );
 
-            Current_Field_Cell = computeFieldIndex( x, y, 1, Length );
-            for( unsigned i = 0 ; i < Vel_DOF ; ++i ) {
-                TestCollideField[ Current_Field_Cell + i ] = TEST_VALUE;
-            }
+    //BBInstance.setIndex( 0 );
+    //InitYZ( TestCollideField, Length, 1, BBInstance );
 
-            BBInstance.addBufferElement( Current_Field_Cell + 14 );
-            BBInstance.addBufferElement( Current_Field_Cell + 15 );
-            BBInstance.addBufferElement( Current_Field_Cell + 16 );
-            BBInstance.addBufferElement( Current_Field_Cell + 17 );
-            BBInstance.addBufferElement( Current_Field_Cell + 18 );
+    //BBInstance.setIndex( 1 );
+    //InitYZ( TestCollideField, Length, Length[ 0 ], BBInstance );
 
-        }
-    }
+    //BBInstance.setIndex( 2 );
+    //InitXZ( TestCollideField, Length, 1, BBInstance );
 
-    unsigned NumberOfTransferedComponents = TRANSFERED_COMPONENTS_PER_LATTICE
-                                        * ( Length[1] + 2 )
-                                        * ( Length[0] + 2 );
+    BBInstance.setIndex( 3 );
+    InitXZ( TestCollideField, Length, Length[ 1 ], BBInstance );
 
-    if ( BBInstance.getBufferSize() != NumberOfTransferedComponents ) {
-        printErrorMessage("getBufferSize() or addBufferElement()");
-    }
-    else {
-        printPassedMessage( "getBufferSize() and addBufferElement()" );
-    }
 
 
     writeVtkOutputTest( TestCollideField,
@@ -163,6 +165,122 @@ int main () {
 //******************************************************************************
 //                              HELPER FUNCTIONS
 //******************************************************************************
+void InitXY( double* Field,
+             unsigned* Length,
+             unsigned Offset,
+             BoundaryBuffer& aBuffer ) {
+
+    // Prepare a layer to be transfered
+    unsigned Current_Field_Cell = 0;
+    double TEST_VALUE = 777;
+    for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
+        for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
+
+            Current_Field_Cell = computeFieldIndex( x, y, Offset, Length );
+            for( unsigned i = 0 ; i < Vel_DOF ; ++i ) {
+                Field[ Current_Field_Cell + i ] = TEST_VALUE;
+            }
+
+            aBuffer.addBufferElement( Current_Field_Cell + 14 );
+            aBuffer.addBufferElement( Current_Field_Cell + 15 );
+            aBuffer.addBufferElement( Current_Field_Cell + 16 );
+            aBuffer.addBufferElement( Current_Field_Cell + 17 );
+            aBuffer.addBufferElement( Current_Field_Cell + 18 );
+
+        }
+    }
+
+    unsigned NumberOfTransferedComponents = TRANSFERED_COMPONENTS_PER_LATTICE
+                                        * ( Length[1] + 2 )
+                                        * ( Length[0] + 2 );
+
+    if ( aBuffer.getBufferSize() != NumberOfTransferedComponents ) {
+        printErrorMessage("getBufferSize() or addBufferElement()");
+    }
+    else {
+        printPassedMessage( "getBufferSize() and addBufferElement()" );
+    }
+
+}
+
+void InitXZ( double* Field,
+             unsigned* Length,
+             unsigned Offset,
+             BoundaryBuffer& aBuffer ) {
+
+    // Prepare a layer to be transfered
+    unsigned Current_Field_Cell = 0;
+    double TEST_VALUE = 777;
+    for ( unsigned z = 0; z < Length[ 2 ] + 2; ++z ) {
+        for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
+
+            Current_Field_Cell = computeFieldIndex( x, Offset, z, Length );
+            for( unsigned i = 0 ; i < Vel_DOF ; ++i ) {
+                Field[ Current_Field_Cell + i ] = TEST_VALUE;
+            }
+
+            aBuffer.addBufferElement( Current_Field_Cell + 4 );
+            aBuffer.addBufferElement( Current_Field_Cell + 11 );
+            aBuffer.addBufferElement( Current_Field_Cell + 12 );
+            aBuffer.addBufferElement( Current_Field_Cell + 13 );
+            aBuffer.addBufferElement( Current_Field_Cell + 18 );
+
+        }
+    }
+
+    unsigned NumberOfTransferedComponents = TRANSFERED_COMPONENTS_PER_LATTICE
+                                        * ( Length[1] + 2 )
+                                        * ( Length[2] + 2 );
+
+    if ( aBuffer.getBufferSize() != NumberOfTransferedComponents ) {
+        printErrorMessage("getBufferSize() or addBufferElement()");
+    }
+    else {
+        printPassedMessage( "getBufferSize() and addBufferElement()" );
+    }
+
+}
+
+void InitYZ( double* Field,
+             unsigned* Length,
+             unsigned Offset,
+             BoundaryBuffer& aBuffer ) {
+
+    // Prepare a layer to be transfered
+    unsigned Current_Field_Cell = 0;
+    double TEST_VALUE = 777;
+    for ( unsigned z = 0; z < Length[ 2 ] + 2; ++z ) {
+        for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
+
+            Current_Field_Cell = computeFieldIndex( Offset, y, z, Length );
+            for( unsigned i = 0 ; i < Vel_DOF ; ++i ) {
+                Field[ Current_Field_Cell + i ] = TEST_VALUE;
+            }
+
+            aBuffer.addBufferElement( Current_Field_Cell + 3 );
+            aBuffer.addBufferElement( Current_Field_Cell + 7 );
+            aBuffer.addBufferElement( Current_Field_Cell + 10 );
+            aBuffer.addBufferElement( Current_Field_Cell + 13 );
+            aBuffer.addBufferElement( Current_Field_Cell + 17 );
+
+        }
+    }
+
+    unsigned NumberOfTransferedComponents = TRANSFERED_COMPONENTS_PER_LATTICE
+                                        * ( Length[1] + 2 )
+                                        * ( Length[0] + 2 );
+
+    if ( aBuffer.getBufferSize() != NumberOfTransferedComponents ) {
+        printErrorMessage("getBufferSize() or addBufferElement()");
+    }
+    else {
+        printPassedMessage( "getBufferSize() and addBufferElement()" );
+    }
+
+}
+
+
+
 void printPassedMessage( std::string FunctionName ) {
     //system("color 01");
     std::cout << TEST_HEADER << FunctionName << " work(s) OK..." << std::endl;

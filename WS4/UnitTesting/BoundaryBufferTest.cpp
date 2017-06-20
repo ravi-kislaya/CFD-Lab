@@ -4,15 +4,19 @@
 
 #include "../DataStructure.h"
 #include "../helper.h"
+#include "TESTvisual.h"
 
 std::string TEST_HEADER = "\033[1;31mTEST: \033[0m";
+const unsigned TRANSFERED_COMPONENTS_PER_LATTICE = 5;
+
 
 void printPassedMessage( std::string FunctionName );
-
 void printErrorMessage( std::string FunctionName );
-
 template <class T, class D>
 void printHintMessage( T Target, D ComputedData );
+
+
+
 
 int main () {
     const unsigned TEST_SIZE = 10;
@@ -56,7 +60,7 @@ int main () {
     }
 
 
-    BBInstance.setIndex( 1 );
+    BBInstance.setIndex( 4 );
     if ( BBInstance.generateProtocol() != -1 ) {
         printErrorMessage("generateProtocol() or setIndex()");
     }
@@ -83,7 +87,10 @@ int main () {
     				 &TestIdField,
     				 Length );
 
-    BBInstance.setField(TestCollideField);
+    BBInstance.setField( TestCollideField );
+
+
+
     if ( BBInstance.generateProtocol() == -1 ) {
         printErrorMessage("generateProtocol() or setField()");
     }
@@ -92,43 +99,56 @@ int main () {
     }
 
 
-//..............................................................................
+//..............................  TEST  ........................................
 
+    // Prepare a layer to be transfered
+    unsigned Current_Field_Cell = 0;
+    double TEST_VALUE = 777;
+    for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
+        for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
 
+            Current_Field_Cell = computeFieldIndex( x, y, 1, Length );
+            for( unsigned i = 0 ; i < Vel_DOF ; ++i ) {
+                TestCollideField[ Current_Field_Cell + i ] = TEST_VALUE;
+            }
 
+            BBInstance.addBufferElement( Current_Field_Cell + 14 );
+            BBInstance.addBufferElement( Current_Field_Cell + 15 );
+            BBInstance.addBufferElement( Current_Field_Cell + 16 );
+            BBInstance.addBufferElement( Current_Field_Cell + 17 );
+            BBInstance.addBufferElement( Current_Field_Cell + 18 );
 
-    // Fill in the buffer
-    std::cout << std::endl;
-    std::cout << "Test values:" << std::endl;
-    for ( unsigned i = 0; i < TEST_SIZE; ++i ) {
-         std::cout << i << ' ';
-        BBInstance.addBufferElement( i*2 );
-    }
-    std::cout << std::endl;
-
-
-    // Check the number of elements in the buffer
-    if ( TEST_SIZE != BBInstance.getBufferSize() ) {
-        printErrorMessage("getBufferSize()");
-        printHintMessage( TEST_SIZE, BBInstance.getBufferSize() );
-        abort();
-    }
-    else {
-        printPassedMessage( "getBufferSize()" );
+        }
     }
 
+    unsigned NumberOfTransferedComponents = TRANSFERED_COMPONENTS_PER_LATTICE
+                                        * ( Length[1] + 2 )
+                                        * ( Length[0] + 2 );
 
-    // try to generate protocol with bad parameters
-    if ( TEST_SIZE != BBInstance.getBufferSize() ) {
-        printErrorMessage("getBufferSize()");
-        printHintMessage( TEST_SIZE, BBInstance.getBufferSize() );
-        abort();
+    if ( BBInstance.getBufferSize() != NumberOfTransferedComponents ) {
+        printErrorMessage("getBufferSize() or addBufferElement()");
     }
     else {
-        printPassedMessage( "getBufferSize()" );
+        printPassedMessage( "getBufferSize() and addBufferElement()" );
     }
 
 
+    writeVtkOutputTest( TestCollideField,
+                        "FieldBeforeTransfer",
+                        0,
+                        Length );
+//..............................  TEST  ........................................
+    BBInstance.generateProtocol();
+    BBInstance.updateProtocol();
+
+    double* Protocol = BBInstance.getProtocol();
+    unsigned ProtocolSize = BBInstance.getProtocolSize();
+    decodeProtocol( Protocol, ProtocolSize, TestCollideField );
+
+    writeVtkOutputTest( TestCollideField,
+                        "FieldAfterTransfer",
+                        0,
+                        Length );
 
     // delete flields
     free( TestCollideField );
@@ -145,7 +165,7 @@ int main () {
 //******************************************************************************
 void printPassedMessage( std::string FunctionName ) {
     //system("color 01");
-    std::cout << TEST_HEADER << FunctionName << " works OK..." << std::endl;
+    std::cout << TEST_HEADER << FunctionName << " work(s) OK..." << std::endl;
     //system("color 02");
 }
 

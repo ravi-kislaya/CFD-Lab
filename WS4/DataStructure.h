@@ -208,7 +208,7 @@ class BoundaryBuffer {
 
 
 		void addBufferElement( unsigned Index );
-		void updateProtocol();
+		int updateProtocol();
 		int generateProtocol();
 
 
@@ -224,7 +224,12 @@ class BoundaryBuffer {
         int m_Index;
         unsigned m_Length[ 3 ];
         unsigned m_BufferSize;
+        bool m_isProtocolReady;
 };
 
+
+void decodeProtocol( double* Protocol,
+                     unsigned ProtocolSize,
+                     double* Field );
 
 #endif

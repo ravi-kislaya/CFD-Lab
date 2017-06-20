@@ -239,7 +239,8 @@ void BoundaryFluid::deleteObstacles() {
 BoundaryBuffer::BoundaryBuffer() : m_Field( 0 ),
 								   m_Protocol( 0 ),
 								   m_Index( -1 ),
- 								   m_BufferSize( 0 ) {
+ 								   m_BufferSize( 0 ),
+ 								   m_isProtocolReady( false ) {
 	for ( int i = 0; i < Dimensions; ++i ) {
 		m_Length[ i ] = 0;
 	}
@@ -247,7 +248,7 @@ BoundaryBuffer::BoundaryBuffer() : m_Field( 0 ),
 
 BoundaryBuffer::~BoundaryBuffer() {
 	if ( m_Protocol != 0 ) {
-		delete m_Protocol;
+		delete [] m_Protocol;
 	}
 }
 
@@ -264,6 +265,7 @@ void BoundaryBuffer::setDomainLength( unsigned* Length ) {
 		m_Length[ i ] = Length[ i ];
 	}
 }
+
 
 int BoundaryBuffer::generateProtocol() {
 
@@ -311,12 +313,98 @@ int BoundaryBuffer::generateProtocol() {
 
 // .............................. GUARDS: END .................................
 
-	// skip that part if the buffer size is equal to zero without
-	// throwing an error
-	if ( this->getBufferSize() == 0 )
-		return 1;
+  	// Boundary Buffer Scheme:
+  	// index 0: +x direction
+  	// index 1: -x direction
+  	// index 2: +y direction
+  	// index 3: -y direction
+  	// index 4: +z direction
+  	// index 5: -z direction
 
-	m_Protocol = new double[ this->getProtocolSize() ];
+	int Shift = 0;
+	unsigned X = m_Length[ 0 ];
+	unsigned Y = m_Length[ 1 ];
+	unsigned Z = m_Length[ 2 ];
+
+	switch ( m_Index ) {
+
+		case 0: Shift = Vel_DOF * X;
+				break;
+
+		case 1: Shift = ( -1 ) *  Vel_DOF * X;
+				break;
+
+		case 2: Shift = Vel_DOF * (X + 2) * Y;
+				break;
+
+		case 3: Shift = ( -1 ) * Vel_DOF * (X + 2) * Y;
+				break;
+
+		case 4: Shift = Vel_DOF * (X + 2) * (Y + 2) * Z;
+				break;
+
+		case 5: Shift = ( -1 ) * Vel_DOF * (X + 2) * (Y + 2) * Z;
+				break;
+
+		default: std::cout << "ERROR: Buffer index is wrong, namely:"
+ 						   << m_Index
+						   << std::endl
+						   << "ERROR SOURCE: DataStructure.cpp -> generateProtocol"
+ 						   << std::endl;
+				 exit( EXIT_FAILURE );
+				 break;
+	}
+
+
+	if ( this->getBufferSize() != 0 ) {
+		m_Protocol = new double[ this->getProtocolSize() ];
+	}
+
+
+	unsigned Counter = 0;
+	for ( std::list<unsigned>::iterator Iterator = BufferElements.begin();
+ 		  Iterator != BufferElements.end();
+		  ++Iterator, Counter += 2 ) {
+		m_Protocol[ Counter ] = (double)( ( *Iterator ) + Shift );
+		m_Protocol[ Counter + 1 ] = m_Field[ ( *Iterator ) ];
+	}
+
+	m_isProtocolReady = true;
 
 	return 1;
+}
+
+
+int  BoundaryBuffer::updateProtocol() {
+
+	if ( m_isProtocolReady == false ) {
+		std::cout << "\tERROR: you've tried to update the protocol" << std::endl;
+		std::cout << "\twhich was not be generated" << std::endl;
+		std::cout << "\tERROR SOURCE: DataStructure.cpp -> updateProtocol()" << std::endl;
+#ifdef TEST
+		return -1;
+#else
+		exit( EXIT_FAILURE ); // DEBUGGING
+#endif
+	}
+
+
+	unsigned Counter = 0;
+	for ( std::list<unsigned>::iterator Iterator = BufferElements.begin();
+ 		  Iterator != BufferElements.end();
+		  ++Iterator, Counter += 2 ) {
+
+		m_Protocol[ Counter + 1 ] = m_Field[ ( *Iterator ) ];
+	}
+}
+
+void decodeProtocol( double* Protocol,
+					 unsigned ProtocolSize,
+					 double* Field ) {
+
+	unsigned Index = 0;
+	for ( unsigned i = 0; i < ProtocolSize; i += 2 ) {
+		Index = (unsigned)Protocol[ i ];
+		Field[ Index ] = Protocol[ i + 1 ];
+	}
 }

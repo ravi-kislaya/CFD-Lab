@@ -1,6 +1,7 @@
 SOURCES=Test.cpp
 
 COMPILER=g++
+MPICC=mpic++
 INCLUDES=-I./ -I../
 all:
-	$(COMPILER) -o comExemp $(SOURCES) $(INCLUDES)
+	$(MPICC) -o comExemp $(SOURCES) $(INCLUDES)

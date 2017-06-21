@@ -3,7 +3,6 @@
 #include "../LBDefinitions.h"
 #include <mpi.h>
 #include <vector>
-#include <list>
 
 unsigned computeCPUCoordinateX( unsigned* Proc,
                                 unsigned Rank ) {
@@ -33,30 +32,31 @@ unsigned getGlobalIndex( unsigned i, unsigned j, unsigned k, unsigned* Proc ) {
 //******************************************************************************
 //                                MAIN
 //******************************************************************************
+// EXAMPLE to run: mpirun -N 27 ./LoadExemp 3 3 3 1000000
 int main( int argc, char** argv ) {
-    unsigned Proc[ 3 ] = { atoi(argv[1]), atoi(argv[1]), atoi(argv[3]) };
+    unsigned Proc[ 3 ] = { atoi(argv[1]), atoi(argv[2]), atoi(argv[3]) };
 
     MPI_Status STATUS;
     int NUMBER_OF_PROCESSORS = 0;
     int RANK = 0;
 
-
     MPI_Init (&argc, &argv);
     MPI_Comm_size (MPI_COMM_WORLD, &NUMBER_OF_PROCESSORS);
     MPI_Comm_rank (MPI_COMM_WORLD, &RANK);
 
-    // Guards: check is the number of processors are consistent with
+
+    // Guards: check is the number of processors are consistent with 
     // the  given layout
     int LayoutProcessorRequest = Proc[ 0 ] * Proc[ 1 ] * Proc[ 2 ];
     if ( NUMBER_OF_PROCESSORS != LayoutProcessorRequest ) {
 
         if ( RANK == 0 ) {
-        std::cout << "ERROR: the number of given processors doesn't\n"
+        std::cout << "ERROR: the number of given processors doesn't\n" 
                   << "match the provided layout topology" << std::endl;
         }
         MPI_Finalize();
         return 0;
-    }
+    }   
 
 
     if ( RANK == 0 ) {
@@ -87,7 +87,7 @@ int main( int argc, char** argv ) {
     Neighbours.push_back( getGlobalIndex( ProcX, ProcY, ProcZ - 1, Proc ) );
 
 
-    // FILTERING
+    // filtering all unnecessary
     const unsigned EMPTY_NEIGHBOR = -1;
     if ( ProcX == ( Proc[ 0 ] - 1 ) ) Neighbours[ 0 ] = EMPTY_NEIGHBOR;
     if ( ProcX == 0 ) Neighbours[ 1 ] = EMPTY_NEIGHBOR;
@@ -100,41 +100,67 @@ int main( int argc, char** argv ) {
 
 
     // prepare all data to be transfered
-    int SEND_DATA = RANK;
-    int RECEIVE_DATA = -1;
     int TAG = 1;
-    int* TestArray[6];
-    for ( int i = 0; i < 6; ++i ) {
-        *TestArray[ i ] = -1;
+    unsigned SIZE = atoi(argv[4]);
+    double* LOAD_DATA = new double[ SIZE ];
+    double* RECEIVE_DATA = new double[ SIZE ];
+    int COUNTER = 0;
+
+    // Init buffers
+    for ( int i = 0; i < SIZE; ++i ) {
+        LOAD_DATA[ i ] = 666;
+        RECEIVE_DATA[ i ] = -1;
     }
 
-    for ( int i = 0; i < 6; ++i ) {
-        if ( Neighbours[i] != EMPTY_NEIGHBOR ) {
-         MPI_Send( &SEND_DATA,
-                     1,
-                     MPI_INT,
-                     Neighbours[ i ],
-                     TAG,
-                     MPI_COMM_WORLD );
+    // perform communication
+    for (int i = 0; i < 6; i += 2) {
+
+        if ( Neighbours[ i ] != EMPTY_NEIGHBOR ) {
+            MPI_Send( LOAD_DATA,
+                      SIZE,
+                      MPI_INT,
+                      Neighbours[ i ],
+                      TAG,
+                      MPI_COMM_WORLD);
+                                       
         }
-    }
+                    
+        if ( Neighbours[ i + 1 ] != EMPTY_NEIGHBOR ) {
+             MPI_Recv( RECEIVE_DATA,
+                       SIZE,
+                       MPI_INT,
+                       Neighbours[ i + 1 ],
+                       TAG,
+                       MPI_COMM_WORLD,
+                       &STATUS );
+                    
 
-
-    for ( int i = 0; i < 6; ++i ) {
-        if ( Neighbours[i] != EMPTY_NEIGHBOR ) {
-         MPI_Recv( TestArray[ i ],
-                   1,
-                   MPI_INT,
-                   Neighbours[ i ],
-                   TAG,
-                   MPI_COMM_WORLD,
-                   &STATUS);
+            MPI_Send( LOAD_DATA,
+                      SIZE,
+                      MPI_INT,
+                      Neighbours[ i + 1 ],
+                      TAG,
+                      MPI_COMM_WORLD );
         }
+             
+
+        if ( Neighbours[ i ] != EMPTY_NEIGHBOR ) {
+                MPI_Recv( RECEIVE_DATA,
+                          SIZE,
+                          MPI_INT,
+                          Neighbours[ i ],
+                          TAG,
+                          MPI_COMM_WORLD,
+                          &STATUS );
+        }
+
+                    
     }
 
-    std::cout << "GOTTEN INFO: " << RECEIVE_DATA << std::endl;
 
-
+    delete [] LOAD_DATA;
+    delete [] RECEIVE_DATA;
+    
     MPI_Finalize();
     return 0;
 }

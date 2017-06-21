@@ -1,7 +1,7 @@
-SOURCES=Test.cpp
-
-COMPILER=g++
+SOURCES=LoadTest.cpp 
 MPICC=mpic++
 INCLUDES=-I./ -I../
-all:
-	$(MPICC) -o comExemp $(SOURCES) $(INCLUDES)
+FLAGS=-fno-stack-protector
+
+all: 
+	$(MPICC) -o LoadExemp $(SOURCES) $(INCLUDES) $(FLAGS)

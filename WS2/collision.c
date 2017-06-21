@@ -1,46 +1,53 @@
 #include "collision.h"
 #include "LBDefinitions.h"
+#include "helper.h"
+#include <stdio.h>
 
 
 void computePostCollisionDistributions( double *currentCell,
                                         const double * const tau,
                                         const double *const feq ) {
-  /* TODO */
+
   double Inverse_Tau = 1.0 / ( *tau );
-  for( int i = 0; i < Vel_DOF; ++i ) {
-    currentCell[ i ] -= Inverse_Tau * ( currentCell[ i ] - ( *feq ) );
+//Solves Equation 13
+  for( unsigned i = 0; i < Vel_DOF; ++i ) {
+    currentCell[ i ] -= Inverse_Tau * ( currentCell[ i ] - feq[ i ]  );
   }
+
 }
 
 void doCollision( double *collideField,
                   int *flagField,
                   const double * const tau,
-                  int xlength){
-	/* TODO */
+                  unsigned xlength ) {
+
 	//Variable declaration
   //TODO : Ask Nicola if we need the pressure distribution
 
   double Density = 0.0;
-	double Velocity[ Dimensions ];
-	double Feq[ Vel_DOF ];
+  double Velocity[ Dimensions ];
+  double Feq[ Vel_DOF ];
+  unsigned TotalLength = xlength + 2;
 
-
-	int X_Coordinate = 0, Y_Coordinate = 0, Z_Coordinate = 0;
-  int Current_Cell = 0;
-  int Square_xlength = xlength * xlength;
+  unsigned Current_Cell = 0;
 
 	//Looping through individual element
+<<<<<<< HEAD
 	for( Z_Coordinate = 1 ; Z_Coordinate <= xlength ; ++Z_Coordinate )  {
 		for( Y_Coordinate = 1 ; Y_Coordinate <= xlength ; ++Y_Coordinate )  {
 			for( X_Coordinate = 1 ; X_Coordinate <= xlength ; ++X_Coordinate ) {
+=======
+	for( unsigned z = 1; z <= xlength; ++z )  {
+		for( unsigned y = 1; y <= xlength; ++y )  {
+			for( unsigned x = 1; x <= xlength; ++x ) {
+>>>>>>> 0b2de49ba286ff6eee309f79c6ccf20705f2a343
 
-				Current_Cell =  Vel_DOF * ( ( Z_Coordinate * Square_xlength )
-										    + ( Y_Coordinate * xlength ) + X_Coordinate );
+				Current_Cell = computeFieldIndex( x, y, z, TotalLength );
 
-				computeDensity( (collideField + Current_Cell) , &Density );
-				computeVelocity( (collideField + Current_Cell) , &Density , Velocity );
+				computeDensity( ( collideField + Current_Cell ) , &Density );
+				computeVelocity( ( collideField + Current_Cell ) , &Density , Velocity );
 				computeFeq( &Density , Velocity , Feq );
-				computePostCollisionDistributions( (collideField + Current_Cell) , tau , Feq );
+				computePostCollisionDistributions( ( collideField + Current_Cell ) , tau , Feq );
 
 			}
 		}

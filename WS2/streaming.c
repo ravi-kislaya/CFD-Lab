@@ -1,31 +1,45 @@
 #include "streaming.h"
 #include "LBDefinitions.h"
+#include "helper.h"
 
-void doStreaming(double *collideField, double *streamField,int *flagField,int xlength){
-	/* TODO */
-
-	int X_Coordinate = 0, Y_Coordinate = 0, Z_Coordinate = 0;
-	int Vel_Component = 0, Current_Cell = 0, Target_Cell = 0;
-	int Square_xlength = xlength * xlength;
+void doStreaming( double *collideField,
+	 			  double *streamField,
+				  int *flagField,
+				  unsigned xlength ) {
 
 
+	unsigned Fluid_Cell = 0;
+	unsigned Neighbour_Cell = 0;
+	unsigned TotalLength = xlength + 2;
+
+<<<<<<< HEAD
 	//Looping through individual element
 	for( Z_Coordinate = 1 ; Z_Coordinate <= xlength ; ++Z_Coordinate )  {
 		for( Y_Coordinate = 1 ; Y_Coordinate <= xlength ; ++Y_Coordinate )  {
 			for( X_Coordinate = 1 ; X_Coordinate <= xlength ; ++X_Coordinate ) {
+=======
+>>>>>>> 0b2de49ba286ff6eee309f79c6ccf20705f2a343
 
-				Current_Cell = Vel_DOF * ( ( Z_Coordinate * Square_xlength )
-										    + ( Y_Coordinate * xlength ) + X_Coordinate ) ;
+	//Looping through all fluid element
+	for( unsigned z = 1 ; z <= xlength ; ++z )  {
+		for( unsigned y = 1 ; y <= xlength ; ++y )  {
+			for( unsigned x = 1 ; x <= xlength ; ++x ) {
+
+				Fluid_Cell = computeFieldIndex( x, y, z, TotalLength );
+
 				//Cell wise streaming considering the velocity component
-				for( Vel_Component = 0 ; Vel_Component < Vel_DOF ; ++Vel_Component ) {
-					Target_Cell = Vel_DOF * ( ( ( Z_Coordinate + LATTICEVELOCITIES[ Vel_Component ][ 2 ] ) * Square_xlength )
-									+ ( ( Y_Coordinate + LATTICEVELOCITIES[ Vel_Component ][ 1 ] ) * xlength )
-								  + ( X_Coordinate + LATTICEVELOCITIES[ Vel_Component ][ 0 ] ) );
+				for( unsigned Vel_Component = 0; Vel_Component < Vel_DOF; ++Vel_Component ) {
 
-					streamField[ Target_Cell + Vel_Component ] = collideField[ Current_Cell + Vel_Component ] ;
 
+					Neighbour_Cell = computeFieldIndex( x + LATTICEVELOCITIES[ Vel_Component ][ 0 ],
+						 							 	y + LATTICEVELOCITIES[ Vel_Component ][ 1 ],
+													 	z + LATTICEVELOCITIES[ Vel_Component ][ 2 ],
+													 	TotalLength );
+
+
+					streamField[ Fluid_Cell + 18 - Vel_Component ]
+							= collideField[ Neighbour_Cell + 18 - Vel_Component ] ;
 				}
-
 			}
 		}
 	}

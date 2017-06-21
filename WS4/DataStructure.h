@@ -192,26 +192,44 @@ class Fluid {
 //------------------------------------------------------------------------------
 //                            Boundary Buffer
 //------------------------------------------------------------------------------
-//scheme : 
+//scheme :
 class BoundaryBuffer {
 	public:
-		BoundaryBuffer() : m_Counter(0), m_Index(0){}
-		BoundaryBuffer(int Counter, int Index) : m_Counter(Counter), m_Index(Index){}
-		
-		int getIndex(){ return m_Index; }
-		int getCounter(){ return m_Counter; }
-		
-		void generateProtocol();
-		double* getProtocol();
-		void addBufferElement( unsigned Index ) { BufferElements.push_back( Index ); }
-		void updateProtocol();
-		
+		BoundaryBuffer();
+        ~BoundaryBuffer();
+
+
+        // Getter FUNCTIONS
+        double* getField() { return m_Field; };
+		double* getProtocol() { return m_Protocol; };
+        unsigned getBufferSize() { return (unsigned)BufferElements.size(); };
+        unsigned getProtocolSize() { return 2 * (unsigned)BufferElements.size(); };
+        int getIndex() { return  m_Index; };
+
+
+		void addBufferElement( unsigned Index );
+		int updateProtocol();
+		int generateProtocol();
+
+
+        // Setter FUNCTIONS
+        void setIndex( unsigned Index ) { m_Index = Index; };
+        void setField ( double* Field ) { m_Field = Field; }
+        void setDomainLength( unsigned* Length );
+
 	private:
-		int m_Counter;
-		int m_Index;
 		std::list<unsigned> BufferElements;
 		double *m_Protocol;
+        double* m_Field;
+        int m_Index;
+        unsigned m_Length[ 3 ];
+        unsigned m_BufferSize;
+        bool m_isProtocolReady;
 };
 
+
+void decodeProtocol( double* Protocol,
+                     unsigned ProtocolSize,
+                     double* Field );
 
 #endif

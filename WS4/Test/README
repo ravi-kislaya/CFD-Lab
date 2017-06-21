@@ -1,0 +1,33 @@
+To run the simulation you have to provide just one parameter which is the name
+of a data file.
+
+    ./lbsim <name> <flag> <name of vtk file(For flow around object)>
+
+following possible simulation flags has to be set up:
+     -fcavity   :    For Lid Driven Cavity
+     -fstep     :    Flow over step
+     -fchannel  :    Pressure Driven shear flow in channel
+     -fplate    :    Flow around Tilted Plate
+
+EXAMPLE:
+	in general: 
+		./lbsim step.data -fstep
+	
+	for tilted plate:
+		 ./lbsim plate.data -fplate lbm_tilted_plate.vtk
+
+HINT: Check spelling of your data file if the simulation doesn't run
+--------------------------------------------------------------------------------
+TODO LIST:
+
+4) Documentation of code and questions of assignment
+5) Theory Part of the assignment
+
+--------------------------------------------------------------------------------
+STRUCTURE:
+	1) Build folder contains all object files
+	2) Frame folder contains all vtk files
+	3) Supplementary folder contains additional files that can be relevant
+		during the examination
+
+--------------------------------------------------------------------------------

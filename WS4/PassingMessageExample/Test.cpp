@@ -8,21 +8,21 @@
 unsigned computeCPUCoordinateX( unsigned* Proc,
                                 unsigned Rank ) {
 
-	return ( unsigned ) ( Rank % Proc[0] );
+	return (( unsigned ) ( Rank % (Proc[0] * Proc[1]) ))  % Proc[0] ;
 
 }
 
 unsigned computeCPUCoordinateY( unsigned* Proc,
                                 unsigned Rank ) {
 
-	return ( ( ( unsigned ) ( Rank / Proc[0] ) ) % Proc[1] );
+	return ( ( ( unsigned ) ( Rank % (Proc[0] * Proc[1]) ) ) / Proc[0] ;
 }
 
 
 unsigned computeCPUCoordinateZ( unsigned* Proc,
                                 unsigned Rank ) {
 
-	return ( unsigned ) ( Rank / ( Proc[1] * Proc[2] ));
+	return ( unsigned ) ( Rank / ( Proc[0] * Proc[1] ));
 }
 
 unsigned getGlobalIndex( unsigned i, unsigned j, unsigned k, unsigned* Proc ) {

@@ -201,9 +201,9 @@ class BoundaryBuffer {
 
         // Getter FUNCTIONS
         double* getField() { return m_Field; };
-		double* getProtocol() { return m_Protocol; };
+		double* getProtocol();
         unsigned getBufferSize() { return (unsigned)BufferElements.size(); };
-        unsigned getProtocolSize() { return 10 * (unsigned)BufferElements.size(); };
+        unsigned getProtocolSize() { return 2 * (unsigned)BufferElements.size(); };
         int getIndex() { return  m_Index; };
 
 

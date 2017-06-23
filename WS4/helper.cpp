@@ -6,6 +6,7 @@
 #include <list>
 #include <iostream>
 #include <string>
+#include <mpi.h>
 
 #include "helper.h"
 #include "DataStructure.h"
@@ -79,7 +80,7 @@ int computeCPUCoordinateZ( int* Proc,
 }
 
 
-int getGlobalIndex( int i, int j, int k, int* Proc ) {
+int getGlobalCPUIndex( int i, int j, int k, int* Proc ) {
     return k * Proc[ 0 ] * Proc[ 1 ] + j * Proc[ 0 ] + i;
 }
 
@@ -123,13 +124,14 @@ int read_parameters( const char *INPUT_FILE_NAME,        /* the name of the data
                      double *WallVelocity,               /* lid velocity along all direction*/
                      double *InletVelocity,              /* Inlet velocity along all direction */
                      double *DeltaDensity,               /* density difference */
-                     unsigned *timesteps,                     /* number of simulation time steps */
-                     unsigned *timestepsPerPlotting ) {       /* number of visualization time steps */
+                     unsigned *timesteps,                /* number of simulation time steps */
+                     unsigned *timestepsPerPlotting,     /* number of visualization time steps */
+                     int CPU_RANK = 0 ) {  
 
    int TempLength[ 3 ] = { 0 };
-   read_int( INPUT_FILE_NAME, "xlength", &TempLength[ 0 ] );
-   read_int( INPUT_FILE_NAME, "ylength", &TempLength[ 1 ] );
-   read_int( INPUT_FILE_NAME, "zlength", &TempLength[ 2 ] );
+   read_int( INPUT_FILE_NAME, "xlength", &TempLength[ 0 ], CPU_RANK );
+   read_int( INPUT_FILE_NAME, "ylength", &TempLength[ 1 ], CPU_RANK );
+   read_int( INPUT_FILE_NAME, "zlength", &TempLength[ 2 ], CPU_RANK );
 
    if (   ( TempLength[ 0 ] <= 1 )
 		|| ( TempLength[ 1 ] <= 1 )
@@ -144,25 +146,26 @@ int read_parameters( const char *INPUT_FILE_NAME,        /* the name of the data
 	}
 
 
-    read_int( INPUT_FILE_NAME, "iProc", &PROC[ 0 ] );
-    read_int( INPUT_FILE_NAME, "jProc", &PROC[ 1 ] );
-    read_int( INPUT_FILE_NAME, "kProc", &PROC[ 2 ] );
-/*
-# ifndef TEST
+    read_int( INPUT_FILE_NAME, "iProc", &PROC[ 0 ], CPU_RANK );
+    read_int( INPUT_FILE_NAME, "jProc", &PROC[ 1 ], CPU_RANK );
+    read_int( INPUT_FILE_NAME, "kProc", &PROC[ 2 ], CPU_RANK );
+
+
+#ifndef TEST
 
 	int PROCESSORS_NUMBER = 0;
  	MPI_Comm_size(MPI_COMM_WORLD, &PROCESSORS_NUMBER);
 
 	int LAYOUT_REQUEST = PROC[ 0 ] * PROC[ 1 ] * PROC[ 2 ];
 	if ( PROCESSORS_NUMBER != LAYOUT_REQUEST ) {
-	   std::string Error = "ERROR: processor topology doen't match with the provessors number";
+       std::string Error = "ERROR: processor topology doen't match to the processors number";
  	   throw Error;
 	}
 
 #endif
-*/
 
-   read_double( INPUT_FILE_NAME, "tau", tau );
+
+   read_double( INPUT_FILE_NAME, "tau", tau, CPU_RANK );
    if ( ( *tau ) <= 0.5 || ( *tau >= 2.0 ) ) {
 	   std::string Error = "ERROR: tau should be between greater than 0.5 and  less than 2.0";
 	   throw Error;
@@ -170,9 +173,9 @@ int read_parameters( const char *INPUT_FILE_NAME,        /* the name of the data
 
    double VelocityMagnitude = 0.0;
 
-   read_double( INPUT_FILE_NAME, "U", &WallVelocity[ 0 ] );
-   read_double( INPUT_FILE_NAME, "V", &WallVelocity[ 1 ] );
-   read_double( INPUT_FILE_NAME, "W", &WallVelocity[ 2 ] );
+   read_double( INPUT_FILE_NAME, "U", &WallVelocity[ 0 ], CPU_RANK );
+   read_double( INPUT_FILE_NAME, "V", &WallVelocity[ 1 ], CPU_RANK );
+   read_double( INPUT_FILE_NAME, "W", &WallVelocity[ 2 ], CPU_RANK );
 
    VelocityMagnitude = WallVelocity[ 0 ] * WallVelocity[ 0 ]
 					 + WallVelocity[ 1 ] * WallVelocity[ 1 ]
@@ -183,9 +186,9 @@ int read_parameters( const char *INPUT_FILE_NAME,        /* the name of the data
    }
 
 
-   read_double( INPUT_FILE_NAME, "Uin", &InletVelocity[ 0 ] );
-   read_double( INPUT_FILE_NAME, "Vin", &InletVelocity[ 1 ] );
-   read_double( INPUT_FILE_NAME, "Win", &InletVelocity[ 2 ] );
+   read_double( INPUT_FILE_NAME, "Uin", &InletVelocity[ 0 ], CPU_RANK );
+   read_double( INPUT_FILE_NAME, "Vin", &InletVelocity[ 1 ], CPU_RANK );
+   read_double( INPUT_FILE_NAME, "Win", &InletVelocity[ 2 ], CPU_RANK );
 
    VelocityMagnitude = InletVelocity[ 0 ] * InletVelocity[ 0 ]
    					 + InletVelocity[ 1 ] * InletVelocity[ 1 ]
@@ -197,14 +200,14 @@ int read_parameters( const char *INPUT_FILE_NAME,        /* the name of the data
    }
 
 
-   read_double( INPUT_FILE_NAME, "DeltaDensity", DeltaDensity );
+   read_double( INPUT_FILE_NAME, "DeltaDensity", DeltaDensity, CPU_RANK );
    if ( ( *DeltaDensity ) > 0.05 ) {
 	   std::string Error = "ERROR: Delta Density should be small, LBM fails at high Mach Number";
 	   throw Error;
    }
 
    int TemporaryVariable = 0;
-   read_int( INPUT_FILE_NAME, "timesteps", &TemporaryVariable );
+   read_int( INPUT_FILE_NAME, "timesteps", &TemporaryVariable, CPU_RANK );
    if ( TemporaryVariable <= 0 ) {
 	   std::string Error = "ERROR: Time Steps cannot be negative";
 	   throw Error;
@@ -214,7 +217,7 @@ int read_parameters( const char *INPUT_FILE_NAME,        /* the name of the data
    }
 
 
-   read_int( INPUT_FILE_NAME, "timestepsPerPlotting", &TemporaryVariable );
+   read_int( INPUT_FILE_NAME, "timestepsPerPlotting", &TemporaryVariable, CPU_RANK );
 
    if ( TemporaryVariable <= 0 ) {
 	   std::string Error = "ERROR: Time Steps Per Plotting cannot be negative";
@@ -281,8 +284,7 @@ void errhandler( int nLine, const char *szFile, const char *szString )
 /* function. To maintain the string over several program calls, it has to be */
 /* copied!!!                                                                 */
 /*                                                                           */
-char* find_string( const char* szFileName, const char *szVarName )
-{
+char* find_string( const char* szFileName, const char *szVarName ) {
     int nLine = 0;
     unsigned i;
     FILE *fh = NULL;
@@ -346,8 +348,10 @@ char* find_string( const char* szFileName, const char *szVarName )
     return NULL;                /* dummy to satisfy the compiler  */
 }
 
-void read_string( const char* szFileName, const char* szVarName, char*   pVariable)
-{
+void read_string( const char* szFileName,
+                  const char* szVarName,
+                  char*   pVariable,
+                  int CPU_RANK = 0 ) {
     char* szValue = NULL;       /* string containg the read variable value */
 
     if( szVarName  == 0 )  ERROR("null pointer given as variable name" );
@@ -362,14 +366,22 @@ void read_string( const char* szFileName, const char* szVarName, char*   pVariab
     if( sscanf( szValue, "%s", pVariable) == 0)
         READ_ERROR("wrong format", szVarName, szFileName,0);
 
-    printf( "File: %s\t\t%s%s= %s\n", szFileName,
-                                      szVarName,
-                                      &("               "[min_int( (int)strlen(szVarName), 15)]),
-                                      pVariable );
+    if ( CPU_RANK == MASTER_CPU ) {
+
+        printf( "File: %s\t\t%s%s= %s\n",
+                szFileName,
+                szVarName,
+                &("               "[min_int( (int)strlen(szVarName), 15)]),
+                pVariable );
+
+    }
 }
 
-void read_int( const char* szFileName, const char* szVarName, int* pVariable)
-{
+void read_int( const char* szFileName, 
+               const char* szVarName, 
+               int* pVariable,
+               int CPU_RANK = 0 ) {
+    
     char* szValue = NULL;       /* string containing the read variable value */
 
     if( szVarName  == 0 )  ERROR("null pointer given as varable name" );
@@ -384,15 +396,22 @@ void read_int( const char* szFileName, const char* szVarName, int* pVariable)
     if( sscanf( szValue, "%d", pVariable) == 0)
         READ_ERROR("wrong format", szVarName, szFileName, 0);
 
-    printf( "File: %s\t\t%s%s= %d\n", szFileName,
-                                      szVarName,
-                                      &("               "[min_int( (int)strlen(szVarName), 15)]),
-                                      *pVariable );
+    
+    if ( CPU_RANK == MASTER_CPU ) {
+        printf( "File: %s\t\t%s%s= %d\n", 
+                szFileName,
+                szVarName,
+                &("               "[min_int( (int)strlen(szVarName), 15)]),
+                *pVariable );
+    }
 }
 
 
-void read_unsigned( const char* szFileName, const char* szVarName, unsigned* pVariable)
-{
+void read_unsigned( const char* szFileName, 
+                    const char* szVarName, 
+                    unsigned* pVariable, 
+                    int CPU_RANK ) {
+
     char* szValue = NULL;       /* string containing the read variable value */
 
     if( szVarName  == 0 )  ERROR("null pointer given as varable name" );
@@ -407,15 +426,22 @@ void read_unsigned( const char* szFileName, const char* szVarName, unsigned* pVa
     if( sscanf( szValue, "%u", pVariable) == 0)
         READ_ERROR("wrong format", szVarName, szFileName, 0);
 
-    printf( "File: %s\t\t%s%s= %u\n", szFileName,
-                                      szVarName,
-                                      &("               "[min_int( (unsigned)strlen(szVarName), 15)]),
-                                      *pVariable );
+
+    if ( CPU_RANK == MASTER_CPU ) {
+        printf( "File: %s\t\t%s%s= %u\n", 
+                szFileName,
+                szVarName,
+                &("               "[min_int( (unsigned)strlen(szVarName), 15)]),
+                *pVariable );
+    }
 }
 
 
-void read_double( const char* szFileName, const char* szVarName, double* pVariable)
-{
+void read_double( const char* szFileName, 
+                  const char* szVarName, 
+                  double* pVariable,
+                  int CPU_RANK ) {
+
     char* szValue = NULL;       /* String mit dem eingelesenen Variablenwert */
 
     if( szVarName  == 0 )  ERROR("null pointer given as varable name" );
@@ -430,10 +456,14 @@ void read_double( const char* szFileName, const char* szVarName, double* pVariab
     if( sscanf( szValue, "%lf", pVariable) == 0)
         READ_ERROR("wrong format", szVarName, szFileName, 0);
 
-    printf( "File: %s\t\t%s%s= %f\n", szFileName,
-                                      szVarName,
-                                      &("               "[min_int( (int)strlen(szVarName), 15)]),
-                                      *pVariable );
+    if ( CPU_RANK == MASTER_CPU ) {
+
+        printf( "File: %s\t\t%s%s= %f\n",
+                szFileName,
+                szVarName,
+                &("               "[min_int( (int)strlen(szVarName), 15)]),
+                *pVariable );
+    }
 }
 
 

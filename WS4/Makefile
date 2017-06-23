@@ -6,8 +6,8 @@ SOURCES=initLB.cpp visualLB.cpp boundary.cpp collision.cpp streaming.cpp\
 # --------
 CC=mpic++
 
-CFLAGS= -Wall -g -fno-omit-frame-pointer #-Werror
-#CFLAGS= -pedantic -Wall -O2 -funroll-loops #-Werror
+#CFLAGS= -Wall -g -fno-omit-frame-pointer #-Werror
+CFLAGS= -Wall -O2 -funroll-loops #-pedantic #-Werror
 
 
 #MODE=-DDEBUGGING

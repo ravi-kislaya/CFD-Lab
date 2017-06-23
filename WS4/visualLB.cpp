@@ -27,7 +27,7 @@ void writeVtkOutput( const char * filename,
 
     char szFilename[80];
     FILE *fp = NULL;
-    sprintf( szFilename, "%s.%i.%i.vtu", filename, t, RANK );
+    sprintf( szFilename, "%s.%i.%i.vtk", filename, t, RANK );
 
     fp = fopen( szFilename, "w");
     if( fp == NULL ) {

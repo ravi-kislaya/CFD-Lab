@@ -49,7 +49,7 @@ void initialiseFields_LidDrivenCavity( double **collideField,
 
 				Current_Field_Cell = computeFieldIndex( x, y, z, Length );
 
-				for( unsigned i = 0 ; i < Vel_DOF ; ++i ) {
+				for( int i = 0 ; i < Vel_DOF ; ++i ) {
 					//Initialization of collideField
 					(*collideField) [ Current_Field_Cell + i ] = LATTICEWEIGHTS[ i ];
 

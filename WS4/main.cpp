@@ -112,16 +112,20 @@ int main( int argc, char *argv[] ) {
     try{
         read_parameters( INPUT_FILE_NAME,         /* the name of the data file */
                          Length,                  /* number of cells along x direction */
-                         PROC,
+                         PROC,                    /* processor layout */
                          &tau,                    /* relaxation time */
                          wallVelocity,            /* lid velocity along all direction*/
                          InletVelocity,           /* Inlet velocity along all direction */
                          &DeltaDensity,           /* density difference */
                          &TimeSteps,              /* number of simulation time steps */
-                         &TimeStepsPerPlotting ); /* number of visualization time steps */
+                         &TimeStepsPerPlotting,   /* number of visualization time steps */
+                         RANK );                  /* CPU rank */
     }
     catch ( std::string ERROR ) {
-        std::cout << ERROR << std::endl;
+        
+        if ( RANK == MASTER_CPU )
+            std::cout << ERROR << std::endl;
+        
         MPI_Finalize();
         return 0;
     }
@@ -199,12 +203,12 @@ int main( int argc, char *argv[] ) {
   	// index 4: +z direction
   	// index 5: -z direction
     std::vector<int> Neighbours;
-    Neighbours.push_back( getGlobalIndex( ProcX + 1, ProcY, ProcZ, PROC ) );
-    Neighbours.push_back( getGlobalIndex( ProcX - 1, ProcY, ProcZ, PROC ) );
-    Neighbours.push_back( getGlobalIndex( ProcX, ProcY + 1, ProcZ, PROC ) );
-    Neighbours.push_back( getGlobalIndex( ProcX, ProcY - 1, ProcZ, PROC ) );
-    Neighbours.push_back( getGlobalIndex( ProcX, ProcY, ProcZ + 1, PROC ) );
-    Neighbours.push_back( getGlobalIndex( ProcX, ProcY, ProcZ - 1, PROC ) );
+    Neighbours.push_back( getGlobalCPUIndex( ProcX + 1, ProcY, ProcZ, PROC ) );
+    Neighbours.push_back( getGlobalCPUIndex( ProcX - 1, ProcY, ProcZ, PROC ) );
+    Neighbours.push_back( getGlobalCPUIndex( ProcX, ProcY + 1, ProcZ, PROC ) );
+    Neighbours.push_back( getGlobalCPUIndex( ProcX, ProcY - 1, ProcZ, PROC ) );
+    Neighbours.push_back( getGlobalCPUIndex( ProcX, ProcY, ProcZ + 1, PROC ) );
+    Neighbours.push_back( getGlobalCPUIndex( ProcX, ProcY, ProcZ - 1, PROC ) );
 
 
     // filtering all unnecessary
@@ -233,7 +237,7 @@ int main( int argc, char *argv[] ) {
         int TAG = 1;
         for ( unsigned Step = 0; Step < TimeSteps; ++Step ) {
 
-            // .......................COMMUNICATION: START......................
+                           // .......................COMMUNICATION: START......................
             for (int i = 0; i < MAX_COMMUNICATION_FACES; i += 2) {
 
                 if ( Neighbours[ i ] != EMPTY_NEIGHBOR ) {
@@ -255,10 +259,10 @@ int main( int argc, char *argv[] ) {
                                MPI_COMM_WORLD,
                                &STATUS );
 
+
                     decodeProtocol( ReceiveProtocol,
                     				BoundaryBufferArray[ i + 1 ].getProtocolSize(),
-                    				collideField );
-
+                    				collideField );          
 
 
                     MPI_Send( BoundaryBufferArray[ i + 1 ].getProtocol(),
@@ -282,7 +286,8 @@ int main( int argc, char *argv[] ) {
                     decodeProtocol( ReceiveProtocol,
                     				BoundaryBufferArray[ i ].getProtocolSize(),
                     				collideField );
-                }
+
+                  }
             }
             // .......................COMMUNICATION: END........................
 
@@ -332,16 +337,68 @@ int main( int argc, char *argv[] ) {
         }
 
 
-    // display the output information
+    // compute the metric an a local node
     clock_t End = clock();
     double ConsumedTime = (double)( End - Begin ) / CLOCKS_PER_SEC;
     double MLUPS = ( FluidDomain.size() * TimeSteps ) / ( ConsumedTime * 1e6 );
 
-    // display MLUPS number that stands for Mega Lattice Updates Per Second
-    std::cout << "Computational time: " <<  ConsumedTime << " sec" << std::endl;
-    std::cout << "MLUPS: " <<  MLUPS << std::endl;
-    std::cout << "Number of lattices: " <<  (int)FluidDomain.size() << std::endl;
 
+    // All SLAVE CPU's have to send their metrics to the MASTER CPU
+    if ( RANK != MASTER_CPU ) {
+
+            double METRICS[ 2 ] = { MLUPS, (double)FluidDomain.size() };
+            MPI_Send( METRICS,
+                      2,
+                      MPI_DOUBLE,
+                      MASTER_CPU,
+                      TAG,
+                      MPI_COMM_WORLD );
+
+    }
+
+    // Reveive the metrics from all SLAVE CPU's and sum all of them together
+    if ( RANK == MASTER_CPU ) {
+
+        // Allocate temporary buffers for both MPLUPS and domain size
+        double MlupsBuffer[ NUMBER_OF_PROCESSORS ];
+        unsigned DomainSizeBuffer[ NUMBER_OF_PROCESSORS ];
+
+        // initialize the first entries by MASTER CPU data
+        MlupsBuffer[ 0 ] = MLUPS;
+        DomainSizeBuffer[ 0 ] = (unsigned)FluidDomain.size();
+
+
+        double TempReceiveBuffer[ 2 ];
+        for( int i = 1; i < NUMBER_OF_PROCESSORS; ++i ) {
+
+
+            MPI_Recv( TempReceiveBuffer,
+                      2,
+                      MPI_DOUBLE,
+                      i,
+                      TAG,
+                      MPI_COMM_WORLD,
+                      &STATUS );
+
+
+            // assigned received values to the corresponding buffers
+            MlupsBuffer[ i ] = TempReceiveBuffer[ 0 ];
+            DomainSizeBuffer[ i ] = (unsigned)TempReceiveBuffer[ 1 ];
+
+        }
+
+        // compute the total value of MLUPS and the total domain size
+        MLUPS = performArrayReduction( MlupsBuffer, 
+                                       unsigned( NUMBER_OF_PROCESSORS ) );
+
+        unsigned TotalDomainSize = performArrayReduction( DomainSizeBuffer, 
+                                                          unsigned( NUMBER_OF_PROCESSORS ) );
+
+        // display the metrics
+        std::cout << "Computational time: " <<  ConsumedTime << " sec" << std::endl;
+        std::cout << "MLUPS: " <<  MLUPS << std::endl;
+        std::cout << "Number of lattices: " <<  TotalDomainSize << std::endl;
+    }
 
 
     // delete list of obstacles

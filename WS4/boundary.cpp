@@ -165,15 +165,29 @@ void scanBoundary(  std::list<BoundaryFluid*>& ObstacleList,
 	//communication on YZ direction: +x and -x
 	for ( unsigned z = 1; z < Length[ 2 ] + 1; ++z ) {
 		for ( unsigned y = 1; y < Length[ 1 ] + 1; ++y ) {
-			Current_Cell_Field = computeFieldIndex( Length[ 0 ], y, z, Length );
-			BoundaryBufferArray[ 0 ].addBufferElement( Current_Cell_Field );
+			Current_Cell_Field = computeFieldIndex( Length[0], y, z, Length );
+			
+            BoundaryBufferArray[ 0 ].addBufferElement( Current_Cell_Field + 10 );
+            BoundaryBufferArray[ 0 ].addBufferElement( Current_Cell_Field  + 13 );
+            BoundaryBufferArray[ 0 ].addBufferElement( Current_Cell_Field + 7 );
+            BoundaryBufferArray[ 0 ].addBufferElement( Current_Cell_Field + 17 );
+            BoundaryBufferArray[ 0 ].addBufferElement( Current_Cell_Field + 3 );
+
 		}
 	}
 
 	for ( unsigned z = 1; z < Length[ 2 ] + 1; ++z ) {
 		for ( unsigned y = 1; y < Length[ 1 ] + 1; ++y ) {
 			Current_Cell_Field = computeFieldIndex( 1, y, z, Length );
-			BoundaryBufferArray[ 1 ].addBufferElement( Current_Cell_Field );
+            
+            BoundaryBufferArray[ 1 ].addBufferElement( Current_Cell_Field + 8 );
+            BoundaryBufferArray[ 1 ].addBufferElement( Current_Cell_Field  + 11 );
+            BoundaryBufferArray[ 1 ].addBufferElement( Current_Cell_Field + 5 );
+            BoundaryBufferArray[ 1 ].addBufferElement( Current_Cell_Field + 15 );
+            BoundaryBufferArray[ 1 ].addBufferElement( Current_Cell_Field + 1 );
+
+
+
 		}
 	}
 
@@ -181,30 +195,57 @@ void scanBoundary(  std::list<BoundaryFluid*>& ObstacleList,
 	//communication on XZ direction: +y and -y
 	for ( unsigned z = 1; z < Length[ 2 ] + 1; ++z ) {
 		for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
-			Current_Cell_Field = computeFieldIndex( x, Length[ 1 ], z, Length );
-			BoundaryBufferArray[ 2 ].addBufferElement( Current_Cell_Field );
+			Current_Cell_Field = computeFieldIndex( x, Length[1], z, Length );
+
+
+            BoundaryBufferArray[ 2 ].addBufferElement( Current_Cell_Field + 12 );
+            BoundaryBufferArray[ 2 ].addBufferElement( Current_Cell_Field  + 4 );
+            BoundaryBufferArray[ 2 ].addBufferElement( Current_Cell_Field + 18 );
+            BoundaryBufferArray[ 2 ].addBufferElement( Current_Cell_Field + 13 );
+            BoundaryBufferArray[ 2 ].addBufferElement( Current_Cell_Field + 11 );
+
+
 		}
 	}
 
 	for ( unsigned z = 1; z < Length[ 2 ] + 1; ++z ) {
 		for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
 			Current_Cell_Field = computeFieldIndex( x, 1, z, Length );
-			BoundaryBufferArray[ 3 ].addBufferElement( Current_Cell_Field );
-		}
+
+            BoundaryBufferArray[ 3 ].addBufferElement( Current_Cell_Field + 6 );
+            BoundaryBufferArray[ 3 ].addBufferElement( Current_Cell_Field  + 0 );
+            BoundaryBufferArray[ 3 ].addBufferElement( Current_Cell_Field + 14 );
+            BoundaryBufferArray[ 3 ].addBufferElement( Current_Cell_Field + 7 );
+            BoundaryBufferArray[ 3 ].addBufferElement( Current_Cell_Field + 5 );
+
+
+        }
 	}
 
 	//communication on XY direction: +z and -z
 	for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
 		for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
-			Current_Cell_Field = computeFieldIndex( x, y, Length[ 2 ], Length );
-			BoundaryBufferArray[ 4 ].addBufferElement( Current_Cell_Field );
+			Current_Cell_Field = computeFieldIndex( x, y, Length[2], Length );
+
+            BoundaryBufferArray[ 4 ].addBufferElement( Current_Cell_Field + 16 );
+            BoundaryBufferArray[ 4 ].addBufferElement( Current_Cell_Field  + 18 );
+            BoundaryBufferArray[ 4 ].addBufferElement( Current_Cell_Field + 14 );
+            BoundaryBufferArray[ 4 ].addBufferElement( Current_Cell_Field + 17 );
+            BoundaryBufferArray[ 4 ].addBufferElement( Current_Cell_Field + 15 );
+
 		}
 	}
 
 	for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
 		for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
-			Current_Cell_Field = computeFieldIndex( x, y, Length[ 2 ], Length );
-			BoundaryBufferArray[ 5 ].addBufferElement( Current_Cell_Field );
+			Current_Cell_Field = computeFieldIndex( x, y, 1, Length );
+
+            BoundaryBufferArray[ 5 ].addBufferElement( Current_Cell_Field + 2 );
+            BoundaryBufferArray[ 5 ].addBufferElement( Current_Cell_Field  + 4 );
+            BoundaryBufferArray[ 5 ].addBufferElement( Current_Cell_Field + 0 );
+            BoundaryBufferArray[ 5 ].addBufferElement( Current_Cell_Field + 3 );
+            BoundaryBufferArray[ 5 ].addBufferElement( Current_Cell_Field + 1 );
+
 		}
 	}
 
@@ -224,5 +265,6 @@ void treatBoundary( double *collideField,
 
               (*FluidCell)->processBoundary( collideField );
 
-    }
+        }  
 }
+

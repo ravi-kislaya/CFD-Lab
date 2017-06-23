@@ -48,7 +48,7 @@
                                            };
 
 
-  enum Flags{ FLUID, NO_SLIP, MOVING_WALL, FREE_SLIP, INFLOW, PRESSURE_IN, OUTFLOW, PARALLEL_BOUNDARY_X, PARALLEL_BOUNDARY_Y, PARALLEL_BOUNDARY_Z };
+  enum Flags{ FLUID, NO_SLIP, MOVING_WALL, FREE_SLIP, INFLOW, PRESSURE_IN, OUTFLOW };
 
 
   // C_S - is the speed of sound which is equal to 1.0 / sqrt ( 3.0 ) = 0.577350269
@@ -59,7 +59,6 @@
   static const double InverseCS_Four = 9.0;
   static const double Density_Reference = 1.0;
   static const int SELF_INDEX = 9; //for D3Q19
-  static const unsigned MAX_COMMUNICATION_FACES = 6;
 
 
 #endif

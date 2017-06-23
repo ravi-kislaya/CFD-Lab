@@ -56,6 +56,34 @@ void getLengthFromString( unsigned* Length, std::string String ) {
 }
 
 
+int computeCPUCoordinateX( int* Proc,
+                           int Rank ) {
+
+ //   return ( unsigned ) ( Rank % Proc[0] );
+    return ( int ) ( ( Rank % ( Proc[0] * Proc[1] ) ) % Proc[ 0 ] );
+}
+
+
+int computeCPUCoordinateY( int* Proc,
+                           int Rank ) {
+
+    //return ( ( ( unsigned ) ( Rank / Proc[0] ) ) % Proc[1] );
+    return ( int ) ( ( Rank % ( Proc[0] * Proc[1] ) ) / Proc[ 0 ] );
+}
+
+
+int computeCPUCoordinateZ( int* Proc,
+                           int Rank ) {
+
+	return ( int ) ( Rank / ( Proc[0] * Proc[1] ));
+}
+
+
+int getGlobalIndex( int i, int j, int k, int* Proc ) {
+    return k * Proc[ 0 ] * Proc[ 1 ] + j * Proc[ 0 ] + i;
+}
+
+
 template< class T >
 T min( T a, T b ) {
     if( a < b ) return a;
@@ -90,6 +118,7 @@ int min_int( const int n1, const int n2 )
 
 int read_parameters( const char *INPUT_FILE_NAME,        /* the name of the data file */
                      unsigned* Length,                   /* number of cells along x direction */
+					 int* PROC,							 /* CPU layout */
                      double *tau,                        /* relaxation time */
                      double *WallVelocity,               /* lid velocity along all direction*/
                      double *InletVelocity,              /* Inlet velocity along all direction */
@@ -114,6 +143,24 @@ int read_parameters( const char *INPUT_FILE_NAME,        /* the name of the data
 		Length[ 2 ] = ( unsigned )TempLength[ 2 ];
 	}
 
+
+    read_int( INPUT_FILE_NAME, "iProc", &PROC[ 0 ] );
+    read_int( INPUT_FILE_NAME, "jProc", &PROC[ 1 ] );
+    read_int( INPUT_FILE_NAME, "kProc", &PROC[ 2 ] );
+/*
+# ifndef TEST
+
+	int PROCESSORS_NUMBER = 0;
+ 	MPI_Comm_size(MPI_COMM_WORLD, &PROCESSORS_NUMBER);
+
+	int LAYOUT_REQUEST = PROC[ 0 ] * PROC[ 1 ] * PROC[ 2 ];
+	if ( PROCESSORS_NUMBER != LAYOUT_REQUEST ) {
+	   std::string Error = "ERROR: processor topology doen't match with the provessors number";
+ 	   throw Error;
+	}
+
+#endif
+*/
 
    read_double( INPUT_FILE_NAME, "tau", tau );
    if ( ( *tau ) <= 0.5 || ( *tau >= 2.0 ) ) {

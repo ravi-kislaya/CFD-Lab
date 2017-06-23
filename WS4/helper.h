@@ -58,6 +58,26 @@ void getLengthFromString( unsigned* Length, std::string String );
 void copyToVector( std::list<Fluid*> &aList, std::vector<Fluid*> &aVector );
 
 
+
+
+int computeCPUCoordinateX( int* Proc,
+                           int Rank );
+
+
+int computeCPUCoordinateY( int* Proc,
+                           int Rank );
+
+int computeCPUCoordinateZ( int* Proc,
+                           int Rank );
+
+
+int getGlobalIndex( int i,
+					int j,
+					int k,
+					int* Proc );
+
+
+
 #ifdef PI
 #undef PI
 #endif
@@ -76,7 +96,8 @@ extern clock_t last_timer_reset;
 
 
 int read_parameters( const char *INPUT_FILE_NAME,        /* the name of the data file */
-                     unsigned* Length,                       /* number of cells along x direction */
+                     unsigned* Length,                   /* number of cells along x direction */
+					 int* PROC,							 /* CPU layout */
                      double *tau,                        /* relaxation time */
                      double *WallVelocity,               /* lid velocity along all direction*/
                      double *InletVelocity,              /* Inlet velocity along all direction */

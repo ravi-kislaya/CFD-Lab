@@ -59,7 +59,7 @@
   static const double InverseCS_Four = 9.0;
   static const double Density_Reference = 1.0;
   static const int SELF_INDEX = 9; //for D3Q19
-  static const unsigned MAX_COMMUNICATION_FACES = 6;
+  static const int MAX_COMMUNICATION_FACES = 6;
 
 
 #endif

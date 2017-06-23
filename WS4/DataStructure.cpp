@@ -236,8 +236,8 @@ void BoundaryFluid::deleteObstacles() {
 //------------------------------------------------------------------------------
 //                            Boundary Buffer
 //------------------------------------------------------------------------------
-BoundaryBuffer::BoundaryBuffer() : m_Field( 0 ),
-								   m_Protocol( 0 ),
+BoundaryBuffer::BoundaryBuffer() : m_Protocol( 0 ),
+								   m_Field( 0 ),
 								   m_Index( -1 ),
  								   m_BufferSize( 0 ),
  								   m_isProtocolReady( false ) {
@@ -322,6 +322,7 @@ int BoundaryBuffer::generateProtocol() {
   	// index 5: -z direction
 
 	int Shift = 0;
+	int TransferVelComponent[ 5 ] = { 0 };
 	unsigned X = m_Length[ 0 ];
 	unsigned Y = m_Length[ 1 ];
 	unsigned Z = m_Length[ 2 ];
@@ -329,21 +330,51 @@ int BoundaryBuffer::generateProtocol() {
 	switch ( m_Index ) {
 
 		case 0: Shift = Vel_DOF * X;
+						TransferVelComponent[ 0 ] = 10;
+						TransferVelComponent[ 1 ] = 13;
+						TransferVelComponent[ 2 ] = 7;
+						TransferVelComponent[ 3 ] = 17;
+						TransferVelComponent[ 4 ] = 3;
 				break;
 
 		case 1: Shift = ( -1 ) *  Vel_DOF * X;
+						TransferVelComponent[ 0 ] = 8;
+						TransferVelComponent[ 1 ] = 11;
+						TransferVelComponent[ 2 ] = 5;
+						TransferVelComponent[ 3 ] = 15;
+						TransferVelComponent[ 4 ] = 1;
 				break;
 
 		case 2: Shift = Vel_DOF * (X + 2) * Y;
+						TransferVelComponent[ 0 ] = 12;
+						TransferVelComponent[ 1 ] = 4;
+						TransferVelComponent[ 2 ] = 18;
+						TransferVelComponent[ 3 ] = 13;
+						TransferVelComponent[ 4 ] = 11;
 				break;
 
 		case 3: Shift = ( -1 ) * Vel_DOF * (X + 2) * Y;
+						TransferVelComponent[ 0 ] = 6;
+						TransferVelComponent[ 1 ] = 0;
+						TransferVelComponent[ 2 ] = 14;
+						TransferVelComponent[ 3 ] = 7;
+						TransferVelComponent[ 4 ] = 5;
 				break;
 
 		case 4: Shift = Vel_DOF * (X + 2) * (Y + 2) * Z;
+						TransferVelComponent[ 0 ] = 16;
+						TransferVelComponent[ 1 ] = 18;
+						TransferVelComponent[ 2 ] = 14;
+						TransferVelComponent[ 3 ] = 17;
+						TransferVelComponent[ 4 ] = 15;
 				break;
 
 		case 5: Shift = ( -1 ) * Vel_DOF * (X + 2) * (Y + 2) * Z;
+						TransferVelComponent[ 0 ] = 2;
+						TransferVelComponent[ 1 ] = 4;
+						TransferVelComponent[ 2 ] = 0;
+						TransferVelComponent[ 3 ] = 3;
+						TransferVelComponent[ 4 ] = 1;
 				break;
 
 		default: std::cout << "ERROR: Buffer index is wrong, namely:"
@@ -364,15 +395,22 @@ int BoundaryBuffer::generateProtocol() {
 	unsigned Counter = 0;
 	for ( std::list<unsigned>::iterator Iterator = BufferElements.begin();
  		  Iterator != BufferElements.end();
-		  ++Iterator, Counter += 2 ) {
-		m_Protocol[ Counter ] = (double)( ( *Iterator ) + Shift );
-		m_Protocol[ Counter + 1 ] = m_Field[ ( *Iterator ) ];
+		  ++Iterator, Counter += 10 ) {
+				for(int i = 0; i < 5; ++i) {
+					m_Protocol[ Counter ] = (double)( ( *Iterator )
+ 										  + Shift
+										  + TransferVelComponent[ i ]);
+
+					m_Protocol[ Counter + 1 ] = m_Field[ ( *Iterator )
+											  + TransferVelComponent[ i ] ];
+				}
 	}
 
 	m_isProtocolReady = true;
 
 	return 1;
 }
+
 
 
 int  BoundaryBuffer::updateProtocol() {
@@ -396,7 +434,11 @@ int  BoundaryBuffer::updateProtocol() {
 
 		m_Protocol[ Counter + 1 ] = m_Field[ ( *Iterator ) ];
 	}
+
+	return 0;
 }
+
+
 
 void decodeProtocol( double* Protocol,
 					 unsigned ProtocolSize,

@@ -82,7 +82,8 @@ int main () {
         printPassedMessage( "guards of generateProtocol() and setIndex()" );
     }
 
-    unsigned Length[ 3 ] = { 10, 10, 10 };
+    unsigned Length[ 3 ] = { 10, 20, 30 };
+
     BBInstance.setDomainLength( Length );
     if ( BBInstance.generateProtocol() != -1 ) {
         printErrorMessage("generateProtocol() or setDomainLengths()");
@@ -103,7 +104,7 @@ int main () {
 
     BBInstance.setField( TestCollideField );
 
-
+/*
 
     if ( BBInstance.generateProtocol() == -1 ) {
         printErrorMessage("generateProtocol() or setField()");
@@ -134,7 +135,7 @@ int main () {
     InitXZ( TestCollideField, Length, Length[ 1 ], BBInstance );
 
 
-
+*/
     writeVtkOutputTest( TestCollideField,
                         "FieldBeforeTransfer",
                         0,
@@ -151,6 +152,7 @@ int main () {
                         "FieldAfterTransfer",
                         0,
                         Length );
+
 
     // delete flields
     free( TestCollideField );
@@ -181,12 +183,7 @@ void InitXY( double* Field,
                 Field[ Current_Field_Cell + i ] = TEST_VALUE;
             }
 
-            aBuffer.addBufferElement( Current_Field_Cell + 14 );
-            aBuffer.addBufferElement( Current_Field_Cell + 15 );
-            aBuffer.addBufferElement( Current_Field_Cell + 16 );
-            aBuffer.addBufferElement( Current_Field_Cell + 17 );
-            aBuffer.addBufferElement( Current_Field_Cell + 18 );
-
+            aBuffer.addBufferElement( Current_Field_Cell );
         }
     }
 
@@ -219,11 +216,8 @@ void InitXZ( double* Field,
                 Field[ Current_Field_Cell + i ] = TEST_VALUE;
             }
 
-            aBuffer.addBufferElement( Current_Field_Cell + 4 );
-            aBuffer.addBufferElement( Current_Field_Cell + 11 );
-            aBuffer.addBufferElement( Current_Field_Cell + 12 );
-            aBuffer.addBufferElement( Current_Field_Cell + 13 );
-            aBuffer.addBufferElement( Current_Field_Cell + 18 );
+            aBuffer.addBufferElement( Current_Field_Cell );
+
 
         }
     }
@@ -257,11 +251,7 @@ void InitYZ( double* Field,
                 Field[ Current_Field_Cell + i ] = TEST_VALUE;
             }
 
-            aBuffer.addBufferElement( Current_Field_Cell + 3 );
-            aBuffer.addBufferElement( Current_Field_Cell + 7 );
-            aBuffer.addBufferElement( Current_Field_Cell + 10 );
-            aBuffer.addBufferElement( Current_Field_Cell + 13 );
-            aBuffer.addBufferElement( Current_Field_Cell + 17 );
+            aBuffer.addBufferElement( Current_Field_Cell );
 
         }
     }

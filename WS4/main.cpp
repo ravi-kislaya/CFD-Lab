@@ -7,6 +7,7 @@
 #include <iostream>
 #include <stdio.h>
 #include <string>
+#include <mpi.h>
 
 
 #include "LBDefinitions.h"
@@ -25,96 +26,69 @@
 //     -fstep
 //     -fchannel
 //     -fplate
-int main( int argc, char *argv[] ){
+int main( int argc, char *argv[] ) {
 
 //******************************************************************************
 //                          CHECK INPUT PARAMETERS
 //******************************************************************************
-    const unsigned NUMBER_OF_MODES = 4;
-    static const char* MODES[ NUMBER_OF_MODES ] = { "-fcavity",
-                                                    "-fstep",
-                                                    "-fchannel",
-                                                    "-fplate" };
 
-    try {
-     if ( argc >= 3 ) {
 
-         // check if it's possible to open the data file
-         FILE* DataFile;
-         DataFile = fopen( argv[1], "r" );
+     // check the correctness of the input parameters
+     //
+     // stop the execution if:
+     //
+     // 1. the number of input parameters is not equal to two
+     //    ( including both the program name and the name of the input data file )
+     //
+     // 2. there is no such file at the project folder
+     //
+     if ( argc == 2 ) {
+
+         // check if it's possible to open the file
+         FILE* file;
+         file = fopen( argv[1], "r" );
 
          // Abort execution if it's not possible to open the file
-         if ( DataFile == 0 ) {
-             std::string Error = "";
-             Error = "ERROR: The file comtaining the input data does not exsist\n";
-             Error.append( "HINT:   Check the file spelling or its existence and try again" );
-             throw Error;
-         }
+         if ( file == 0 ) {
+             printf( "\nERROR: The file comtaining the input data doesn't exsist\n\n" );
+             printf( "HINT:   Check the file spelling or its existence and try again\n\n");
 
-         // check a mode was selected right
-         int aWrongModeProvided = true;
-         for ( unsigned i = 0; i < NUMBER_OF_MODES; ++i ) {
-                aWrongModeProvided *= strcmp( argv[2], MODES[ i ] );
-         }
-
-         if ( aWrongModeProvided ) {
-             std::string Error = "";
-             Error = "ERROR: The provided mode does not exsist\n";
-             Error.append( "HINT: Check the mode spelling and try again" );
-             throw Error;
-         }
-
-         // Check the consistence of vtk files if the plane mode was selected
-         if( !strcmp( argv[2], MODES[ NUMBER_OF_MODES - 1  ] ) ) {
-             if ( argc == 4 ) {
-                 // check if it's possible to open a vtk file
-                 FILE* VtkFile;
-                 VtkFile = fopen( argv[3], "r" );
-
-                 if ( VtkFile == 0 ) {
-                    std::string Error = "";
-                    Error = "ERROR: The file containing the mesh does not exsist\n";
-                    Error.append( "HINT: Check the file spelling or its existence and try again" );
-                     throw Error;
-                 }
-
-             }
-
-             else {
-                std::string Error = "";
-                Error = "ERROR: The number of input parameters is wrong\n";
-                Error.append( "Example: ./lbsim cube.dat -fstep" );
-                throw Error;
-             }
+             return -1;
          }
 
      }
      else {
-            // Abort execution if the number of input parameters is wrong
-            std::string Error = "";
-            Error = "ERROR: The number of input parameters is wrong\n";
-            Error.append( "HINT: Look at the README file to find out how to run the program\n" );
-            Error.append( "Example: ./lbsim cube.dat -fstep" );
-            throw Error;
-     }
-    }
-    catch( std::string Error ) {
-        std::cout << Error << std::endl;
-        return -1;
-    }
-    catch ( ... ) {
-        std::cout << "Unexpected error" << std::endl;
-        return -1;
-    }
 
+         // Abort execution if the number of input parameters is wrong
+         printf( "\nERROR: The number of input parameters is wrong\n\n" );
+
+         printf( "HINT: You've probably forgot to pass the input file" );
+         printf( " as a parameter\n" );
+         printf( "\tor you've passed more than one parameter\n\n" );
+
+         printf( "Example: ./sim cavity.dat\n\n" );
+         return -1;
+     }
 
 
 //******************************************************************************
 //                          PERFORM COMPUTATION
 //******************************************************************************
+    int NUMBER_OF_PROCESSORS = 0;
+    int RANK = 0;
+    MPI_Status STATUS;
+
+
+    MPI_Init (&argc, &argv);
+    MPI_Comm_size (MPI_COMM_WORLD, &NUMBER_OF_PROCESSORS);
+    MPI_Comm_rank (MPI_COMM_WORLD, &RANK);
 
   // Define basics variables
-  const char* INPUT_FILE_NAME = argv[1];
+  // MPI SECTION: START
+  int PROC[ Dimensions ] = { 0 };
+  // MPI SECTION: END
+
+  const char* INPUT_FILE_NAME = argv[ 1 ];
 
 #ifndef MLUPS_FLAG
   const char* OUTPUT_FILE_NAME = "./Frames/RESULT";
@@ -135,25 +109,39 @@ int main( int argc, char *argv[] ){
   int *IdField = 0;
 
 
-  try {
+    try{
+        read_parameters( INPUT_FILE_NAME,         /* the name of the data file */
+                         Length,                  /* number of cells along x direction */
+                         PROC,
+                         &tau,                    /* relaxation time */
+                         wallVelocity,            /* lid velocity along all direction*/
+                         InletVelocity,           /* Inlet velocity along all direction */
+                         &DeltaDensity,           /* density difference */
+                         &TimeSteps,              /* number of simulation time steps */
+                         &TimeStepsPerPlotting ); /* number of visualization time steps */
+    }
+    catch ( std::string ERROR ) {
+        std::cout << ERROR << std::endl;
+        MPI_Finalize();
+        return 0;
+    }
 
-      read_parameters( INPUT_FILE_NAME,         /* the name of the data file */
-                       Length,                  /* number of cells along x direction */
-                       &tau,                    /* relaxation time */
-                       wallVelocity,            /* lid velocity along all direction*/
-                       InletVelocity,           /* Inlet velocity along all direction */
-                       &DeltaDensity,           /* density difference */
-                       &TimeSteps,              /* number of simulation time steps */
-                       &TimeStepsPerPlotting ); /* number of visualization time steps */
-  }
-  catch( std::string Error ) {
-    std::cout << Error << std::endl;
-    return - 1;
-  }
-  catch( ... ) {
-    std::cout << "Unexpected error" << std::endl;
-    return - 1;
-  }
+
+    // compute coordinates of each peocessor
+    int ProcZ = computeCPUCoordinateZ( PROC, RANK );
+    int ProcY = computeCPUCoordinateY( PROC, RANK );
+    int ProcX = computeCPUCoordinateX( PROC, RANK );
+    int CpuCoordinates[ Dimensions ] = { ProcX, ProcY, ProcZ };
+
+
+    initialiseFields_LidDrivenCavity( &collideField,
+                                      &streamField,
+                                      &flagField,
+                                      &IdField,
+                                      Length,
+                                      RANK,
+                                      PROC,
+                                      CpuCoordinates );
 
 
   // Boundary Buffer Scheme:
@@ -173,59 +161,7 @@ int main( int argc, char *argv[] ){
   }
 
 
-      // Lid driven cavity mode
-    if ( !strcmp( argv[ 2 ], MODES[ 0 ] ) ) {
 
-          initialiseFields_LidDrivenCavity( &collideField,
-                                            &streamField,
-                                            &flagField,
-                                            &IdField,
-                                            Length );
-
-      }
-
-      // Flow over a step mode
-      else if ( !strcmp( argv[ 2 ], MODES[ 1 ] ) ) {
-
-          if ( Length[ 0 ] >= Length[ 2 ] ) {
-            std::cout << "ERROR: zLength cannot be less or equal then xLength "
-                      << "in the fstep mode" << std::endl;
-            return -1;
-          }
-
-          initialiseFields_Step( &collideField,
-                                 &streamField,
-                                 &flagField,
-                                 &IdField,
-                                 Length );
-
-      }
-
-      // Plane Shear Flow mode
-      else if( !strcmp( argv[ 2 ], MODES[ 2 ] ) ) {
-
-          initialiseFields_PlaneShearFlow( &collideField,
-                                            &streamField,
-                                            &flagField,
-                                            &IdField,
-                                            Length );
-
-
-      }
-
-      // Tilted Plate mode
-      else if( !strcmp( argv[ 2 ], MODES[ 3 ] ) ) {
-
-
-
-          initialiseFields_TiltedPlate( argv[ 3 ],
-                                        &collideField,
-          			                    &streamField,
-          			                    &flagField,
-          			                    &IdField,
-          			                    Length );
-
-      }
 
     // allcocate the list of boundary layer cells
     std::list<BoundaryFluid*> BoundaryList;
@@ -242,13 +178,46 @@ int main( int argc, char *argv[] ){
       // prepare all boundaries ( stationary and moving walls )
       scanBoundary( BoundaryList,
     				FluidDomainList,
+                    BoundaryBufferArray,
                     VTKrepresentation,
                     flagField,
                     IdField,
                     Length,
-                    wallVelocity,
-    				InletVelocity,
-    				DeltaDensity );
+                    wallVelocity );
+
+    for ( int i = 0; i < MAX_COMMUNICATION_FACES; ++i ) {
+        BoundaryBufferArray[ i ].generateProtocol();
+    }
+
+
+    // init all neighbours
+  	// Boundary Buffer Scheme:
+  	// index 0: +x direction
+  	// index 1: -x direction
+  	// index 2: +y direction
+  	// index 3: -y directionProc
+  	// index 4: +z direction
+  	// index 5: -z direction
+    std::vector<int> Neighbours;
+    Neighbours.push_back( getGlobalIndex( ProcX + 1, ProcY, ProcZ, PROC ) );
+    Neighbours.push_back( getGlobalIndex( ProcX - 1, ProcY, ProcZ, PROC ) );
+    Neighbours.push_back( getGlobalIndex( ProcX, ProcY + 1, ProcZ, PROC ) );
+    Neighbours.push_back( getGlobalIndex( ProcX, ProcY - 1, ProcZ, PROC ) );
+    Neighbours.push_back( getGlobalIndex( ProcX, ProcY, ProcZ + 1, PROC ) );
+    Neighbours.push_back( getGlobalIndex( ProcX, ProcY, ProcZ - 1, PROC ) );
+
+
+    // filtering all unnecessary
+    const int EMPTY_NEIGHBOR = -1;
+    if ( ProcX == ( PROC[ 0 ] - 1 ) ) Neighbours[ 0 ] = EMPTY_NEIGHBOR;
+    if ( ProcX == 0 ) Neighbours[ 1 ] = EMPTY_NEIGHBOR;
+
+    if ( ProcY == ( PROC[ 1 ] - 1 ) ) Neighbours[ 2 ] = EMPTY_NEIGHBOR;
+    if ( ProcY == 0 ) Neighbours[ 3 ] = EMPTY_NEIGHBOR;
+
+    if ( ProcZ == ( PROC[ 2 ] - 1 ) ) Neighbours[ 4 ] = EMPTY_NEIGHBOR;
+    if ( ProcZ == 0 ) Neighbours[ 5 ] = EMPTY_NEIGHBOR;
+
 
 
        std::vector<Fluid*> FluidDomain;
@@ -260,7 +229,62 @@ int main( int argc, char *argv[] ){
 
         // Perform LB method
         double* Swap = NULL;
+        double* ReceiveProtocol = new double[ BoundaryBufferArray[ 5 ].getProtocolSize() ];
+        int TAG = 1;
         for ( unsigned Step = 0; Step < TimeSteps; ++Step ) {
+
+            // .......................COMMUNICATION: START......................
+            for (int i = 0; i < MAX_COMMUNICATION_FACES; i += 2) {
+
+                if ( Neighbours[ i ] != EMPTY_NEIGHBOR ) {
+                    MPI_Send( BoundaryBufferArray[ i ].getProtocol(),
+                              BoundaryBufferArray[ i ].getProtocolSize(),
+                              MPI_DOUBLE,
+                              Neighbours[ i ],
+                              TAG,
+                              MPI_COMM_WORLD );
+
+                }
+
+                if ( Neighbours[ i + 1 ] != EMPTY_NEIGHBOR ) {
+                     MPI_Recv( ReceiveProtocol,
+                               BoundaryBufferArray[ i + 1 ].getProtocolSize(),
+                               MPI_DOUBLE,
+                               Neighbours[ i + 1 ],
+                               TAG,
+                               MPI_COMM_WORLD,
+                               &STATUS );
+
+                    decodeProtocol( ReceiveProtocol,
+                    				BoundaryBufferArray[ i + 1 ].getProtocolSize(),
+                    				collideField );
+
+
+
+                    MPI_Send( BoundaryBufferArray[ i + 1 ].getProtocol(),
+                              BoundaryBufferArray[ i + 1 ].getProtocolSize(),
+                              MPI_DOUBLE,
+                              Neighbours[ i + 1 ],
+                              TAG,
+                              MPI_COMM_WORLD );
+                }
+
+
+                if ( Neighbours[ i ] != EMPTY_NEIGHBOR ) {
+                        MPI_Recv( ReceiveProtocol,
+                                  BoundaryBufferArray[ i ].getProtocolSize(),
+                                  MPI_DOUBLE,
+                                  Neighbours[ i ],
+                                  TAG,
+                                  MPI_COMM_WORLD,
+                                  &STATUS );
+
+                    decodeProtocol( ReceiveProtocol,
+                    				BoundaryBufferArray[ i ].getProtocolSize(),
+                    				collideField );
+                }
+            }
+            // .......................COMMUNICATION: END........................
 
 
             doStreaming( collideField,
@@ -288,9 +312,12 @@ int main( int argc, char *argv[] ){
             // if the MLUPS_FLAG flag is enabled then we will measure performance
             // without performing redundant I/O operations
 
+
             if ( ( Step % TimeStepsPerPlotting ) == 0 ) {
 
                 writeVtkOutput( OUTPUT_FILE_NAME,
+                                RANK,
+                                CpuCoordinates,
                                 collideField,
                                 FluidDomain,
                                 VTKrepresentation,
@@ -298,6 +325,7 @@ int main( int argc, char *argv[] ){
                                 Step,
                                 Length );
             }
+
 #endif
 
 
@@ -338,11 +366,16 @@ int main( int argc, char *argv[] ){
 
     }
 
+    delete [] ReceiveProtocol;
     // delete flields
     free( collideField );
     free( streamField );
     free( flagField );
+
+
+    MPI_Finalize();
   return 0;
 }
+
 
 #endif

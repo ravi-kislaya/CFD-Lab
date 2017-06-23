@@ -203,7 +203,7 @@ class BoundaryBuffer {
         double* getField() { return m_Field; };
 		double* getProtocol() { return m_Protocol; };
         unsigned getBufferSize() { return (unsigned)BufferElements.size(); };
-        unsigned getProtocolSize() { return 2 * (unsigned)BufferElements.size(); };
+        unsigned getProtocolSize() { return 10 * (unsigned)BufferElements.size(); };
         int getIndex() { return  m_Index; };
 
 
@@ -219,7 +219,7 @@ class BoundaryBuffer {
 
 	private:
 		std::list<unsigned> BufferElements;
-		double *m_Protocol;
+		double* m_Protocol;
         double* m_Field;
         int m_Index;
         unsigned m_Length[ 3 ];

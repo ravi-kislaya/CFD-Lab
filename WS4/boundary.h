@@ -7,13 +7,12 @@
 
 void scanBoundary( std::list<BoundaryFluid*>& ObstacleList,
 					std::list<Fluid*>& FluidDomain,
+					BoundaryBuffer* BoundaryBufferArray,
 					std::list<Fluid*>& VTKrepresentation,
                     int* flagField,
 					int *IdField,
                     unsigned* Length,
-                    double* wallVelocity,
-					double* InletVel,
-					double DeltaDensity );
+                    double* wallVelocity );
 
 
 void treatBoundary( double *collideField,

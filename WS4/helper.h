@@ -58,6 +58,35 @@ void getLengthFromString( unsigned* Length, std::string String );
 void copyToVector( std::list<Fluid*> &aList, std::vector<Fluid*> &aVector );
 
 
+
+
+int computeCPUCoordinateX( int* Proc,
+                           int Rank );
+
+
+int computeCPUCoordinateY( int* Proc,
+                           int Rank );
+
+int computeCPUCoordinateZ( int* Proc,
+                           int Rank );
+
+
+int getGlobalCPUIndex( int i,
+					int j,
+					int k,
+					int* Proc );
+
+template< class T >
+T performArrayReduction( T* Array, unsigned SIZE ) {
+    
+    T Accumulator = 0;
+    for ( unsigned i = 0; i < SIZE; ++i ) {
+        Accumulator += Array[ i ];
+    }
+    return Accumulator;
+}
+
+
 #ifdef PI
 #undef PI
 #endif
@@ -76,14 +105,15 @@ extern clock_t last_timer_reset;
 
 
 int read_parameters( const char *INPUT_FILE_NAME,        /* the name of the data file */
-                     unsigned* Length,                       /* number of cells along x direction */
+                     unsigned* Length,                   /* number of cells along x direction */
+					 int* PROC,							 /* CPU layout */
                      double *tau,                        /* relaxation time */
                      double *WallVelocity,               /* lid velocity along all direction*/
                      double *InletVelocity,              /* Inlet velocity along all direction */
                      double *DeltaDensity,               /* density difference */
-                     unsigned *timesteps,                     /* number of simulation time steps */
-                     unsigned *timestepsPerPlotting );        /* number of visualization time steps */
-
+                     unsigned *timesteps,                /* number of simulation time steps */
+                     unsigned *timestepsPerPlotting,     /* number of visualization time steps */
+                     int CPU_RANK );
 
 
 void errhandler( int nLine,
@@ -97,22 +127,26 @@ char* find_string( const char* szFileName,
 
 void read_string( const char* szFileName,
                   const char* szVarName,
-                  char*   pVariable);
+                  char*   pVariable,
+                  int CPU_RANK );
 
 
 void read_int( const char* szFileName,
                const char* szVarName,
-               int* pVariable);
+               int* pVariable,
+               int CPU_RANK );
 
 
 void read_unsigned( const char* szFileName,
 			   		const char* szVarName,
-			   		unsigned* pVariable);
+			   		unsigned* pVariable,
+                    int CPU_RANK );
 
 
 void read_double( const char* szFileName,
                   const char* szVarName,
-                  double* pVariable);
+                  double* pVariable,
+                  int CPU_RANK );
 
 
 int min_int( const int n1, const int n2 );

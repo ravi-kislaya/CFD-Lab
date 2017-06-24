@@ -4,16 +4,18 @@ SOURCES=initLB.cpp visualLB.cpp boundary.cpp collision.cpp streaming.cpp\
 
 # Compiler
 # --------
-CC=g++
+CC=mpic++
 
-#CFLAGS= -pedantic -Wall -g -fno-omit-frame-pointer -Werror
-CFLAGS= -pedantic -Wall -O2 -funroll-loops -Werror
+#CFLAGS= -Wall -g -fno-omit-frame-pointer #-Werror
+CFLAGS= -Wall -O2 -funroll-loops #-pedantic #-Werror
 
 
 #MODE=-DDEBUGGING
-MODE=-DRELEASE
+#MODE=-DRELEASE
+#MODE=-DTEST
 #MODE=-DMLUPS_FLAG
 # Linker flags
+
 # ------------
 LDFLAGS=
 

@@ -1,6 +1,3 @@
-#ifndef _MAIN_C_
-#define _MAIN_C_
-
 #include <time.h>
 #include <list>
 #include <vector>
@@ -8,7 +5,6 @@
 #include <stdio.h>
 #include <string>
 #include <mpi.h>
-
 
 #include "LBDefinitions.h"
 #include "collision.h"
@@ -52,12 +48,14 @@ int main( int argc, char *argv[] ) {
          if ( file == 0 ) {
              printf( "\nERROR: The file comtaining the input data doesn't exsist\n\n" );
              printf( "HINT:   Check the file spelling or its existence and try again\n\n");
-
+             
+             fclose( file );
              return -1;
          }
 
-     }
-     else {
+        fclose( file );
+    }
+    else {
 
          // Abort execution if the number of input parameters is wrong
          printf( "\nERROR: The number of input parameters is wrong\n\n" );
@@ -66,9 +64,10 @@ int main( int argc, char *argv[] ) {
          printf( " as a parameter\n" );
          printf( "\tor you've passed more than one parameter\n\n" );
 
-         printf( "Example: ./sim cavity.dat\n\n" );
+         printf( "Example: ./lbsim cavity.dat\n\n" );
+         
          return -1;
-     }
+    }
 
 
 //******************************************************************************
@@ -233,11 +232,23 @@ int main( int argc, char *argv[] ) {
 
         // Perform LB method
         double* Swap = NULL;
-        double* ReceiveProtocol = new double[ BoundaryBufferArray[ 5 ].getProtocolSize() ];
+        
+        // Define the protocol size of the receiver
+        unsigned MaxProtocolSize = 0;
+        for ( int i = 0; i < MAX_COMMUNICATION_FACES; ++i ) {
+            if ( MaxProtocolSize < BoundaryBufferArray[ i ].getProtocolSize() ) {
+                MaxProtocolSize = BoundaryBufferArray[ i ].getProtocolSize();
+            }
+        }
+
+        double* ReceiveProtocol = new double[ MaxProtocolSize ];
+        
+        
+        
         int TAG = 1;
         for ( unsigned Step = 0; Step < TimeSteps; ++Step ) {
 
-                           // .......................COMMUNICATION: START......................
+// .......................COMMUNICATION: START......................
             for (int i = 0; i < MAX_COMMUNICATION_FACES; i += 2) {
 
                 if ( Neighbours[ i ] != EMPTY_NEIGHBOR ) {
@@ -423,8 +434,9 @@ int main( int argc, char *argv[] ) {
 
     }
 
-    delete [] ReceiveProtocol;
+
     // delete flields
+    delete [] ReceiveProtocol;
     free( collideField );
     free( streamField );
     free( flagField );
@@ -433,6 +445,3 @@ int main( int argc, char *argv[] ) {
     MPI_Finalize();
   return 0;
 }
-
-
-#endif

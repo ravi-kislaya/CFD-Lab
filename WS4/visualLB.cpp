@@ -27,7 +27,7 @@ void writeVtkOutput( const char * filename,
 
     char szFilename[80];
     FILE *fp = NULL;
-    sprintf( szFilename, "%s.%i.%i.vtk", filename, t, RANK );
+    sprintf( szFilename, "%s%i.%i.vtk", filename, RANK, t );
 
     fp = fopen( szFilename, "w");
     if( fp == NULL ) {
@@ -149,7 +149,7 @@ void write_vtkPointCoordinates( FILE* fp,
 
     int OriginX = PROC[ 0 ] * ( Length[ 0 ] - 1 );
     int OriginY = PROC[ 1 ] * ( Length[ 1 ] - 1 );
-    int OriginZ = PROC[ 2 ] * ( Length[ 1 ] - 1 );
+    int OriginZ = PROC[ 2 ] * ( Length[ 2 ] - 1 );
 
     for ( std::vector<Fluid*>::iterator Iterator = FluidDomain.begin();
           Iterator != FluidDomain.end();

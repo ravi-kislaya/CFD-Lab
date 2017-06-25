@@ -346,7 +346,7 @@ int BoundaryBuffer::generateProtocol() {
 		case 3: Shift = Vel_DOF * (X + 2) * Y;
 				break;
 
-		case 4: Shift = ( -1 ) *  Vel_DOF * (X + 2) * (Y + 2) * Z;
+		case 4: Shift = ( -1 ) * Vel_DOF * (X + 2) * (Y + 2) * Z;
 				break;
 
 		case 5: Shift = Vel_DOF * (X + 2) * (Y + 2) * Z;

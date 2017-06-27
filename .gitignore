@@ -8,3 +8,5 @@ WS1/.idea/
 GoogleTestLib/
 WS2/PDFs/
 perf*
+*.xml
+*.pyc

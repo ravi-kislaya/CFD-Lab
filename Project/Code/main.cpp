@@ -5,6 +5,7 @@
 #include <list>
 #include <vector>
 #include <iostream>
+#include <fstream>
 #include <stdio.h>
 #include <string>
 
@@ -20,21 +21,121 @@
 #include "computeCellValues.h"
 #include "helper.h"
 
-// the following possible simulation flags has to be set up:
-//     -fcavity
-//     -fstep
-//     -fchannel
-//     -fplate
-int main( int argc, char *argv[] ){
+
+int main( int argc, char *argv[] ) {
 
 //******************************************************************************
 //                          CHECK INPUT PARAMETERS
 //******************************************************************************
-    const unsigned NUMBER_OF_MODES = 4;
-    static const char* MODES[ NUMBER_OF_MODES ] = { "-fcavity",
-                                                    "-fstep",
-                                                    "-fchannel",
-                                                    "-fplate" };
+    std::ifstream File;
+    try {
+
+          // CHECK if file containing input data exists
+          File.open( argv[ 1 ] );
+          if ( !File ) {
+                std::string ERROR = "ERROR: file Input.data does not exist";
+                throw( ERROR );
+          }
+          File.close();
+
+
+          // CHECK if file containing Lattice coordinates exists
+          File.open( "./Mesh/Coordinates.crd" );
+          if ( !File ) {
+                std::string ERROR = "ERROR: file /Mesh/Coordinates.crd does not exist";
+                throw( ERROR );
+          }
+          File.close();
+
+
+          // CHECK if file containing Flag Field exists
+          File.open( "./Mesh/FlagFields.fg" );
+          if ( !File ) {
+                std::string ERROR = "ERROR: file /Mesh/FlagFields.fg does not exist";
+                throw( ERROR );
+          }
+          File.close();
+
+
+          // CHECK if file containing Lattice Neighbors exists
+          File.open( "./Mesh/Neighbors.nb" );
+          if ( !File ) {
+                std::string ERROR = "ERROR: file /Mesh/Neighbors.nb does not exist";
+                throw( ERROR );
+          }
+          File.close();
+
+
+          // CHECK if file containing Lattice Neighbors exists
+          File.open( "./Mesh/BoundaryList.bc" );
+          if ( !File ) {
+                std::string ERROR = "ERROR: file /Mesh/BoundaryList.bc does not exist";
+                throw( ERROR );
+          }
+          File.close();
+
+
+    }
+    catch ( std::string ERROR ) {
+        std::cout << ERROR << std::endl;
+        File.close();
+        return -1;
+    }
+    catch ( ... ) {
+        std::cout << "Unexpected error" << std::endl;
+        File.close();
+        return -1;
+    }
+
+
+//******************************************************************************
+//                          INIT PARAMETERS
+//******************************************************************************
+    // allocate a list for all fluid
+    std::vector<Fluid*> FluidDomain;
+
+    // allcocate the list of boundary layer cells
+    std::list<BoundaryFluid*> BoundaryList;
+
+    // allocate a list for VTK represenation
+    std::vector<Fluid*> VTKrepresentation;
+
+    std::vector<BoundaryEntry*> BoundaryConditions;
+
+    double *collideField = 0;
+    double *streamField = 0;
+    int *flagField = 0;
+    int *VtkID = 0;
+
+
+    initialiseData( &collideField,
+                    &streamField,
+                    &flagField,
+                    &VtkID,
+                    FluidDomain,
+                    BoundaryConditions );
+
+
+    scanBoundary( FluidDomain,
+                  VTKrepresentation,
+                  BoundaryList,
+                  flagField,
+                  VtkID,
+                  BoundaryConditions );
+
+    const char* OUTPUT_FILE_NAME = "./Frames/RESULT";
+
+    writeVtkOutput( OUTPUT_FILE_NAME,
+                    collideField,
+                    VtkID,
+                    FluidDomain,
+                    VTKrepresentation,
+                    0 );
+
+/*
+//******************************************************************************
+//                          CHECK INPUT PARAMETERS
+//******************************************************************************
 
     try {
      if ( argc >= 3 ) {
@@ -109,7 +210,7 @@ int main( int argc, char *argv[] ){
 
 
 
-//******************************************************************************
+//*****************************************-1*************************************
 //                          PERFORM COMPUTATION
 //******************************************************************************
 
@@ -135,16 +236,17 @@ int main( int argc, char *argv[] ){
   int *IdField = 0;
 
 
+
   try {
 
-      read_parameters( INPUT_FILE_NAME,         /* the name of the data file */
-                       Length,                  /* number of cells along x direction */
-                       &tau,                    /* relaxation time */
-                       wallVelocity,            /* lid velocity along all direction*/
-                       InletVelocity,           /* Inlet velocity along all direction */
-                       &DeltaDensity,           /* density difference */
-                       &TimeSteps,              /* number of simulation time steps */
-                       &TimeStepsPerPlotting ); /* number of visualization time steps */
+      read_parameters( INPUT_FILE_NAME,         // the name of the data file
+                       Length,                  // number of cells along x direction
+                       &tau,                    // relaxation time
+                       wallVelocity,            // lid velocity along all direction
+                       InletVelocity,           // Inlet velocity along all direction
+                       &DeltaDensity,           // density difference
+                       &TimeSteps,              // number of simulation time steps
+                       &TimeStepsPerPlotting ); // number of visualization time steps
   }
   catch( std::string Error ) {
     std::cout << Error << std::endl;
@@ -161,7 +263,8 @@ int main( int argc, char *argv[] ){
       if ( !strcmp( argv[ 2 ], MODES[ 0 ] ) ) {
 
           initialiseFields_LidDrivenCavity( &collideField,
-                                            &streamField,
+                                            &str  int *flagField = 0;
+eamField,
                                             &flagField,
                                             &IdField,
                                             Length );
@@ -298,7 +401,7 @@ int main( int argc, char *argv[] ){
 
 
 
-    // delete list of obstacles
+    // delete list of oCoordinatesbstacles
     for ( std::list<BoundaryFluid*>::iterator Iterator = BoundaryList.begin();
           Iterator != BoundaryList.end();
           ++ Iterator ) {
@@ -324,6 +427,23 @@ int main( int argc, char *argv[] ){
     free( collideField );
     free( streamField );
     free( flagField );
+*/
+
+
+    for ( unsigned i = 0; i < FluidDomain.size(); ++i ) {
+        delete FluidDomain[ i ];
+    }
+
+
+    for ( unsigned i = 0; i < BoundaryConditions.size(); ++i ) {
+        delete BoundaryConditions[ i ];
+    }
+
+
+    delete [] collideField;
+    delete [] streamField;
+    delete [] flagField;
+    delete [] VtkID;
   return 0;
 }
 

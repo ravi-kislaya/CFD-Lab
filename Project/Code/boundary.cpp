@@ -10,17 +10,45 @@
 #include "DataStructure.h"
 
 
-void scanBoundary(  std::list<BoundaryFluid*>& ObstacleList,
-					std::list<Fluid*>& FluidDomain,
-					std::list<Fluid*>& VTKrepresentation,
-                    int* flagField,
-					int *IdField,
-                    unsigned* Length,
-                    double* wallVelocity,
-					double* InletVel,
-					double DeltaDensity ) {
+void scanBoundary( 	std::vector<Fluid*>& FluidDomain,
+					std::vector<Fluid*>& VTKrepresentation,
+					std::list<BoundaryFluid*>& ObstacleList,
+					int* flagField,
+					int* VtkID,
+					std::vector<BoundaryEntry*> &BoundaryConditions ) {
 
 
+	int ID = 0;
+	int isLatticeUnDrawable = 0;
+	for( unsigned i = 0; i < FluidDomain.size(); ++i, ++ID ) {
+
+/*
+		for( int Component = 0; i < Vel_DOF; ++Component ) {
+			FluidDomain[ i ]->getIdIndex( Component );
+		}
+*/
+
+
+		isLatticeUnDrawable += flagField[ FluidDomain[ i ]->getIdIndex( 10 ) ];
+		isLatticeUnDrawable += flagField[ FluidDomain[ i ]->getIdIndex( 12 ) ];
+		isLatticeUnDrawable += flagField[ FluidDomain[ i ]->getIdIndex( 13 ) ];
+		isLatticeUnDrawable += flagField[ FluidDomain[ i ]->getIdIndex( 16 ) ];
+		isLatticeUnDrawable += flagField[ FluidDomain[ i ]->getIdIndex( 17 ) ];
+		isLatticeUnDrawable += flagField[ FluidDomain[ i ]->getIdIndex( 18 ) ];
+		isLatticeUnDrawable += flagField[ FluidDomain[ i ]->getDiagonalLattice() ];
+
+
+
+		if ( isLatticeUnDrawable == false  ) {
+			VTKrepresentation.push_back( FluidDomain[ i ] );
+		}
+
+		VtkID[ FluidDomain[ i ]->getID() ] = ID;
+		isLatticeUnDrawable = 0;
+	}
+
+
+/*
 	int ID = 0;
     int Current_Cell_Flag = 0;
     int Neighbour_Cell_Flag = 0;
@@ -233,4 +261,5 @@ void treatBoundary( double *collideField,
               (*FluidCell)->processBoundary( collideField );
 
     }
+*/
 }

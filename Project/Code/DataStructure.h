@@ -1,4 +1,5 @@
 #include <list>
+#include <string>
 #include "LBDefinitions.h"
 
 #ifndef _DATA_STRUCTURE_H_
@@ -155,37 +156,71 @@ class BoundaryFluid {
 
 class Fluid {
 	public:
-		Fluid(  ) {
+		Fluid() :  m_ID( -1 ),
+                   m_XCoord( 0.0 ),
+                   m_YCoord( 0.0 ),
+                   m_ZCoord( 0.0 ),
+                   m_DiagonalLattice( 0 )  {
+
 			for( int i = 0; i < Vel_DOF; ++i ) {
-				m_Index[i] = 0;
+				m_NeighbourIndex[i] = 0;
 			}
+
 		}
 
 		Fluid( int ID, int x, int y, int z, int* Index ) :  m_ID( ID ),
                                                             m_XCoord( x ),
                                                             m_YCoord( y ),
-                                                            m_ZCoord( z ) {
+                                                            m_ZCoord( z ),
+                                                            m_DiagonalLattice( 0 ),
+                                                            m_BoundaryTag("NONE") {
             // Assign all neighbours
 			for( int i = 0; i < Vel_DOF; ++i ) {
-				m_Index[ i ] = Index[ i ];
+				m_NeighbourIndex[ i ] = Index[ i ];
 			}
 		}
 
+        // GETTER FUNCTIONS
         int getID() { return m_ID; }
-        int getXCoord() { return m_XCoord; }
-        int getYCoord() { return m_YCoord; }
-        int getZCoord() { return m_ZCoord; }
-        int getIndex( int Index ) { return m_Index[ Index ]; }
-        int getIdIndex( int Index ) { return (int)( m_Index[ Index ] / Vel_DOF ); }
+        double getXCoord() { return m_XCoord; }
+        double getYCoord() { return m_YCoord; }
+        double getZCoord() { return m_ZCoord; }
+        int getIndex( int Index ) { return m_NeighbourIndex[ Index ]; }
+        int getIdIndex( int Index ) { return (int)( m_NeighbourIndex[ Index ] / Vel_DOF ); }
+        int getDiagonalLattice() { return (int)( m_DiagonalLattice / Vel_DOF ); }
+        std::string getBoundaryTag() { return m_BoundaryTag; }
+
+        // STTER FUNCTIONS
+        void setID( int ID ) { m_ID = ID; }
+        void setXCoord( double XCoord ) { m_XCoord = XCoord; }
+        void setYCoord( double YCoord ) { m_YCoord = YCoord; }
+        void setZCoord( double ZCoord ) { m_ZCoord = ZCoord; }
+        void setIndex( int NeighborID, int Index ) { m_NeighbourIndex[ Index ] = Vel_DOF * NeighborID; }
+        void setDiagonalLattice( int ID ) { m_DiagonalLattice = Vel_DOF * ID; }
+        void setBoundaryTag( std::string Tag ) { m_BoundaryTag = Tag; }
 
 	private:
         int m_ID;
-        int m_XCoord;
-        int m_YCoord;
-        int m_ZCoord;
-        int m_Index[ Vel_DOF ];
-
-
+        double m_XCoord;
+        double m_YCoord;
+        double m_ZCoord;
+        int m_NeighbourIndex[ Vel_DOF ];
+        int m_DiagonalLattice;
+        std::string m_BoundaryTag;
 };
 
+
+
+class BoundaryEntry {
+    public:
+        BoundaryEntry() : Name("NONE"), TYPE(-1)  {
+            for ( int i = 0; i < Dimensions; ++i  ) {
+                Data[ i ] = -1.0;
+            }
+        }
+
+        std::string Name;
+        int TYPE;
+        double Data[ Dimensions ];
+};
 #endif

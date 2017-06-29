@@ -5,13 +5,15 @@
 
 /** handles the boundaries in our simulation setup */
 
-void scanBoundary( 	std::vector<Fluid*>& FluidDomain,
-					std::vector<Fluid*>& VTKrepresentation,
-					std::list<BoundaryFluid*>& ObstacleList,
-					int* flagField,
-					int* VtkID,
-					std::vector<BoundaryEntry*> &BoundaryConditions );
-
+void scanBoundary( std::list<BoundaryFluid*>& ObstacleList,
+					std::list<Fluid*>& FluidDomain,
+					std::list<Fluid*>& VTKrepresentation,
+                    int* flagField,
+					int *IdField,
+                    unsigned* Length,
+                    double* wallVelocity,
+					double* InletVel,
+					double DeltaDensity );
 
 
 void treatBoundary( double *collideField,

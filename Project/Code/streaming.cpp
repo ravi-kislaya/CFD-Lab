@@ -16,17 +16,7 @@ void doStreaming( double *collideField,
           aFluidCell != FluidDomain.end();
           ++aFluidCell ) {
 
-		Fluid_Cell = (*aFluidCell)->getIndex(SELF_INDEX);
+		(*aFluidCell)->doLocalStreaming( collideField, streamField );
 
-		//Cell wise streaming considering the velocity component
-		for( int Vel_Component = 0; Vel_Component < Vel_DOF; ++Vel_Component ) {
-
-
-			Neighbour_Cell = (*aFluidCell)->getIndex(Vel_Component);
-
-			streamField[ Fluid_Cell + 18 - Vel_Component ]
-							= collideField[ Neighbour_Cell + 18 - Vel_Component ] ;
-
-		}
 	}
 }

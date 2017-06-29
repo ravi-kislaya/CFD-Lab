@@ -6,43 +6,25 @@
 #include <vector>
 #include "DataStructure.h"
 
-
-void computePostCollisionDistributions( double *currentCell,
-                                        const double * const tau,
-                                        const double *const feq ) {
-
-
-  double Inverse_Tau = 1.0 / ( *tau );
-
-  for( int i = 0; i < Vel_DOF; ++i ) {
-    currentCell[ i ] -= Inverse_Tau * ( currentCell[ i ] - feq[ i ]  );
-  }
-
-}
-
 void doCollision( std::vector<Fluid*>& FluidDomain,
 				  double *collideField,
                   const double * const tau ) {
 
 	//Variable declaration
 
-  double Density = 0.0;
-  double Velocity[ Dimensions ];
-  double Feq[ Vel_DOF ];
-
-  int Current_Cell = 0;
+  double *Density;
+  *Density = 0.0;
+  double Velocity[ Dimensions ] = { 0.0 };
+  double Feq[ Vel_DOF ] = { 0.0 };
+  double Inverse_Tau = 1.0 / ( *tau );
 
 	//Looping through all fluid element
 	for ( std::vector<Fluid*>::iterator aFluidCell = FluidDomain.begin();
           aFluidCell != FluidDomain.end();
           ++aFluidCell ) {
 
-		Current_Cell = (*aFluidCell)->getIndex(SELF_INDEX);
-
-		computeDensity( ( collideField + Current_Cell ) , &Density );
-		computeVelocity( ( collideField + Current_Cell ) , &Density , Velocity );
-		computeFeq( &Density , Velocity , Feq );
-		computePostCollisionDistributions( ( collideField + Current_Cell ) , tau , Feq );
+		(*aFluidCell)->doLocalCollision( collideField, Inverse_Tau,
+										 Density, Velocity, Feq );
 
 	}
 

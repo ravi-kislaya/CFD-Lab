@@ -173,7 +173,7 @@ int main( int argc, char *argv[] ){
                                             &streamField,
                                             &flagField,
                                             &IdField,
-                                            Length, 13,3,3,2 );
+                                            Length, 15, 4, 2, 2 );
 
       }
 

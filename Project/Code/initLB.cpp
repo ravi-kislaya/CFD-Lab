@@ -93,7 +93,6 @@ void initialiseData( double** collideField,
     }
 
 
-    std::cout << ProblemSize << std::endl;
     ( *flagField ) = new int[ ProblemSize ];
     ( *VtkID ) = new int[ ProblemSize ];
     initializeFiledByZero( ( *flagField ), ProblemSize );

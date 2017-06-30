@@ -41,11 +41,7 @@ void writeVtkOutput( const char * filename,
     write_vtkPointElements( fp, VTKrepresentation, VtkID );
 
 
-
-
-
     fprintf( fp, "\nPOINT_DATA %lu \n", FluidDomain.size() );
-    std::cout << "SIZE OF THE DOMAIN: " << FluidDomain.size() << std::endl;
 //------------------------------------------------------------------------------
 //                        Write density to the file
 //------------------------------------------------------------------------------

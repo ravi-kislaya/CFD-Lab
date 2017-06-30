@@ -14,11 +14,7 @@ void scanBoundary(  std::list<BoundaryFluid*>& ObstacleList,
 					std::vector<Fluid*>& FluidDomain,
 					std::vector<Fluid*>& VTKrepresentation,
                     int* flagField,
-					int *IdField,
-                    unsigned* Length,
-                    double* wallVelocity,
-					double* InletVel,
-					double DeltaDensity,
+					int *VtkID,
  					std::vector<BoundaryEntry*> BoundaryConditions ) {
 
 
@@ -41,8 +37,7 @@ void scanBoundary(  std::list<BoundaryFluid*>& ObstacleList,
 	int BoundaryID = -1;
 	int BoundaryType = -1;
 
-	int TEMP = -1;
-	const int VTK_NEIGHBOR_SIZE = 7;
+	const int VTK_NEIGHBOR_SIZE = 6;
 	int VtkNeighbors[ VTK_NEIGHBOR_SIZE ] = { 10, 12, 13, 16, 17, 18 };
 
     for ( std::vector<Fluid*>::iterator aFluidCell = FluidDomain.begin();
@@ -187,27 +182,28 @@ void scanBoundary(  std::list<BoundaryFluid*>& ObstacleList,
 		}
 */
 
+//.............................. VTK PART: START ...............................
 		// Check out all neighbors in the positive octant
 		// if all of them are fuild lattices then add the current lattice
 		// to the represenation list
-		TEMP = 0;
+		isLatticeUnDrawable = 0;
 		for ( int i = 0; i < VTK_NEIGHBOR_SIZE; ++i ) {
-			TEMP = flagField[ (*aFluidCell)->getIdIndex( VtkNeighbors[ i ] ) ];
-			isLatticeUnDrawable += BoundaryConditions[ TEMP ]->TYPE;
+			BoundaryID = flagField[ (*aFluidCell)->getIdIndex( VtkNeighbors[ i ] ) ];
+			isLatticeUnDrawable += BoundaryConditions[ BoundaryID ]->TYPE;
 		}
 
-		TEMP = flagField[ (*aFluidCell)->getDiagonalLattice() ];
-		isLatticeUnDrawable += BoundaryConditions[ TEMP ]->TYPE;
+
+		BoundaryID = flagField[ (*aFluidCell)->getDiagonalLattice() ];
+		isLatticeUnDrawable += BoundaryConditions[ BoundaryID ]->TYPE;
 
 
 		if ( isLatticeUnDrawable == false  ) {
 			VTKrepresentation.push_back( (*aFluidCell) );
 		}
 
+		VtkID[ (*aFluidCell)->getID() ] = ID;
 
-		IdField[ (*aFluidCell)->getID() ] = ID;
-		isLatticeUnDrawable = 0;
-
+//................................... END .....................................
 
 
 		// Delete a fluid cell if there was no obstacle cells

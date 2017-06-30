@@ -1,14 +1,6 @@
 Boundary Conditions: 10
 
 ###############################
-inlet INFLOW 0.0 0.0 0.2
-outlet1 OUTFLOW
-outlet2 OUTFLOW
-outlet3 OUTFLOW
-outlet4	OUTFLOW
-outlet5 OUTFLOW
-outlet6 OUTFLOW
-outlet7 OUTFLOW
-outlet8 OUTFLOW
-walls NO_SLIP
+movingLid MOVING_WALL 0.40 0.00 0.00
+NoSlipWall NO_SLIP
 Fluid FLUID

@@ -89,72 +89,19 @@ int min_int( const int n1, const int n2 )
 
 
 int read_parameters( const char *INPUT_FILE_NAME,        /* the name of the data file */
-                     unsigned* Length,                   /* number of cells along x direction */
-                     double *tau,                        /* relaxation time */
-                     double *WallVelocity,               /* lid velocity along all direction*/
-                     double *InletVelocity,              /* Inlet velocity along all direction */
-                     double *DeltaDensity,               /* density difference */
-                     unsigned *timesteps,                     /* number of simulation time steps */
-                     unsigned *timestepsPerPlotting ) {       /* number of visualization time steps */
-
-   int TempLength[ 3 ] = { 0 };
-   read_int( INPUT_FILE_NAME, "xlength", &TempLength[ 0 ] );
-   read_int( INPUT_FILE_NAME, "ylength", &TempLength[ 1 ] );
-   read_int( INPUT_FILE_NAME, "zlength", &TempLength[ 2 ] );
-
-   if (   ( TempLength[ 0 ] <= 1 )
-		|| ( TempLength[ 1 ] <= 1 )
-		|| ( TempLength[ 2 ] <= 1 ) ) {
-		std::string Error = "ERROR: provided geometrical parameters are wrong";
-		throw Error;
-	}
-	else {
-		Length[ 0 ] = ( unsigned )TempLength[ 0 ];
-		Length[ 1 ] = ( unsigned )TempLength[ 1 ];
-		Length[ 2 ] = ( unsigned )TempLength[ 2 ];
-	}
+                     double *Tau,                        /* relaxation time */
+                     unsigned *TimeSteps,                     /* number of simulation time steps */
+                     unsigned *TimeStepsPerPlotting ) {       /* number of visualization time steps */
 
 
-   read_double( INPUT_FILE_NAME, "tau", tau );
-   if ( ( *tau ) <= 0.5 || ( *tau >= 2.0 ) ) {
+   const double MAX_TAU = 2.0;
+   const double MIN_TAU = 0.5;
+   read_double( INPUT_FILE_NAME, "tau", Tau );
+   if ( ( ( *Tau ) <= MIN_TAU ) || ( ( *Tau )>= MAX_TAU ) ) {
 	   std::string Error = "ERROR: tau should be between greater than 0.5 and  less than 2.0";
 	   throw Error;
    }
 
-   double VelocityMagnitude = 0.0;
-
-   read_double( INPUT_FILE_NAME, "U", &WallVelocity[ 0 ] );
-   read_double( INPUT_FILE_NAME, "V", &WallVelocity[ 1 ] );
-   read_double( INPUT_FILE_NAME, "W", &WallVelocity[ 2 ] );
-
-   VelocityMagnitude = WallVelocity[ 0 ] * WallVelocity[ 0 ]
-					 + WallVelocity[ 1 ] * WallVelocity[ 1 ]
-					 + WallVelocity[ 2 ] * WallVelocity[ 2 ];
-   if ( VelocityMagnitude >= 0.01 ) {
-	   std::string Error = "ERROR: Lid Velocity should be small, LBM fails at high Mach Number";
-	   throw Error;
-   }
-
-
-   read_double( INPUT_FILE_NAME, "Uin", &InletVelocity[ 0 ] );
-   read_double( INPUT_FILE_NAME, "Vin", &InletVelocity[ 1 ] );
-   read_double( INPUT_FILE_NAME, "Win", &InletVelocity[ 2 ] );
-
-   VelocityMagnitude = InletVelocity[ 0 ] * InletVelocity[ 0 ]
-   					 + InletVelocity[ 1 ] * InletVelocity[ 1 ]
-   					 + InletVelocity[ 2 ] * InletVelocity[ 2 ];
-
-   if ( VelocityMagnitude >= 0.01 ) {
-	   std::string Error = "ERROR: Inlet Velocity should be small, LBM fails at high Mach Number";
-	   throw Error;
-   }
-
-
-   read_double( INPUT_FILE_NAME, "DeltaDensity", DeltaDensity );
-   if ( ( *DeltaDensity ) > 0.05 ) {
-	   std::string Error = "ERROR: Delta Density should be small, LBM fails at high Mach Number";
-	   throw Error;
-   }
 
    int TemporaryVariable = 0;
    read_int( INPUT_FILE_NAME, "timesteps", &TemporaryVariable );
@@ -163,20 +110,18 @@ int read_parameters( const char *INPUT_FILE_NAME,        /* the name of the data
 	   throw Error;
    }
    else {
-		( *timesteps ) = TemporaryVariable;
-   }
+		( *TimeSteps ) = TemporaryVariable;
+	}
 
 
    read_int( INPUT_FILE_NAME, "timestepsPerPlotting", &TemporaryVariable );
-
    if ( TemporaryVariable <= 0 ) {
 	   std::string Error = "ERROR: Time Steps Per Plotting cannot be negative";
 	   throw Error;
    }
    else {
-	 	( *timestepsPerPlotting ) = ( TemporaryVariable );
+		( *TimeStepsPerPlotting ) = TemporaryVariable;
    }
-
 
    return 1;
 }

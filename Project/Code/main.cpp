@@ -102,17 +102,33 @@ int main( int argc, char *argv[] ) {
 
     std::vector<BoundaryEntry*> BoundaryConditions;
 
+    const char* INPUT_FILE_NAME = argv[ 1 ];
+    const char* OUTPUT_FILE_NAME = "./Frames/RESULT";
+    double Tau = 0.0;
+    unsigned TimeSteps = 0;
+    unsigned TimeStepsPerPlotting = 0;
+
     double *collideField = 0;
     double *streamField = 0;
     int *flagField = 0;
     int *VtkID = 0;
 
-    // REMOVE OF THE FOLLOWING: START
-    unsigned Length[ 3 ] = { 10, 10, 10 };
-    double wallVelocity[ 3 ] = { 0.05, 0.0, 0.0 };
-    double InletVel[ 3 ] = { 0.05, 0.0, 0.0 };
-    double DeltaDensity = 0.0;
-    // END
+
+    try {
+        read_parameters( INPUT_FILE_NAME,         // the name of the data file
+                         &Tau,                    // relaxation time
+                         &TimeSteps,              // number of simulation time steps
+                         &TimeStepsPerPlotting ); // number of visualization time steps
+    }
+    catch( std::string Error ) {
+        std::cout << Error << std::endl;
+        return - 1;
+    }
+    catch( ... ) {
+        std::cout << "Unexpected error" << std::endl;
+        return - 1;
+    }
+
 
     initialiseData( &collideField,
                     &streamField,
@@ -121,26 +137,14 @@ int main( int argc, char *argv[] ) {
                     FluidDomain,
                     BoundaryConditions );
 
-  scanBoundary(  BoundaryList,
-					FluidDomain,
-					VTKrepresentation,
-                    flagField,
-					VtkID,
-                    Length,
-                    wallVelocity,
-					InletVel,
-					DeltaDensity,
-                    BoundaryConditions );
 
-/*
-    scanBoundary( FluidDomain,
-                  VTKrepresentation,
-                  BoundaryList,
-                  flagField,
-                  VtkID,
-                  BoundaryConditions );
-*/
-    const char* OUTPUT_FILE_NAME = "./Frames/RESULT";
+    scanBoundary(  BoundaryList,
+				   FluidDomain,
+				   VTKrepresentation,
+                   flagField,
+				   VtkID,
+                   BoundaryConditions );
+
 
     writeVtkOutput( OUTPUT_FILE_NAME,
                     collideField,
@@ -239,7 +243,7 @@ int main( int argc, char *argv[] ) {
 #endif
 
   unsigned Length[ 3 ] = { 0, 0, 0 };
-  double tau = 0.0;
+  double Tau = 0.0;
   double wallVelocity[ 3 ] = { 0.0, 0.0, 0.0 };
   unsigned TimeSteps = 0;
   unsigned TimeStepsPerPlotting = 0;
@@ -258,7 +262,7 @@ int main( int argc, char *argv[] ) {
 
       read_parameters( INPUT_FILE_NAME,         // the name of the data file
                        Length,                  // number of cells along x direction
-                       &tau,                    // relaxation time
+                       &Tau,                    // relaxation time
                        wallVelocity,            // lid velocity along all direction
                        InletVelocity,           // Inlet velocity along all direction
                        &DeltaDensity,           // density difference
@@ -378,7 +382,7 @@ eamField,
 
             doCollision( FluidDomain,
     					 collideField,
-                         &tau);
+                         &Tau);
 
 
             treatBoundary( collideField,

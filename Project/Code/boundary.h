@@ -9,11 +9,7 @@ void scanBoundary( std::list<BoundaryFluid*>& ObstacleList,
 					std::vector<Fluid*>& FluidDomain,
 					std::vector<Fluid*>& VTKrepresentation,
                     int* flagField,
-					int *IdField,
-                    unsigned* Length,
-                    double* wallVelocity,
-					double* InletVel,
-					double DeltaDensity,
+					int *VtkID,
 					std::vector<BoundaryEntry*> BoundaryConditions );
 
 

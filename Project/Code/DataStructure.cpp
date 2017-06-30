@@ -5,7 +5,6 @@
 #include <list>
 
 
-
 //------------------------------------------------------------------------------
 //                            Wall cell
 //------------------------------------------------------------------------------
@@ -16,8 +15,10 @@ inline void StationaryWall::treatBoundary( double * Field ) {
 
 	int Reflected_Vel_Component = 18 - m_VelocityComponent;
 
+
+
 	Field[ m_SelfIndex + Reflected_Vel_Component ]
-            = Field[ m_SourceIndex + m_VelocityComponent ];
+                                = Field[ m_SourceIndex + m_VelocityComponent ];
 }
 
 /********************MovingWall************************************/
@@ -32,7 +33,7 @@ inline void MovingWall::treatBoundary( double * Field ) {
 	Field[ m_SelfIndex + Reflected_Vel_Component ]
 			          = Field[ m_SourceIndex + m_VelocityComponent ]
 					  + ( 2.0 * LATTICEWEIGHTS[ m_VelocityComponent ] * Density
-				        * m_DotProduct * InverseCS_Square );
+				          * m_DotProduct * InverseCS_Square );
 
 
 }
@@ -154,10 +155,10 @@ inline void FreeSlip::treatBoundary( double * Field ) {
 /********************Inflow************************************/
 inline void Inflow::treatBoundary( double * Field ) {
 
-	double Density = 1.0;		 
+	double Density = 1.0;
  	double TempF = 0.0;
- 	computeDensity( Field + m_SourceIndex, &Density );		
- 	computeSingleFeq( &Density, m_InletVelocity, &TempF, m_VelocityComponent );		
+ 	computeDensity( Field + m_SourceIndex, &Density );
+ 	computeSingleFeq( &Density, m_InletVelocity, &TempF, m_VelocityComponent );
  	Field[m_SelfIndex + m_VelocityComponent] = TempF;
 
 
@@ -234,11 +235,11 @@ void BoundaryFluid::deleteObstacles() {
 //------------------------------------------------------------------------------
 /*********************************Streaming************************************/
 void Fluid::doLocalStreaming( double* collideField, double* streamField ) {
-	
-	int Current_Cell = Vel_DOF * m_NeighbourIndex[ SELF_INDEX ];
-	int Neighbour_Cell = Vel_DOF * m_NeighbourIndex [ Vel_Component ];
-	for( int Vel_Component = 0; Vel_Component < Vel_DOF; ++Vel_Component ) {
 
+	int Current_Cell = Vel_DOF * m_NeighbourIndex[ SELF_INDEX ];
+	int Neighbour_Cell = 0;
+	for( int Vel_Component = 0; Vel_Component < Vel_DOF; ++Vel_Component ) {
+		Neighbour_Cell = Vel_DOF * m_NeighbourIndex [ Vel_Component ];
 		streamField[ Current_Cell + Vel_Component ]
 			= collideField[ Neighbour_Cell + 18 - Vel_Component ];
 
@@ -251,15 +252,15 @@ void Fluid::doLocalCollision( double *collideField,
 							  double *Density,
 							  double *Velocity,
 							  double* Feq ) {
-	
+
 	int Current_Cell = Vel_DOF * m_NeighbourIndex[ SELF_INDEX ];
-	
+
 	computeDensity( ( collideField + Current_Cell ) , Density );
 	computeVelocity( ( collideField + Current_Cell ) , Density , Velocity );
 	computeFeq( Density , Velocity , Feq );
 	for( int i = 0; i < Vel_DOF; ++i ) {
 		collideField[ Current_Cell + i ] -= Inverse_Tau
-										  * ( currentCell[ Current_Cell + i ] - Feq[ i ]  );
+										  * ( collideField[ Current_Cell + i ] - Feq[ i ]  );
 	}
-	
+
 }

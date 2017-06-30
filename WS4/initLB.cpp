@@ -21,10 +21,9 @@ void initialiseFields_LidDrivenCavity( double **collideField,
                                        int **flagField,
                                        int **IdField,
                                        unsigned* Length,
-									   unsigned rank,
-									   unsigned iProj,
-									   unsigned jProj,
-									   unsigned kProj) {
+									   unsigned RANK,
+                                       int* PROC,
+									   int* CpuCoordinates ) {
 
 //..............................................................................
 // 						Allocate the fields in memory
@@ -41,10 +40,6 @@ void initialiseFields_LidDrivenCavity( double **collideField,
 //..............................................................................
 
 	unsigned Current_Field_Cell = 0;
-	unsigned ProcZ = (int) rank / ( iProj * jProj);
-	unsigned Temp = rank % ( iProj * jProj);
-	unsigned ProcY = (int) Temp / iProj;
-	unsigned ProcX = (int) Temp % iProj;
 
 	// init Fields: collide and stream fields
 	//Initialization of collideField
@@ -54,7 +49,7 @@ void initialiseFields_LidDrivenCavity( double **collideField,
 
 				Current_Field_Cell = computeFieldIndex( x, y, z, Length );
 
-				for( unsigned i = 0 ; i < Vel_DOF ; ++i ) {
+				for( int i = 0 ; i < Vel_DOF ; ++i ) {
 					//Initialization of collideField
 					(*collideField) [ Current_Field_Cell + i ] = LATTICEWEIGHTS[ i ];
 
@@ -85,7 +80,7 @@ void initialiseFields_LidDrivenCavity( double **collideField,
 			}
 		}
 	}
-	
+
 	//initialising parallel boundary for YZ parallel planes
 	for ( unsigned z = 0; z < Length[ 2 ] + 2; ++z ) {
 		for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
@@ -93,8 +88,8 @@ void initialiseFields_LidDrivenCavity( double **collideField,
 			( *flagField )[ computeFlagIndex( Length[ 0 ] + 1, y, z, Length ) ] = PARALLEL_BOUNDARY_X;
 		}
 	}
-	
-		
+
+
 	//initialising parallel boundary for XZ parallel planes
 	for ( unsigned z = 0; z < Length[ 2 ] + 2; ++z ) {
 		for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
@@ -102,7 +97,7 @@ void initialiseFields_LidDrivenCavity( double **collideField,
 			( *flagField )[ computeFlagIndex( x, Length[ 1 ] + 1, z, Length ) ] = PARALLEL_BOUNDARY_Y;
 		}
 	}
-	
+
 	//initialising parallel boundary for XY parallel planes
 	for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
 		for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
@@ -112,48 +107,48 @@ void initialiseFields_LidDrivenCavity( double **collideField,
 	}
 
 	// initialised No Slip: YZ plate
-	if( ProcX == 0 ){
+	if( CpuCoordinates[0] == 0 ){
 		for ( unsigned z = 0; z < Length[ 2 ] + 2; ++z ) {
-			for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) 
+			for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y )
 				( *flagField )[ computeFlagIndex( 0, y, z, Length ) ] = NO_SLIP;
 		}
 	}
-	
-	if( ProcX % iProj == iProj - 1 ){
+
+	if( CpuCoordinates[0]  == ( PROC[0] - 1 ) ){
 		for ( unsigned z = 0; z < Length[ 2 ] + 2; ++z ) {
-			for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) 
+			for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y )
 				( *flagField )[ computeFlagIndex( Length[ 0 ] + 1, y, z, Length ) ] = NO_SLIP;
 		}
 	}
 
 
 	// initialised walls: XZ plate
-	if( ProcY == 0 ) {
+	if( CpuCoordinates[1] == 0 ) {
 		for ( unsigned z = 0; z < Length[ 2 ] + 2; ++z ) {
-			for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) 
+			for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x )
 				( *flagField )[ computeFlagIndex( x, 0, z, Length ) ] = NO_SLIP;
 		}
 	}
-	
-	if( ProcY % jProj == jProj - 1 ) {
+
+	if( CpuCoordinates[1] == ( PROC[1] - 1 ) ) {
 		for ( unsigned z = 0; z < Length[ 2 ] + 2; ++z ) {
-			for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) 
+			for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x )
 				( *flagField )[ computeFlagIndex( x, Length[ 1 ] + 1, z, Length ) ] = NO_SLIP;
 		}
 	}
 
 
 	// initialised walls: XY plate
-	if( ProcZ == 0 ) {
+	if( CpuCoordinates[2] == 0 ) {
 		for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
-			for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) 
+			for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x )
 				( *flagField )[ computeFlagIndex( x, y, 0, Length ) ] = NO_SLIP;
 		}
 	}
-	
-	if( ProcZ % kProj == kProj - 1 ) {
+
+	if( CpuCoordinates[2]  == ( PROC[2] - 1 ) ) {
 		for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
-			for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) 
+			for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x )
 				( *flagField )[ computeFlagIndex( x, y, Length[ 2 ] + 1, Length ) ] = MOVING_WALL;
 		}
 	}

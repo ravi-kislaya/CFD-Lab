@@ -12,13 +12,12 @@
 
 void scanBoundary(  std::list<BoundaryFluid*>& ObstacleList,
 					std::list<Fluid*>& FluidDomain,
+					BoundaryBuffer* BoundaryBufferArray,
 					std::list<Fluid*>& VTKrepresentation,
                     int* flagField,
 					int *IdField,
                     unsigned* Length,
-                    double* wallVelocity,
-					double* InletVel,
-					double DeltaDensity ) {
+                    double* wallVelocity ) {
 
 
 	int ID = 0;
@@ -28,7 +27,6 @@ void scanBoundary(  std::list<BoundaryFluid*>& ObstacleList,
     int Neighbour_Cell_Field = 0;
 	int Neighbour[ Vel_DOF ] = { 0 };
 	double Dot_Product = 0.0;
-	int FreeSlipVelocity[6] = { 2, 6, 8, 10, 12, 16 };
 
 
     for( unsigned z = 0 ; z <= Length[ 2 ] + 1; ++z )  {
@@ -39,7 +37,7 @@ void scanBoundary(  std::list<BoundaryFluid*>& ObstacleList,
                 Current_Cell_Flag = computeFlagIndex( x, y, z, Length );
 				Current_Cell_Field = Vel_DOF * Current_Cell_Flag;
 
-				if( flagField[Current_Cell_Flag] == FLUID ) {
+				if( ( flagField[Current_Cell_Flag] == FLUID ) ) {
 
 					// Allocate a new fluid cell
 					BoundaryFluid* aBoundaryFluidCell = new BoundaryFluid( Current_Cell_Flag );
@@ -86,71 +84,11 @@ void scanBoundary(  std::list<BoundaryFluid*>& ObstacleList,
 															Dot_Product );
 							aBoundaryFluidCell->addObstacle( Wall );
 						}
-
-						//Inflow
-						if ( flagField[ Neighbour_Cell_Flag ] == INFLOW ) {
-							Dot_Product = 0.0;
-							Neighbour_Cell_Field = Vel_DOF * Neighbour_Cell_Flag;
-							Obstacle* Wall = new Inflow( Neighbour_Cell_Field,//Here,Neighbour means wall
-														 Current_Cell_Field,  //Here,Current means fluid
-														 18 - i,
-														 Dot_Product,
-														 InletVel );
-
-
-							aBoundaryFluidCell->addObstacle( Wall );
-
-
-						}
-
-						//Pressure In
-						if ( flagField[ Neighbour_Cell_Flag ] == PRESSURE_IN ) {
-							Dot_Product = 0.0;
-							Neighbour_Cell_Field = Vel_DOF * Neighbour_Cell_Flag;
-							Obstacle* Wall = new PressureIn( Neighbour_Cell_Field,//Here,Neighbour means wall
-															 Current_Cell_Field,  //Here,Current means fluid
-															 18 - i,
-															 Dot_Product,
-														     DeltaDensity );
-
-							//TODO:some global variable from readParameters
-							aBoundaryFluidCell->addObstacle( Wall );
-
-
-						}
-
-						//Outflow
-						if ( flagField[ Neighbour_Cell_Flag ] == OUTFLOW ) {
-							Dot_Product = 0.0;
-							Neighbour_Cell_Field = Vel_DOF * Neighbour_Cell_Flag;
-							Obstacle* Wall = new Outflow( Neighbour_Cell_Field,//Here,Neighbour means wall
-														  Current_Cell_Field,  //Here,Current means fluid
-														  18 - i,
-														  Dot_Product );
-							aBoundaryFluidCell->addObstacle( Wall );
-
-						}
-
 					}
 
-					//separate loop for Free Slip
-					for( int i = 0; i < 6; ++i ) {
-						Neighbour_Cell_Flag = computeFlagIndex( x + LATTICEVELOCITIES[ FreeSlipVelocity[i] ][ 0 ],
-																y + LATTICEVELOCITIES[ FreeSlipVelocity[i] ][ 1 ],
-																z + LATTICEVELOCITIES[ FreeSlipVelocity[i] ][ 2 ],
-																Length );
 
-						if( flagField[ Neighbour_Cell_Flag ] == FREE_SLIP ) {
-							Dot_Product = 0.0;
-							Neighbour_Cell_Field = Vel_DOF * Neighbour_Cell_Flag;
-							Obstacle* Wall = new FreeSlip( Neighbour_Cell_Field,//Here,Neighbour means wall
-														   Current_Cell_Field,  //Here,Current means fluid
-														   FreeSlipVelocity[i],
-														   Dot_Product );
-							aBoundaryFluidCell->addObstacle( Wall );
-						}
 
-					}
+
 
 					//Create and push the Fluid in the Fluid Domain List
 					Fluid* aFluidCell = new Fluid( ID, x, y, z, Neighbour );
@@ -197,8 +135,7 @@ void scanBoundary(  std::list<BoundaryFluid*>& ObstacleList,
 
 
 					if ( isItDrawable == true ) {
-
-							  VTKrepresentation.push_back( aFluidCell );
+						VTKrepresentation.push_back( aFluidCell );
 					}
 
 
@@ -216,6 +153,102 @@ void scanBoundary(  std::list<BoundaryFluid*>& ObstacleList,
         }
     }
 
+    // init all neighbours
+  	// Boundary Buffer Scheme:
+  	// index 0: +x direction
+  	// index 1: -x direction
+  	// index 2: +y direction
+  	// index 3: -y directionProc
+  	// index 4: +z direction
+  	// index 5: -z direction
+
+	//communication on YZ direction: +x and -x
+	for ( unsigned z = 1; z < Length[ 2 ] + 1; ++z ) {
+		for ( unsigned y = 1; y < Length[ 1 ] + 1; ++y ) {
+			Current_Cell_Field = computeFieldIndex( Length[0], y, z, Length );
+			
+            BoundaryBufferArray[ 0 ].addBufferElement( Current_Cell_Field + 10 );
+            BoundaryBufferArray[ 0 ].addBufferElement( Current_Cell_Field  + 13 );
+            BoundaryBufferArray[ 0 ].addBufferElement( Current_Cell_Field + 7 );
+            BoundaryBufferArray[ 0 ].addBufferElement( Current_Cell_Field + 17 );
+            BoundaryBufferArray[ 0 ].addBufferElement( Current_Cell_Field + 3 );
+
+		}
+	}
+
+	for ( unsigned z = 1; z < Length[ 2 ] + 1; ++z ) {
+		for ( unsigned y = 1; y < Length[ 1 ] + 1; ++y ) {
+			Current_Cell_Field = computeFieldIndex( 1, y, z, Length );
+            
+            BoundaryBufferArray[ 1 ].addBufferElement( Current_Cell_Field + 8 );
+            BoundaryBufferArray[ 1 ].addBufferElement( Current_Cell_Field  + 11 );
+            BoundaryBufferArray[ 1 ].addBufferElement( Current_Cell_Field + 5 );
+            BoundaryBufferArray[ 1 ].addBufferElement( Current_Cell_Field + 15 );
+            BoundaryBufferArray[ 1 ].addBufferElement( Current_Cell_Field + 1 );
+
+
+
+		}
+	}
+
+
+	//communication on XZ direction: +y and -y
+	for ( unsigned z = 1; z < Length[ 2 ] + 1; ++z ) {
+		for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
+			Current_Cell_Field = computeFieldIndex( x, Length[1], z, Length );
+
+
+            BoundaryBufferArray[ 2 ].addBufferElement( Current_Cell_Field + 12 );
+            BoundaryBufferArray[ 2 ].addBufferElement( Current_Cell_Field  + 4 );
+            BoundaryBufferArray[ 2 ].addBufferElement( Current_Cell_Field + 18 );
+            BoundaryBufferArray[ 2 ].addBufferElement( Current_Cell_Field + 13 );
+            BoundaryBufferArray[ 2 ].addBufferElement( Current_Cell_Field + 11 );
+
+
+		}
+	}
+
+	for ( unsigned z = 1; z < Length[ 2 ] + 1; ++z ) {
+		for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
+			Current_Cell_Field = computeFieldIndex( x, 1, z, Length );
+
+            BoundaryBufferArray[ 3 ].addBufferElement( Current_Cell_Field + 6 );
+            BoundaryBufferArray[ 3 ].addBufferElement( Current_Cell_Field  + 0 );
+            BoundaryBufferArray[ 3 ].addBufferElement( Current_Cell_Field + 14 );
+            BoundaryBufferArray[ 3 ].addBufferElement( Current_Cell_Field + 7 );
+            BoundaryBufferArray[ 3 ].addBufferElement( Current_Cell_Field + 5 );
+
+
+        }
+	}
+
+	//communication on XY direction: +z and -z
+	for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
+		for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
+			Current_Cell_Field = computeFieldIndex( x, y, Length[2], Length );
+
+            BoundaryBufferArray[ 4 ].addBufferElement( Current_Cell_Field + 16 );
+            BoundaryBufferArray[ 4 ].addBufferElement( Current_Cell_Field  + 18 );
+            BoundaryBufferArray[ 4 ].addBufferElement( Current_Cell_Field + 14 );
+            BoundaryBufferArray[ 4 ].addBufferElement( Current_Cell_Field + 17 );
+            BoundaryBufferArray[ 4 ].addBufferElement( Current_Cell_Field + 15 );
+
+		}
+	}
+
+	for ( unsigned y = 0; y < Length[ 1 ] + 2; ++y ) {
+		for ( unsigned x = 0; x < Length[ 0 ] + 2; ++x ) {
+			Current_Cell_Field = computeFieldIndex( x, y, 1, Length );
+
+            BoundaryBufferArray[ 5 ].addBufferElement( Current_Cell_Field + 2 );
+            BoundaryBufferArray[ 5 ].addBufferElement( Current_Cell_Field  + 4 );
+            BoundaryBufferArray[ 5 ].addBufferElement( Current_Cell_Field + 0 );
+            BoundaryBufferArray[ 5 ].addBufferElement( Current_Cell_Field + 3 );
+            BoundaryBufferArray[ 5 ].addBufferElement( Current_Cell_Field + 1 );
+
+		}
+	}
+
 }
 
 
@@ -232,5 +265,6 @@ void treatBoundary( double *collideField,
 
               (*FluidCell)->processBoundary( collideField );
 
-    }
+        }  
 }
+

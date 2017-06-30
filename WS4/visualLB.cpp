@@ -15,7 +15,9 @@
 
 //Writes Density and Velocity from the collision field
 void writeVtkOutput( const char * filename,
-                     double * const collideField,
+                     int RANK,
+                     int* PROC,
+                     double* const collideField,
                      std::vector<Fluid*>& FluidDomain,
                      std::list<Fluid*>& VTKrepresentation,
                      int *IdField,
@@ -25,7 +27,7 @@ void writeVtkOutput( const char * filename,
 
     char szFilename[80];
     FILE *fp = NULL;
-    sprintf( szFilename, "%s.%i.vtk", filename, t );
+    sprintf( szFilename, "%s%i.%i.vtk", filename, RANK, t );
 
     fp = fopen( szFilename, "w");
     if( fp == NULL ) {
@@ -39,9 +41,9 @@ void writeVtkOutput( const char * filename,
 //                   Write the file header and coordinates
 //------------------------------------------------------------------------------
 
-    write_vtkHeader( fp, FluidDomain, Length );
+    write_vtkHeader( fp, RANK, FluidDomain, Length );
 
-    write_vtkPointCoordinates( fp, FluidDomain, Length );
+    write_vtkPointCoordinates( fp, PROC, FluidDomain, Length );
 //------------------------------------------------------------------------------
 //                   Write the file header and coordinates
 //------------------------------------------------------------------------------
@@ -117,6 +119,7 @@ void writeVtkOutput( const char * filename,
 
 
 void write_vtkHeader( FILE *fp,
+                      int RANK,
                       std::vector<Fluid*>& FluidDomain,
                       unsigned* Length ) {
 
@@ -140,16 +143,21 @@ void write_vtkHeader( FILE *fp,
 
 
 void write_vtkPointCoordinates( FILE* fp,
+                                int* PROC,
                                 std::vector<Fluid*>& FluidDomain,
                                 unsigned* Length ) {
+
+    int OriginX = PROC[ 0 ] * ( Length[ 0 ] - 1 );
+    int OriginY = PROC[ 1 ] * ( Length[ 1 ] - 1 );
+    int OriginZ = PROC[ 2 ] * ( Length[ 2 ] - 1 );
 
     for ( std::vector<Fluid*>::iterator Iterator = FluidDomain.begin();
           Iterator != FluidDomain.end();
           ++Iterator ) {
 
-              fprintf(fp, "%d %d %d\n", (*Iterator)->getXCoord(),
-                                        (*Iterator)->getYCoord(),
-                                        (*Iterator)->getZCoord() );
+              fprintf(fp, "%d %d %d\n", (*Iterator)->getXCoord() + OriginX,
+                                        (*Iterator)->getYCoord() + OriginY,
+                                        (*Iterator)->getZCoord()  + OriginZ );
           }
 
 

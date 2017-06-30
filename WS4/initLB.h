@@ -12,10 +12,9 @@ void initialiseFields_LidDrivenCavity( double **collideField,
                                        int **flagField,
                                        int **IdField,
                                        unsigned* Length,
-									   unsigned rank,
-									   unsigned iProj,
-									   unsigned jProj,
-									   unsigned kProj ) ;
+									   unsigned RANK,
+                                       int* PROC,
+									   int* CpuCoordinates ) ;
 
 
 #endif

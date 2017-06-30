@@ -2,7 +2,10 @@
 #include "helper.h"
 #include "computeCellValues.h"
 #include "LBDefinitions.h"
+
 #include <list>
+#include <iostream>
+#include <stdlib.h>
 
 
 
@@ -156,10 +159,10 @@ inline void FreeSlip::treatBoundary( double * Field ) {
 /********************Inflow************************************/
 inline void Inflow::treatBoundary( double * Field ) {
 
-	double Density = 1.0;		 
+	double Density = 1.0;
  	double TempF = 0.0;
- 	computeDensity( Field + m_SourceIndex, &Density );		
- 	computeSingleFeq( &Density, m_InletVelocity, &TempF, m_VelocityComponent );		
+ 	computeDensity( Field + m_SourceIndex, &Density );
+ 	computeSingleFeq( &Density, m_InletVelocity, &TempF, m_VelocityComponent );
  	Field[m_SelfIndex + m_VelocityComponent] = TempF;
 
 
@@ -233,4 +236,191 @@ void BoundaryFluid::deleteObstacles() {
 //------------------------------------------------------------------------------
 //                            Boundary Buffer
 //------------------------------------------------------------------------------
+BoundaryBuffer::BoundaryBuffer() : m_Protocol( 0 ),
+								   m_Field( 0 ),
+								   m_Index( -1 ),
+ 								   m_BufferSize( 0 ),
+ 								   m_isProtocolReady( false ) {
+	for ( int i = 0; i < Dimensions; ++i ) {
+		m_Length[ i ] = 0;
+	}
+}
 
+BoundaryBuffer::~BoundaryBuffer() {
+	if ( m_Protocol != 0 ) {
+		delete [] m_Protocol;
+	}
+}
+
+// inline DEBUGGING
+void BoundaryBuffer::addBufferElement( unsigned Index ) {
+	BufferElements.push_back( Index );
+	++m_BufferSize;
+}
+
+
+// inline DEBUGGING
+void BoundaryBuffer::setDomainLength( unsigned* Length ) {
+	for ( int i = 0; i < Dimensions; ++i ) {
+		m_Length[ i ] = Length[ i ];
+	}
+}
+
+
+double* BoundaryBuffer::getProtocol() {
+    this->updateProtocol();
+    return m_Protocol;
+}
+
+
+int BoundaryBuffer::generateProtocol() {
+
+// ............................ GUARDS: BEGINING ...............................
+
+	if ( m_Index == -1 ) {
+		std::cout << "\tERROR: you've tried to generate the protocol" << std::endl;
+		std::cout << "\twithout initializing the buffer index" << std::endl;
+		std::cout << "\tERROR SOURCE: DataStructure.cpp -> generateProtocol()" << std::endl;
+#ifdef TEST
+		return -1;
+#else
+		exit( EXIT_FAILURE ); // DEBUGGING
+#endif
+	}
+
+
+	bool isLengthInitialized = true;
+	for ( int i = 0; i < Dimensions; ++i )
+		isLengthInitialized *= m_Length[ i ];
+	if ( isLengthInitialized == false ) {
+		std::cout << "\tERROR: you've tried to generate the protocol" << std::endl;
+		std::cout << "\twithout initializing geometry parameters" << std::endl;
+		std::cout << "\tERROR SOURCE: DataStructure.cpp -> generateProtocol()" << std::endl;
+#ifdef TEST
+		return -1;
+#else
+		exit( EXIT_FAILURE ); // DEBUGGING
+#endif
+
+	}
+
+
+	if ( m_Field == 0 ) {
+		std::cout << "\tERROR: you've tried to generate the protocol" << std::endl;
+		std::cout << "\twithout initializing the field" << std::endl;
+		std::cout << "\tERROR SOURCE: DataStructure.cpp -> generateProtocol()" << std::endl;
+#ifdef TEST
+		return -1;
+#else
+		exit( EXIT_FAILURE ); // DEBUGGING
+#endif
+	}
+
+
+// .............................. GUARDS: END .................................
+
+  	// Boundary Buffer Scheme:
+  	// index 0: +x direction
+  	// index 1: -x direction
+  	// index 2: +y direction
+  	// index 3: -y direction
+  	// index 4: +z direction
+  	// index 5: -z direction
+
+	int Shift = 0;
+	unsigned X = m_Length[ 0 ];
+	unsigned Y = m_Length[ 1 ];
+	unsigned Z = m_Length[ 2 ];
+
+	switch ( m_Index ) {
+
+		case 0: Shift = ( -1 ) * Vel_DOF * X;
+				break;
+
+		case 1: Shift = Vel_DOF * X;
+				break;
+
+		case 2: Shift = ( -1 ) * Vel_DOF * (X + 2) * Y;
+				break;
+
+		case 3: Shift = Vel_DOF * (X + 2) * Y;
+				break;
+
+		case 4: Shift = ( -1 ) * Vel_DOF * (X + 2) * (Y + 2) * Z;
+				break;
+
+		case 5: Shift = Vel_DOF * (X + 2) * (Y + 2) * Z;
+				break;
+
+		default: std::cout << "ERROR: Buffer index is wrong, namely:"
+ 						   << m_Index
+						   << std::endl
+						   << "ERROR SOURCE: DataStructure.cpp -> generateProtocol"
+ 						   << std::endl;
+				 exit( EXIT_FAILURE );
+				 break;
+	}
+
+
+	if ( this->getBufferSize() != 0 ) {
+		m_Protocol = new double[ this->getProtocolSize() ];
+	}
+
+
+	unsigned Counter = 0;
+	for ( std::list<unsigned>::iterator Iterator = BufferElements.begin();
+ 		  Iterator != BufferElements.end();
+		  ++Iterator, Counter += 2 ) {
+	
+                    m_Protocol[ Counter ] = (double) ( ( *Iterator ) + Shift );
+	
+    }
+
+
+	m_isProtocolReady = true;
+
+	return 1;
+}
+
+
+
+int  BoundaryBuffer::updateProtocol() {
+
+	if ( m_isProtocolReady == false ) {
+		std::cout << "\tERROR: you've tried to update the protocol" << std::endl;
+		std::cout << "\twhich was not be generated" << std::endl;
+		std::cout << "\tERROR SOURCE: DataStructure.cpp -> updateProtocol()" << std::endl;
+#ifdef TEST
+		return -1;
+#else
+		exit( EXIT_FAILURE ); // DEBUGGING
+#endif
+	}
+
+
+	unsigned Counter = 0;
+	for ( std::list<unsigned>::iterator Iterator = BufferElements.begin();
+ 		  Iterator != BufferElements.end();
+		  ++Iterator, Counter += 2 ) {
+
+		m_Protocol[ Counter + 1 ] = m_Field[ ( *Iterator ) ];
+    //    std::cout << m_Protocol[ Counter + 1 ] << std::endl;
+	}
+
+	return 0;
+}
+
+
+
+void decodeProtocol( double* Protocol,
+					 unsigned ProtocolSize,
+					 double* Field ) {
+
+	unsigned Index = 0;
+	for ( unsigned i = 0; i < ProtocolSize; i += 2 ) {
+		Index = (unsigned)Protocol[ i ];
+       // std::cout << Protocol[ i ] << std::endl;
+
+		Field[ Index ] = Protocol[ i + 1 ];
+	}
+}

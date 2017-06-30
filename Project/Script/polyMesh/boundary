@@ -10,82 +10,26 @@ FoamFile
     version     2.0;
     format      ascii;
     class       polyBoundaryMesh;
-    location    "1/polyMesh";
+    location    "constant/polyMesh";
     object      boundary;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-10
+2
 (
-    inlet
+    movingLid
     {
         type            wall;
         inGroups        1(wall);
-        nFaces          116;
-        startFace       304225;
+        nFaces          400;
+        startFace       22800;
     }
-    outlet1
+    NoSlipWall
     {
         type            wall;
         inGroups        1(wall);
-        nFaces          28;
-        startFace       304341;
-    }
-    outlet2
-    {
-        type            wall;
-        inGroups        1(wall);
-        nFaces          34;
-        startFace       304369;
-    }
-    outlet3
-    {
-        type            wall;
-        inGroups        1(wall);
-        nFaces          23;
-        startFace       304403;
-    }
-    outlet4
-    {
-        type            wall;
-        inGroups        1(wall);
-        nFaces          22;
-        startFace       304426;
-    }
-    outlet5
-    {
-        type            wall;
-        inGroups        1(wall);
-        nFaces          38;
-        startFace       304448;
-    }
-    outlet6
-    {
-        type            wall;
-        inGroups        1(wall);
-        nFaces          32;
-        startFace       304486;
-    }
-    outlet7
-    {
-        type            wall;
-        inGroups        1(wall);
-        nFaces          25;
-        startFace       304518;
-    }
-    outlet8
-    {
-        type            wall;
-        inGroups        1(wall);
-        nFaces          43;
-        startFace       304543;
-    }
-    walls
-    {
-        type            wall;
-        inGroups        1(wall);
-        nFaces          67593;
-        startFace       304586;
+        nFaces          2000;
+        startFace       23200;
     }
 )
 

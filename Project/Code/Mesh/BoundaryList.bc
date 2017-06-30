@@ -1,0 +1,6 @@
+Boundary Conditions: 10
+
+###############################
+movingLid MOVING_WALL 0.40 0.00 0.00
+NoSlipWall NO_SLIP
+Fluid FLUID

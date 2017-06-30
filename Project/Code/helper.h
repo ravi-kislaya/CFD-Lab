@@ -76,13 +76,9 @@ extern clock_t last_timer_reset;
 
 
 int read_parameters( const char *INPUT_FILE_NAME,        /* the name of the data file */
-                     unsigned* Length,                       /* number of cells along x direction */
-                     double *tau,                        /* relaxation time */
-                     double *WallVelocity,               /* lid velocity along all direction*/
-                     double *InletVelocity,              /* Inlet velocity along all direction */
-                     double *DeltaDensity,               /* density difference */
-                     unsigned *timesteps,                     /* number of simulation time steps */
-                     unsigned *timestepsPerPlotting );        /* number of visualization time steps */
+                     double *Tau,                        /* relaxation time */
+                     unsigned *TimeSteps,                /* number of simulation time steps */
+                     unsigned *TimeStepsPerPlotting );   /* number of visualization time steps */
 
 
 

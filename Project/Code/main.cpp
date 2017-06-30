@@ -107,6 +107,12 @@ int main( int argc, char *argv[] ) {
     int *flagField = 0;
     int *VtkID = 0;
 
+    // REMOVE OF THE FOLLOWING: START
+    unsigned Length[ 3 ] = { 10, 10, 10 };
+    double wallVelocity[ 3 ] = { 0.05, 0.0, 0.0 };
+    double InletVel[ 3 ] = { 0.05, 0.0, 0.0 };
+    double DeltaDensity = 0.0;
+    // END
 
     initialiseData( &collideField,
                     &streamField,
@@ -115,14 +121,25 @@ int main( int argc, char *argv[] ) {
                     FluidDomain,
                     BoundaryConditions );
 
+  scanBoundary(  BoundaryList,
+					FluidDomain,
+					VTKrepresentation,
+                    flagField,
+					VtkID,
+                    Length,
+                    wallVelocity,
+					InletVel,
+					DeltaDensity,
+                    BoundaryConditions );
 
+/*
     scanBoundary( FluidDomain,
                   VTKrepresentation,
                   BoundaryList,
                   flagField,
                   VtkID,
                   BoundaryConditions );
-
+*/
     const char* OUTPUT_FILE_NAME = "./Frames/RESULT";
 
     writeVtkOutput( OUTPUT_FILE_NAME,
@@ -210,7 +227,7 @@ int main( int argc, char *argv[] ) {
 
 
 
-//*****************************************-1*************************************
+//******************************************************************************
 //                          PERFORM COMPUTATION
 //******************************************************************************
 

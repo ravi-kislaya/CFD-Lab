@@ -1,6 +1,7 @@
 #include <list>
 #include <string>
 #include "LBDefinitions.h"
+#include "computeCellValues.h"
 
 #ifndef _DATA_STRUCTURE_H_
 #define _DATA_STRUCTURE_H_
@@ -11,14 +12,12 @@
 class Obstacle {
     public:
         Obstacle() : m_SelfIndex( 0 ), m_SourceIndex( 0 ),
-					 m_VelocityComponent( 0 ), m_DotProduct( 0.0 ) {}
+					 m_VelocityComponent( 0 ) {}
         Obstacle( int SelfIndex,
                   int getSourceIndex,
-                  int Component,
-				  double DotProduct) : m_SelfIndex( SelfIndex ),
+                  int Component ) : m_SelfIndex( SelfIndex ),
                                     m_SourceIndex( getSourceIndex ),
-                                    m_VelocityComponent( Component ),
-									m_DotProduct( DotProduct ) {}
+                                    m_VelocityComponent( Component ) {}
 
 
         virtual ~Obstacle() {}
@@ -28,13 +27,11 @@ class Obstacle {
         int getSelfIndex() { return m_SelfIndex; }
         int getSourceIndex() { return m_SourceIndex; }
 		int getVelocityComponent() { return m_VelocityComponent; }
-		double getDotProduct() { return m_DotProduct; }
 
     protected:
         int m_SelfIndex;
         int m_SourceIndex;
         int m_VelocityComponent;
-		double m_DotProduct;
 };
 
 
@@ -42,11 +39,9 @@ class StationaryWall : public Obstacle {
     public:
         StationaryWall( int SelfIndex,
                         int getSourceIndex,
-                        int Component,
-						double DotProduct) : Obstacle( SelfIndex,
+                        int Component) : Obstacle( SelfIndex,
                                                     getSourceIndex,
-                                                    Component,
-													DotProduct) {}
+                                                   Component ) {}
 
         virtual void treatBoundary( double * Field );
 };
@@ -59,21 +54,23 @@ class MovingWall : public Obstacle {
                     int Component,
 					double DotProduct) : Obstacle( SelfIndex,
                                                 getSourceIndex,
-                                                Component,
-												DotProduct) {}
+                                                Component ) {
+                        m_DotProduct = DotProduct;
+                    }
 
         virtual void treatBoundary( double * Field );
+		double getDotProduct() { return m_DotProduct; }
+	private:
+		double m_DotProduct;
 };
 
 class FreeSlip : public Obstacle {
     public:
         FreeSlip( int SelfIndex,
                     int getSourceIndex,
-                    int Component,
-					double DotProduct) : Obstacle( SelfIndex,
+                    int Component) : Obstacle( SelfIndex,
                                                 getSourceIndex,
-                                                Component,
-												DotProduct) {}
+                                                Component ) {}
 
         virtual void treatBoundary( double * Field );
 };
@@ -83,11 +80,9 @@ class Inflow : public Obstacle {
         Inflow( int SelfIndex,
                     int getSourceIndex,
                     int Component,
-					double DotProduct,
 					double* Inlet ) : Obstacle( SelfIndex,
                                                 getSourceIndex,
-                                                Component,
-												DotProduct) {
+                                                Component ) {
 						m_InletVelocity[0] = Inlet[0];
 						m_InletVelocity[1] = Inlet[1];
 						m_InletVelocity[2] = Inlet[2];
@@ -102,11 +97,9 @@ class Outflow : public Obstacle {
     public:
         Outflow( int SelfIndex,
                     int getSourceIndex,
-                    int Component,
-					double DotProduct) : Obstacle( SelfIndex,
+                    int Component) : Obstacle( SelfIndex,
                                                 getSourceIndex,
-                                                Component,
-												DotProduct) {}
+                                                Component ) {}
 
         virtual void treatBoundary( double * Field );
 };
@@ -117,11 +110,9 @@ class PressureIn : public Obstacle {
         PressureIn( int SelfIndex,
                     int getSourceIndex,
                     int Component,
-					double DotProduct,
                     double DeltaDensity) : Obstacle( SelfIndex,
                                                 getSourceIndex,
-                                                Component,
-												DotProduct),
+                                                Component),
                                          m_DeltaDensity( DeltaDensity ) {}
 
 
@@ -186,8 +177,11 @@ class Fluid {
         double getYCoord() { return m_YCoord; }
         double getZCoord() { return m_ZCoord; }
         int getIndex( int Index ) { return m_NeighbourIndex[ Index ]; }
-        int getIdIndex( int Index ) { return (int)( m_NeighbourIndex[ Index ] / Vel_DOF ); }
-        int getDiagonalLattice() { return (int)( m_DiagonalLattice / Vel_DOF ); }
+        int getIdIndex( int Index ) { return (int)( m_NeighbourIndex[ Index ] ); }
+		void doLocalStreaming( double* collideField, double* streamField );
+		void doLocalCollision( double *collideField, double Inverse_Tau,
+							   double *Density, double *Velocity, double* Feq );
+        int getDiagonalLattice() { return (int)( m_DiagonalLattice ); }
         std::string getBoundaryTag() { return m_BoundaryTag; }
 
         // STTER FUNCTIONS
@@ -195,8 +189,8 @@ class Fluid {
         void setXCoord( double XCoord ) { m_XCoord = XCoord; }
         void setYCoord( double YCoord ) { m_YCoord = YCoord; }
         void setZCoord( double ZCoord ) { m_ZCoord = ZCoord; }
-        void setIndex( int NeighborID, int Index ) { m_NeighbourIndex[ Index ] = Vel_DOF * NeighborID; }
-        void setDiagonalLattice( int ID ) { m_DiagonalLattice = Vel_DOF * ID; }
+        void setIndex( int NeighborID, int Index ) { m_NeighbourIndex[ Index ] = NeighborID; }
+        void setDiagonalLattice( int ID ) { m_DiagonalLattice = ID; }
         void setBoundaryTag( std::string Tag ) { m_BoundaryTag = Tag; }
 
 	private:
@@ -213,14 +207,18 @@ class Fluid {
 
 class BoundaryEntry {
     public:
-        BoundaryEntry() : Name("NONE"), TYPE(-1)  {
+        BoundaryEntry() : Name( "NONE" ),
+                          BoundaryID( -1 ),
+                          TYPE( -1 )  {
             for ( int i = 0; i < Dimensions; ++i  ) {
                 Data[ i ] = -1.0;
             }
         }
 
         std::string Name;
+        int BoundaryID;
         int TYPE;
         double Data[ Dimensions ];
 };
+
 #endif

@@ -32,9 +32,15 @@ void doCollision( double *collideField,
   unsigned Current_Cell = 0;
 
 	//Looping through individual element
+<<<<<<< HEAD
+	for( Z_Coordinate = 1 ; Z_Coordinate <= xlength ; ++Z_Coordinate )  {
+		for( Y_Coordinate = 1 ; Y_Coordinate <= xlength ; ++Y_Coordinate )  {
+			for( X_Coordinate = 1 ; X_Coordinate <= xlength ; ++X_Coordinate ) {
+=======
 	for( unsigned z = 1; z <= xlength; ++z )  {
 		for( unsigned y = 1; y <= xlength; ++y )  {
 			for( unsigned x = 1; x <= xlength; ++x ) {
+>>>>>>> 0b2de49ba286ff6eee309f79c6ccf20705f2a343
 
 				Current_Cell = computeFieldIndex( x, y, z, TotalLength );
 

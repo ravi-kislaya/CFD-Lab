@@ -228,3 +228,39 @@ void BoundaryFluid::deleteObstacles() {
         delete ( *Iterator );
     }
 }
+
+
+//------------------------------------------------------------------------------
+//                             Fluid cell
+//------------------------------------------------------------------------------
+/*********************************Streaming************************************/
+void Fluid::doLocalStreaming( double* collideField, double* streamField ) {
+
+	int Current_Cell = Vel_DOF * m_NeighbourIndex[ SELF_INDEX ];
+	int Neighbour_Cell = 0;
+	for( int Vel_Component = 0; Vel_Component < Vel_DOF; ++Vel_Component ) {
+		Neighbour_Cell = Vel_DOF * m_NeighbourIndex [ Vel_Component ];
+		streamField[ Current_Cell + Vel_Component ]
+			= collideField[ Neighbour_Cell + 18 - Vel_Component ];
+
+	}
+}
+
+/*********************************Collision************************************/
+void Fluid::doLocalCollision( double *collideField,
+							  double Inverse_Tau,
+							  double *Density,
+							  double *Velocity,
+							  double* Feq ) {
+
+	int Current_Cell = Vel_DOF * m_NeighbourIndex[ SELF_INDEX ];
+
+	computeDensity( ( collideField + Current_Cell ) , Density );
+	computeVelocity( ( collideField + Current_Cell ) , Density , Velocity );
+	computeFeq( Density , Velocity , Feq );
+	for( int i = 0; i < Vel_DOF; ++i ) {
+		collideField[ Current_Cell + i ] -= Inverse_Tau
+										  * ( collideField[ Current_Cell + i ] - Feq[ i ]  );
+	}
+
+}

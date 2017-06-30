@@ -4,7 +4,7 @@
 #include <iostream>
 #include <list>
 #include <vector>
-#include <algorithm>
+#include <unordered_map>
 
 #include "initLB.h"
 #include "LBDefinitions.h"
@@ -61,6 +61,16 @@ void initialiseData( double** collideField,
     BoundaryConditions = converToBoundary( BufferList );
 
 
+    // generare a hash table for the boundaries
+    std::unordered_map<std::string, int> LookUpTable;
+    for ( unsigned i = 0; i < BoundaryConditions.size(); ++i ) {
+        LookUpTable.insert( { BoundaryConditions[ i ]->Name,
+                              BoundaryConditions[ i ]->BoundaryID } );
+
+    }
+
+
+
     // *** READ FLAG FIELD
      BufferList.clear();
      FILE.open( "./Mesh/FlagFields.fg" );
@@ -83,7 +93,7 @@ void initialiseData( double** collideField,
     }
 
 
-
+    std::cout << ProblemSize << std::endl;
     ( *flagField ) = new int[ ProblemSize ];
     ( *VtkID ) = new int[ ProblemSize ];
     initializeFiledByZero( ( *flagField ), ProblemSize );
@@ -96,7 +106,8 @@ void initialiseData( double** collideField,
 
      // Fill in the flag field according to the boundary name of each lattice
     std::vector<std::string> BufferVector;
-    int aFlag = -1;
+    std::unordered_map<std::string, int>::const_iterator LookUpTableIterator;
+    int BoundaryID = -1;
      for ( std::list<std::string>::iterator aString = BufferList.begin();
            aString != BufferList.end();
            ++aString ) {
@@ -104,23 +115,16 @@ void initialiseData( double** collideField,
          // parse a string obtained from the Flag Field file
          BufferVector = getVectorOfStrings( *aString );
 
-         // Find the appropriate flag Using the boundary name
-         // IMPORTANT: according to the format the first entry in a string
-         // is the Cell ID. The second entry is the name of the boundary
-         for ( unsigned i = 0; i < BoundaryConditions.size(); ++i  ) {
-            if ( BufferVector[ 1 ] == BoundaryConditions[ i ]->Name ) {
+         // Find the appropriate BoundaryID based on the boundary name
+         LookUpTableIterator = LookUpTable.find( BufferVector[ 1 ] );
+         BoundaryID = LookUpTableIterator->second;
 
-                aFlag = BoundaryConditions[ i ]->TYPE;
-                break;
-            }
-         }
 
-        // DEBUGGING: print out the boundary name and assigned boundary TYPE
-        //if ( BufferVector[ 1 ] == "walls" ) {
-        //    std::cout << BufferVector[ 1 ] << " == " << aFlag << std::endl;
-        //}
+        // DEBUGGING: print out the boundary name and assigned boundary ID
+        //std::cout << BufferVector[ 1 ] << " == " << BoundaryID << std::endl;
 
-        ( *flagField )[ std::stoi( BufferVector[ 0 ] ) ] = aFlag;
+
+        ( *flagField )[ std::stoi( BufferVector[ 0 ] ) ] = BoundaryID;
     }
 
 
@@ -348,17 +352,20 @@ std::vector<BoundaryEntry*> converToBoundary( std::list<std::string> &aList ) {
     std::vector<std::string> ParsedString;
     BoundaryEntry* Dummy;
 
+     int BoundaryID = 0;
      for ( std::list<std::string>::iterator aString = aList.begin();
            aString != aList.end();
-           ++aString ) {
+           ++aString, ++BoundaryID ) {
 
             ParsedString = getVectorOfStrings( *aString );
 
             Dummy = new BoundaryEntry;
             Dummy->Name = ParsedString[ 0 ];
+            Dummy->BoundaryID = BoundaryID;
             Dummy->TYPE = convertBoundaryStringToInteger( ParsedString[ 1 ] );
 
-            if ( Dummy->TYPE == INFLOW ) {
+
+            if ( ( Dummy->TYPE == INFLOW ) || ( Dummy->TYPE == MOVING_WALL ) ) {
                 Dummy->Data[ 0 ] = std::stoi( ParsedString[ 2 ] );
                 Dummy->Data[ 1 ] = std::stoi( ParsedString[ 3 ] );
                 Dummy->Data[ 2 ] = std::stoi( ParsedString[ 4 ] );

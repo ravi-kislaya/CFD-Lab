@@ -44,8 +44,10 @@
                                               1.0 / 36.0,
                                               2.0 / 36.0,
                                               1.0 / 36.0,
-                                              1.0 / 36.0,
+                                              1.0 / 36.0
                                            };
+
+  enum Flags{ FLUID, WALL, MOVING_WALL }; 
 
 
   enum Flags{ FLUID, WALL, MOVING_WALL };

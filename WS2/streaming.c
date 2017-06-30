@@ -12,6 +12,13 @@ void doStreaming( double *collideField,
 	unsigned Neighbour_Cell = 0;
 	unsigned TotalLength = xlength + 2;
 
+<<<<<<< HEAD
+	//Looping through individual element
+	for( Z_Coordinate = 1 ; Z_Coordinate <= xlength ; ++Z_Coordinate )  {
+		for( Y_Coordinate = 1 ; Y_Coordinate <= xlength ; ++Y_Coordinate )  {
+			for( X_Coordinate = 1 ; X_Coordinate <= xlength ; ++X_Coordinate ) {
+=======
+>>>>>>> 0b2de49ba286ff6eee309f79c6ccf20705f2a343
 
 	//Looping through all fluid element
 	for( unsigned z = 1 ; z <= xlength ; ++z )  {

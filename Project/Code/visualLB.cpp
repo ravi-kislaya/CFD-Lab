@@ -45,6 +45,7 @@ void writeVtkOutput( const char * filename,
 
 
     fprintf( fp, "\nPOINT_DATA %lu \n", FluidDomain.size() );
+    std::cout << "SIZE OF THE DOMAIN: " << FluidDomain.size() << std::endl;
 //------------------------------------------------------------------------------
 //                        Write density to the file
 //------------------------------------------------------------------------------
@@ -90,7 +91,7 @@ void writeVtkOutput( const char * filename,
 
     for( unsigned i = 0; i < FluidDomain.size(); ++i ) {
 
-				Index = collideField + FluidDomain[ i ]->getIndex( SELF_INDEX );
+				Index = collideField + ( Vel_DOF *FluidDomain[ i ]->getIndex( SELF_INDEX ) );
 
                 computeDensity ( Index, &Density );
                 computeVelocity ( Index, &Density, Velocity );

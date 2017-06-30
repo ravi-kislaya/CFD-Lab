@@ -10,3 +10,5 @@ WS2/PDFs/
 perf*
 *.xml
 *.pyc
+Project/TestMesh
+Project/OpenFoamCase

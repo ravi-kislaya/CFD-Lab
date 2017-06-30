@@ -248,16 +248,16 @@ void Fluid::doLocalStreaming( double* collideField, double* streamField ) {
 
 /*********************************Collision************************************/
 void Fluid::doLocalCollision( double *collideField,
-							  double Inverse_Tau,
-							  double *Density,
-							  double *Velocity,
-							  double* Feq ) {
+							  double Inverse_Tau ) {
 
 	int Current_Cell = Vel_DOF * m_NeighbourIndex[ SELF_INDEX ];
+	double Density = 0.0;
+	double Velocity[ Dimensions ] = { 0.0 };
+	double Feq[ Vel_DOF ] = { 0.0 };
 
-	computeDensity( ( collideField + Current_Cell ) , Density );
-	computeVelocity( ( collideField + Current_Cell ) , Density , Velocity );
-	computeFeq( Density , Velocity , Feq );
+	computeDensity( ( collideField + Current_Cell ) , &Density );
+	computeVelocity( ( collideField + Current_Cell ) , &Density , Velocity );
+	computeFeq( &Density , Velocity , Feq );
 	for( int i = 0; i < Vel_DOF; ++i ) {
 		collideField[ Current_Cell + i ] -= Inverse_Tau
 										  * ( collideField[ Current_Cell + i ] - Feq[ i ]  );

@@ -14,7 +14,6 @@ void scanBoundary( std::list<BoundaryFluid*>& ObstacleList,
 
 
 void treatBoundary( double *collideField,
-                    std::list<BoundaryFluid*>& BoundaryLayerList,
-                    const double * const wallVelocity );
+                    std::list<BoundaryFluid*>& BoundaryLayerList );
 
 #endif

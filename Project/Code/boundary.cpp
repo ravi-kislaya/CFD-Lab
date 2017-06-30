@@ -84,9 +84,12 @@ void scanBoundary(  std::list<BoundaryFluid*>& ObstacleList,
 
 				// Explicitly assign the velocity components to a temp variables
 				// to make the dot product formula look clear
-				WallVelocity[ 0 ] = BoundaryConditions[ BoundaryID ]->Data[ 0 ];
+				//WallVelocity[ 0 ] = BoundaryConditions[ BoundaryID ]->Data[ 0 ];
+				WallVelocity[ 0 ] = 0.005;
 				WallVelocity[ 1 ] = BoundaryConditions[ BoundaryID ]->Data[ 1 ];
 				WallVelocity[ 2 ] = BoundaryConditions[ BoundaryID ]->Data[ 2 ];
+				
+				printf("Moving Wall called %f %f %f \n", WallVelocity[ 0 ], WallVelocity[ 1 ], WallVelocity[ 2 ]);
 
 
 				Dot_Product
@@ -223,8 +226,7 @@ void scanBoundary(  std::list<BoundaryFluid*>& ObstacleList,
 
 
 void treatBoundary( double *collideField,
-                    std::list<BoundaryFluid*>& BoundaryLayerList,
-                    const double * const wallVelocity ) {
+                    std::list<BoundaryFluid*>& BoundaryLayerList ) {
 
 
     // iterate through out all boundary layer cells

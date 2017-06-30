@@ -179,8 +179,7 @@ class Fluid {
         int getIndex( int Index ) { return m_NeighbourIndex[ Index ]; }
         int getIdIndex( int Index ) { return (int)( m_NeighbourIndex[ Index ] ); }
 		void doLocalStreaming( double* collideField, double* streamField );
-		void doLocalCollision( double *collideField, double Inverse_Tau,
-							   double *Density, double *Velocity, double* Feq );
+		void doLocalCollision( double *collideField, double Inverse_Tau );
         int getDiagonalLattice() { return (int)( m_DiagonalLattice ); }
         std::string getBoundaryTag() { return m_BoundaryTag; }
 

@@ -12,10 +12,10 @@ void doCollision( std::vector<Fluid*>& FluidDomain,
 
 	//Variable declaration
 
-  double *Density;
+/*  double *Density;
   *Density = 0.0;
   double Velocity[ Dimensions ] = { 0.0 };
-  double Feq[ Vel_DOF ] = { 0.0 };
+  double Feq[ Vel_DOF ] = { 0.0 };*/
   double Inverse_Tau = 1.0 / ( *tau );
 
 	//Looping through all fluid element
@@ -23,8 +23,7 @@ void doCollision( std::vector<Fluid*>& FluidDomain,
           aFluidCell != FluidDomain.end();
           ++aFluidCell ) {
 
-		(*aFluidCell)->doLocalCollision( collideField, Inverse_Tau,
-										 Density, Velocity, Feq );
+		(*aFluidCell)->doLocalCollision( collideField, Inverse_Tau );
 
 	}
 

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <stdio.h>
 #include <string>
 #include <fstream>
 #include <iostream>
@@ -365,9 +366,9 @@ std::vector<BoundaryEntry*> converToBoundary( std::list<std::string> &aList ) {
 
 
             if ( ( Dummy->TYPE == INFLOW ) || ( Dummy->TYPE == MOVING_WALL ) ) {
-                Dummy->Data[ 0 ] = std::stoi( ParsedString[ 2 ] );
-                Dummy->Data[ 1 ] = std::stoi( ParsedString[ 3 ] );
-                Dummy->Data[ 2 ] = std::stoi( ParsedString[ 4 ] );
+                Dummy->Data[ 0 ] = std::stod( ParsedString[ 2 ] );
+                Dummy->Data[ 1 ] = std::stod( ParsedString[ 3 ] );
+                Dummy->Data[ 2 ] = std::stod( ParsedString[ 4 ] );
             }
 
             BoundaryList.push_back( Dummy );

@@ -59,18 +59,20 @@ void writeVtkOutput( const char * filename,
     double* Index = 0;
     double Density = 0.0;
 
-    for ( unsigned i = 0; i < FluidDomain.size(); ++i ) {
+	for ( std::vector<Fluid*>::iterator aFluidCell = FluidDomain.begin();
+          aFluidCell != FluidDomain.end();
+          ++aFluidCell ) {
 
-                Index = collideField + FluidDomain[ i ]->getIndex( SELF_INDEX );
+                Index = collideField + ( Vel_DOF * ((*aFluidCell)->getIndex( SELF_INDEX )) );
                 computeDensity ( Index, &Density );
 
                 fprintf( fp, "%f\n", Density );
 
 #ifdef DEBUGGING
         if( ( Density < MINIMUM_DENSITY ) || ( Density > MAXIMUM_DENSITY ) )
-        printf("x %d y %d z %d  %f   \n", FluidDomain[ i ]->getXCoord(),
-                                          FluidDomain[ i ]->getYCoord(),
-                                          FluidDomain[ i ]->getZCoord(),
+        printf("x %f y %f z %f  %f   \n", (*aFluidCell)->getXCoord(),
+                                          (*aFluidCell)->getYCoord(),
+                                          (*aFluidCell)->getZCoord(),
                                           Density);
 #endif
 
@@ -85,9 +87,11 @@ void writeVtkOutput( const char * filename,
     double Velocity[ 3 ] = { 0.0 };
     Index = 0;
 
-    for( unsigned i = 0; i < FluidDomain.size(); ++i ) {
+    for ( std::vector<Fluid*>::iterator aFluidCell = FluidDomain.begin();
+          aFluidCell != FluidDomain.end();
+          ++aFluidCell ) {
 
-				Index = collideField + ( Vel_DOF *FluidDomain[ i ]->getIndex( SELF_INDEX ) );
+				Index = collideField + ( Vel_DOF * ((*aFluidCell)->getIndex( SELF_INDEX )) );
 
                 computeDensity ( Index, &Density );
                 computeVelocity ( Index, &Density, Velocity );

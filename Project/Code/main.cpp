@@ -146,12 +146,12 @@ int main( int argc, char *argv[] ) {
                    BoundaryConditions );
 
 
-    /*writeVtkOutput( OUTPUT_FILE_NAME,
+    writeVtkOutput( OUTPUT_FILE_NAME,
                     collideField,
                     VtkID,
                     FluidDomain,
                     VTKrepresentation,
-                    0 );*/
+                    0 );
 
 
 
@@ -168,7 +168,7 @@ int main( int argc, char *argv[] ) {
 	
     // Perform LB method
     double* Swap = NULL;
-    for ( unsigned Step = 0; Step < TimeSteps; ++Step ) {
+    for ( unsigned Step = 1; Step <= TimeSteps; ++Step ) {
 
         doStreaming( collideField,
                      streamField,
@@ -240,17 +240,6 @@ int main( int argc, char *argv[] ) {
 
     }
 
-    // delete flields
-    /*free( collideField );
-    free( streamField );
-    free( flagField );*/
-
-
-
-/*    for ( unsigned i = 0; i < FluidDomain.size(); ++i ) {
-        delete FluidDomain[ i ];
-    }*/
-
 
     for ( unsigned i = 0; i < BoundaryConditions.size(); ++i ) {
         delete BoundaryConditions[ i ];
@@ -261,7 +250,7 @@ int main( int argc, char *argv[] ) {
     delete [] streamField;
     delete [] flagField;
     delete [] VtkID;
-  return 0;
+	return 0;
 }
 
 #endif

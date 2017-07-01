@@ -54,15 +54,11 @@ void scanBoundary(  std::list<BoundaryFluid*>& ObstacleList,
 		// scan neighbours
 		for ( int i = 0; i < Vel_DOF; ++i ) {
 
-
 			Neighbour_Cell_Flag = ( *aFluidCell )->getIndex( i );
-
 			BoundaryID = flagField[ Neighbour_Cell_Flag ];
 			BoundaryType = BoundaryConditions[ BoundaryID ]->TYPE;
 
-
 			// add neighbours cell ( which is wall or moving wall to the list )
-
 			//No slip
 			if ( BoundaryType == NO_SLIP ) {
 
@@ -81,16 +77,13 @@ void scanBoundary(  std::list<BoundaryFluid*>& ObstacleList,
 
 			//Moving Wall
 			if ( BoundaryType == MOVING_WALL ) {
-
+			//if( z == 0.95 && x!=0.05 && x!=0.95 && y!=0.05 && y!=0.95 && i > 13 ) {
+			
 				// Explicitly assign the velocity components to a temp variables
 				// to make the dot product formula look clear
-				//WallVelocity[ 0 ] = BoundaryConditions[ BoundaryID ]->Data[ 0 ];
-				WallVelocity[ 0 ] = 0.005;
+				WallVelocity[ 0 ] = BoundaryConditions[ BoundaryID ]->Data[ 0 ];
 				WallVelocity[ 1 ] = BoundaryConditions[ BoundaryID ]->Data[ 1 ];
 				WallVelocity[ 2 ] = BoundaryConditions[ BoundaryID ]->Data[ 2 ];
-				
-				printf("Moving Wall called %f %f %f \n", WallVelocity[ 0 ], WallVelocity[ 1 ], WallVelocity[ 2 ]);
-
 
 				Dot_Product
 					= ( WallVelocity[ 0 ] * LATTICEVELOCITIES[ 18 - i ][ 0 ] )

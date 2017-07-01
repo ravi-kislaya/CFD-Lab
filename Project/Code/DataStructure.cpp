@@ -15,8 +15,6 @@ inline void StationaryWall::treatBoundary( double * Field ) {
 
 	int Reflected_Vel_Component = 18 - m_VelocityComponent;
 
-
-
 	Field[ m_SelfIndex + Reflected_Vel_Component ]
                                 = Field[ m_SourceIndex + m_VelocityComponent ];
 }
@@ -26,7 +24,6 @@ inline void MovingWall::treatBoundary( double * Field ) {
 
 	double Density = 0.0;
 	int Reflected_Vel_Component = 18 - m_VelocityComponent;
-
 
 	computeDensity( Field + m_SourceIndex, &Density );
 
@@ -240,7 +237,7 @@ void Fluid::doLocalStreaming( double* collideField, double* streamField ) {
 	int Neighbour_Cell = 0;
 	for( int Vel_Component = 0; Vel_Component < Vel_DOF; ++Vel_Component ) {
 		Neighbour_Cell = Vel_DOF * m_NeighbourIndex [ Vel_Component ];
-		streamField[ Current_Cell + Vel_Component ]
+		streamField[ Current_Cell + 18 - Vel_Component ]
 			= collideField[ Neighbour_Cell + 18 - Vel_Component ];
 
 	}

@@ -1,7 +1,7 @@
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                 |
 | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  4.1                                   |
+|  \\    /   O peration     | Version:  dev                                   |
 |   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
@@ -10,13 +10,13 @@ FoamFile
     version     2.0;
     format      ascii;
     class       uniformDimensionedScalarField;
-    location    "1/polyMesh";
+    location    "constant/polyMesh";
     object      level0Edge;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 dimensions      [0 1 0 0 0 0 0];
-value           5e-05;
+value           0.0001;
 
 
 

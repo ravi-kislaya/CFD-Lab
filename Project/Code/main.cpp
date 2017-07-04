@@ -165,7 +165,7 @@ int main( int argc, char *argv[] ) {
 
 
     clock_t Begin = clock();
-	
+
     // Perform LB method
     double* Swap = NULL;
     for ( unsigned Step = 1; Step <= TimeSteps; ++Step ) {

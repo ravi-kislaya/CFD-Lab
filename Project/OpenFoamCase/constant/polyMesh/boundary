@@ -1,7 +1,7 @@
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                 |
 | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  4.1                                   |
+|  \\    /   O peration     | Version:  dev                                   |
 |   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
@@ -10,82 +10,61 @@ FoamFile
     version     2.0;
     format      ascii;
     class       polyBoundaryMesh;
-    location    "1/polyMesh";
+    location    "constant/polyMesh";
     object      boundary;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-10
+7
 (
     inlet
     {
         type            wall;
         inGroups        1(wall);
-        nFaces          116;
-        startFace       304225;
-    }
-    outlet1
-    {
-        type            wall;
-        inGroups        1(wall);
-        nFaces          28;
-        startFace       304341;
+        nFaces          31;
+        startFace       32184;
     }
     outlet2
     {
         type            wall;
         inGroups        1(wall);
-        nFaces          34;
-        startFace       304369;
+        nFaces          3;
+        startFace       32215;
     }
     outlet3
     {
         type            wall;
         inGroups        1(wall);
-        nFaces          23;
-        startFace       304403;
-    }
-    outlet4
-    {
-        type            wall;
-        inGroups        1(wall);
-        nFaces          22;
-        startFace       304426;
+        nFaces          4;
+        startFace       32218;
     }
     outlet5
     {
         type            wall;
         inGroups        1(wall);
-        nFaces          38;
-        startFace       304448;
-    }
-    outlet6
-    {
-        type            wall;
-        inGroups        1(wall);
-        nFaces          32;
-        startFace       304486;
+        nFaces          3;
+        startFace       32222;
     }
     outlet7
     {
         type            wall;
         inGroups        1(wall);
-        nFaces          25;
-        startFace       304518;
+        nFaces          4;
+        startFace       32225;
     }
     outlet8
     {
         type            wall;
         inGroups        1(wall);
-        nFaces          43;
-        startFace       304543;
+        nFaces          8;
+        startFace       32229;
     }
     walls
     {
         type            wall;
         inGroups        1(wall);
-        nFaces          67593;
-        startFace       304586;
+        nFaces          15361;
+        startFace       32237;
     }
 )
 

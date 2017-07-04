@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 
-
 from LatticeMesh import Lattice
 from ControlVolume import Cell
 from LatticeLayoutTest import *
@@ -17,6 +16,9 @@ BLOCK_END = ')'
 CHUNK_END = '}'
 
 
+################################################################################
+#                                   MAIN
+################################################################################
 def main():
 
     Points = readPoints()
@@ -36,7 +38,7 @@ def main():
 
     # assign boundaris to corresponding points
     for i in range(1, len( Boundaries ) ):
-        Range = [ Boundaries[ i-1 ][ 1 ], Boundaries[ i ][ 1 ] ]
+        Range = [ Boundaries[ i - 1 ][ 1 ], Boundaries[ i ][ 1 ] ]
 
         assigneBoundary( LatticeMesh,
                          Boundaries[ i - 1 ][ 0 ],
@@ -82,12 +84,6 @@ def main():
         Element.completeConstruction( Points )
 
 
-    #for Element in LatticeMesh:
-    #    for ID in Element.Neighbors:
-    #        print Points[ ID ]
-    #    print "################################################################"
-
-
     # check only fluid lattice elements and its neighbor with
     # respect to corectness of D3Q26 stencil
     for i in range( 0, len(LatticeMesh) ):
@@ -113,22 +109,9 @@ def main():
 
     print "Mesh was converted correctly to D3Q19 stencil"
 
+    # write all files, namely: FlagField.fg Coordinates.crd, Neighbors.nb
     printExtendedResults( LatticeMesh, Boundaries, 'LatticeMesh' )
 
-    '''
-    # print a specific boundary of the mesh
-    fig = plt.figure()
-    Plot = fig.add_subplot(111, projection='3d')
-
-
-    plotBoundary( LatticeMesh, 'cone', Plot, 'r' )
-
-    #
-    #Plot.view_init(azim=0, elev=90)
-
-
-    plt.show()
-    '''
 
 
 ################################################################################
@@ -230,15 +213,24 @@ def readCells( Points, Faces ):
     # Find the number of cells
     for line in Text:
         line = line.split(' ')
-        for Entry in line:
-            if 'nCells:' in Entry:
-                CellNumber = Entry
+
+        # scan through the entire line to find "nCells:" entry
+        for i in range( len( line ) ):
+            if 'nCells:' == line[ i ]:
+
+                # the next entry after "nCells:" represents
+                # the total number of cells
+                CellNumber = line[ i + 1 ]
                 isFound = True
                 break
+
         if isFound == True:
             break
 
-    CellNumber = int(CellNumber.strip('nCells:'))
+
+
+    # convert the found string to integer
+    CellNumber = int( CellNumber )
 
 
     # Find the entry of the block
@@ -257,8 +249,8 @@ def readCells( Points, Faces ):
                 Cells[ ID ].addFaceID( Counter )
 
             else:
-                Cells[ID] = Cell(ID)
-                Cells[ID].addFaceID( Counter )
+                Cells[ ID ] = Cell( ID )
+                Cells[ ID ].addFaceID( Counter )
 
             Counter += 1
 
@@ -413,14 +405,16 @@ def printResults( LatticeMesh, Boundaries, FileName ):
 
 def printExtendedResults( LatticeMesh, Boundaries, FileName ):
 
-
+    # separator is a set of characters that separates a file heade and data
+    SEPARATOR = "############################"
 
     ################     write flags to the corresponding file  ################
-    FlagFieldFileName = FileName + '-FlagField.fg'
+    FlagFieldFileName = 'Output/FlagField.fg'
 
     FlagFieldFile = open( FlagFieldFileName, 'w' )
 
     FlagFieldFile.write( 'Number of Elements: %d\n\n' % len( LatticeMesh ) )
+    FlagFieldFile.write( '%s\n' % SEPARATOR )
 
     for Entry in LatticeMesh:
         FlagFieldFile.write('%s\n' % getFlagFieldString( Entry ) )
@@ -428,12 +422,13 @@ def printExtendedResults( LatticeMesh, Boundaries, FileName ):
 
 
     ##########     write all coordinates into the corresponding file  ##########
-    CoordinatesFileName = FileName + '.crd'
+    CoordinatesFileName = 'Output/Coordinates.crd'
 
     FileOfCoordinates = open(CoordinatesFileName, 'w')
 
     # write header for the lattice coordinates file
     FileOfCoordinates.write('Number of Elements: %d\n\n' % len(LatticeMesh))
+    FileOfCoordinates.write( '%s\n' % SEPARATOR )
 
     FlagFieldFile.close()
 
@@ -448,12 +443,13 @@ def printExtendedResults( LatticeMesh, Boundaries, FileName ):
 
 
     ##########     write all neighbours into the corresponding file  ##########
-    NeighborFileName = FileName + '.nb'
+    NeighborFileName = 'Output/Neighbors.nb'
 
     FileOfNeighbors = open(NeighborFileName, 'w')
 
     # write header for the lattice neighbours file
     FileOfNeighbors.write('Number of Elements: %d\n\n' % len( LatticeMesh ))
+    FileOfNeighbors.write( '%s\n' % SEPARATOR )
 
     for Cell in LatticeMesh:
         FileOfNeighbors.write( '%d ' % Cell.ID )

@@ -89,6 +89,8 @@ def main():
     for i in range( 0, len(LatticeMesh) ):
         checkStencil_D3Q26( LatticeMesh[ i ], Points )
 
+    printAdjacencyList( LatticeMesh )
+
 
     print "Mesh was converted correctly to D3Q26 stencil"
 
@@ -402,6 +404,28 @@ def printResults( LatticeMesh, Boundaries, FileName ):
         pass
 
 
+def printAdjacencyList( LatticeMesh ):
+
+    # compute the number of edges
+    NumberOfEdges = 0
+    for Cell in LatticeMesh:
+        NumberOfEdges += len( Cell.Neighbors )
+
+    NumberOfEdges = NumberOfEdges / 2
+
+
+    ########################     write adjacency list  #########################
+    AdjacencyListFileName = 'Output/AdjacencyList.graph'
+    AdjacencyFile = open( AdjacencyListFileName, 'w' )
+
+    AdjacencyFile.write( '%d %d\n' % (len( LatticeMesh ), NumberOfEdges) )
+
+    for Cell in LatticeMesh:
+
+        for i in range( len( Cell.Neighbors ) ):
+            AdjacencyFile.write( ' %d' % ( Cell.Neighbors[ i ] + 1 ) )
+
+        AdjacencyFile.write( '\n' )
 
 def printExtendedResults( LatticeMesh, Boundaries, FileName ):
 
@@ -459,6 +483,7 @@ def printExtendedResults( LatticeMesh, Boundaries, FileName ):
             # be printed out
             for i in range( len( Cell.Neighbors ) ):
                 FileOfNeighbors.write('%d ' % Cell.Neighbors[ i ] )
+
             FileOfNeighbors.write('\n')
 
         else:

@@ -1,3 +1,5 @@
+#include <unordered_map>
+
 #include "DataStructure.h"
 
 #ifndef _BOUNDARY_H_
@@ -10,7 +12,11 @@ void scanBoundary( std::list<BoundaryFluid*>& ObstacleList,
 					std::vector<Fluid*>& VTKrepresentation,
                     int* flagField,
 					int *VtkID,
-					std::vector<BoundaryEntry*> BoundaryConditions );
+					std::vector<BoundaryEntry*> BoundaryConditions,
+ 					int *CpuID,
+ 					int RANK,
+ 					std::unordered_map<unsigned, unsigned>& LocalToGlobalIdTable,
+ 					std::vector<BoundaryBuffer>& CommunicationBuffers );
 
 
 void treatBoundary( double *collideField,

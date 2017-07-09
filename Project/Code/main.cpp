@@ -8,6 +8,7 @@
 #include <fstream>
 #include <stdio.h>
 #include <string>
+#include <unordered_map>
 
 
 #include "LBDefinitions.h"
@@ -74,6 +75,14 @@ int main( int argc, char *argv[] ) {
           }
           File.close();
 
+          // CHECK if file containing partitioning exists
+          File.open( "./Mesh/CpuPartitioning.prt" );
+          if ( !File ) {
+                std::string ERROR = "ERROR: file /Mesh/BoundaryList.bc does not exist";
+                throw( ERROR );
+          }
+          File.close();
+
 
     }
     catch ( std::string ERROR ) {
@@ -87,6 +96,10 @@ int main( int argc, char *argv[] ) {
         return -1;
     }
 
+    int RANK = std::stoi( argv[ 2 ] );
+    int NUMBER_OF_CPUs = 6;
+    std::vector< BoundaryBuffer > CommunicationBuffers;
+    CommunicationBuffers.resize( NUMBER_OF_CPUs );
 
 //******************************************************************************
 //                          INIT PARAMETERS
@@ -102,6 +115,9 @@ int main( int argc, char *argv[] ) {
 
     std::vector<BoundaryEntry*> BoundaryConditions;
 
+    std::unordered_map<unsigned, unsigned> LocalToGlobalIdTable;
+    std::unordered_map<unsigned, unsigned> GlobalToLocalIdTable;
+
     const char* INPUT_FILE_NAME = argv[ 1 ];
     const char* OUTPUT_FILE_NAME = "./Frames/RESULT";
     double Tau = 0.0;
@@ -111,6 +127,7 @@ int main( int argc, char *argv[] ) {
     double *collideField = 0;
     double *streamField = 0;
     int *flagField = 0;
+    int *CpuID = 0;
     int *VtkID = 0;
 
 
@@ -133,9 +150,13 @@ int main( int argc, char *argv[] ) {
     initialiseData( &collideField,
                     &streamField,
                     &flagField,
+                    &CpuID,
                     &VtkID,
                     FluidDomain,
-                    BoundaryConditions );
+                    BoundaryConditions,
+                    LocalToGlobalIdTable,
+                    GlobalToLocalIdTable,
+                    RANK );
 
 
     scanBoundary(  BoundaryList,
@@ -143,7 +164,32 @@ int main( int argc, char *argv[] ) {
 				   VTKrepresentation,
                    flagField,
 				   VtkID,
-                   BoundaryConditions );
+                   BoundaryConditions,
+                   CpuID,
+                   RANK,
+                   LocalToGlobalIdTable,
+                   CommunicationBuffers );
+
+
+    // remove empty buffers from communication bufer array
+    int Iterator = 0;
+    while ( Iterator != NUMBER_OF_CPUs ) {
+        if ( CommunicationBuffers[ Iterator ].getBufferSize() == 0 ) {
+            CommunicationBuffers.erase( CommunicationBuffers.begin() + Iterator );
+            --NUMBER_OF_CPUs;
+        }
+        else {
+            ++Iterator;
+        }
+    }
+
+    // DEBUGGING
+    for ( unsigned i = 0; i < CommunicationBuffers.size(); ++i ) {
+        std::cout << "Buffer containes: " << CommunicationBuffers[ i ].getBufferSize() << " "
+                  << "TragetCPU: " << CommunicationBuffers[ i ].getTragetCpu() << " "
+                  << "Current CPU: " << RANK
+                  << std::endl;
+    }
 
 
     writeVtkOutput( OUTPUT_FILE_NAME,
@@ -156,14 +202,12 @@ int main( int argc, char *argv[] ) {
 
 
 
-
-
 //******************************************************************************
 //                          PERFORM COMPUTATION
 //******************************************************************************
 
 
-
+/*
     clock_t Begin = clock();
 
     // Perform LB method
@@ -215,7 +259,7 @@ int main( int argc, char *argv[] ) {
     std::cout << "Computational time: " <<  ConsumedTime << " sec" << std::endl;
     std::cout << "MLUPS: " <<  MLUPS << std::endl;
     std::cout << "Number of lattices: " <<  (int)FluidDomain.size() << std::endl;
-
+*/
 
 
     // delete list of oCoordinatesbstacles
@@ -249,6 +293,7 @@ int main( int argc, char *argv[] ) {
     delete [] collideField;
     delete [] streamField;
     delete [] flagField;
+    delete [] CpuID;
     delete [] VtkID;
 	return 0;
 }

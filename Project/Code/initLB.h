@@ -13,8 +13,12 @@
 void initialiseData( double** collideField,
                      double** streamField,
 					 int** flagField,
+                     int** CpuID,
                      int** VtkID,
                      std::vector<Fluid*> &FluidDomain,
-                     std::vector<BoundaryEntry*> &BoundaryElementVector );
+                     std::vector<BoundaryEntry*> &BoundaryElementVector,
+                     std::unordered_map<unsigned, unsigned>& LocalToGlobalIdTable,
+                     std::unordered_map<unsigned, unsigned>& GlobalToLocalIdTable,
+                     int RANK );
 
 #endif

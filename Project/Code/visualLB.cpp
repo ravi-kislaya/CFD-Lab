@@ -79,6 +79,19 @@ void writeVtkOutput( const char * filename,
     }
 
 
+    fprintf( fp, "\nSCALARS CpuID float 1 \n" );
+    fprintf( fp, "LOOKUP_TABLE default \n" );
+
+	for ( std::vector<Fluid*>::iterator aFluidCell = FluidDomain.begin();
+          aFluidCell != FluidDomain.end();
+          ++aFluidCell ) {
+
+            fprintf( fp, "%d\n", (*aFluidCell)->getCpuID() );
+
+    }
+
+
+
 //------------------------------------------------------------------------------
 //                        Write velocity to the file
 //--------------------------------------------------------#include <vector>----------------------

@@ -1,7 +1,7 @@
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                 |
 | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  dev                                   |
+|  \\    /   O peration     | Version:  4.1                                   |
 |   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
@@ -10,33 +10,82 @@ FoamFile
     version     2.0;
     format      ascii;
     class       polyBoundaryMesh;
-    location    "constant/polyMesh";
+    location    "1/polyMesh";
     object      boundary;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-3
+10
 (
-    Inlet
+    inlet
     {
         type            wall;
         inGroups        1(wall);
-        nFaces          900;
-        startFace       131100;
+        nFaces          116;
+        startFace       304225;
     }
-    Outlet
+    outlet1
     {
         type            wall;
         inGroups        1(wall);
-        nFaces          900;
-        startFace       132000;
+        nFaces          28;
+        startFace       304341;
     }
-    NoSlipWall
+    outlet2
     {
         type            wall;
         inGroups        1(wall);
-        nFaces          6000;
-        startFace       132900;
+        nFaces          34;
+        startFace       304369;
+    }
+    outlet3
+    {
+        type            wall;
+        inGroups        1(wall);
+        nFaces          23;
+        startFace       304403;
+    }
+    outlet4
+    {
+        type            wall;
+        inGroups        1(wall);
+        nFaces          22;
+        startFace       304426;
+    }
+    outlet5
+    {
+        type            wall;
+        inGroups        1(wall);
+        nFaces          38;
+        startFace       304448;
+    }
+    outlet6
+    {
+        type            wall;
+        inGroups        1(wall);
+        nFaces          32;
+        startFace       304486;
+    }
+    outlet7
+    {
+        type            wall;
+        inGroups        1(wall);
+        nFaces          25;
+        startFace       304518;
+    }
+    outlet8
+    {
+        type            wall;
+        inGroups        1(wall);
+        nFaces          43;
+        startFace       304543;
+    }
+    walls
+    {
+        type            wall;
+        inGroups        1(wall);
+        nFaces          67593;
+        startFace       304586;
     }
 )
 

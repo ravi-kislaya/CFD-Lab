@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <string>
 #include <unordered_map>
-
+#include <mpi.h>
 
 #include "LBDefinitions.h"
 #include "collision.h"
@@ -97,9 +97,16 @@ int main( int argc, char *argv[] ) {
     }
 
     int RANK = 0;
-    int NUMBER_OF_CPUs = 6;
+    int NUMBER_OF_CPUs = 0;
+    
+    MPI_Init (&argc, &argv);
+    MPI_Comm_size (MPI_COMM_WORLD, &NUMBER_OF_CPUs);
+    MPI_Comm_rank (MPI_COMM_WORLD, &RANK);
+
+    MPI_Status STATUS;
     std::vector< BoundaryBuffer > CommunicationBuffers;
     CommunicationBuffers.resize( NUMBER_OF_CPUs );
+
 
 //******************************************************************************
 //                          INIT PARAMETERS
@@ -123,6 +130,7 @@ int main( int argc, char *argv[] ) {
     double Tau = 0.0;
     unsigned TimeSteps = 0;
     unsigned TimeStepsPerPlotting = 0;
+    double* Protocol = 0;
 
     double *collideField = 0;
     double *streamField = 0;
@@ -139,10 +147,12 @@ int main( int argc, char *argv[] ) {
     }
     catch( std::string Error ) {
         std::cout << Error << std::endl;
+        MPI_Finalize();
         return - 1;
     }
     catch( ... ) {
         std::cout << "Unexpected error" << std::endl;
+        MPI_Finalize();
         return - 1;
     }
 
@@ -171,45 +181,46 @@ int main( int argc, char *argv[] ) {
                    CommunicationBuffers );
 
 
-    // remove empty buffers from communication bufer array and
+    // remove empty buffers from communication bufer array,
     // compete initialization of buffers by assigning collideField
+    // compute the size of the protocol
     int Iterator = 0;
+    unsigned BufferSize = CommunicationBuffers[ 0 ].getProtocolSize();
+    unsigned ProtocolSize = BufferSize;
     while ( Iterator != NUMBER_OF_CPUs ) {
-        if ( CommunicationBuffers[ Iterator ].getBufferSize() == 0 ) {
+        
+        BufferSize = CommunicationBuffers[ Iterator ].getProtocolSize();
+ 
+        if ( BufferSize  == 0 ) {
             CommunicationBuffers.erase( CommunicationBuffers.begin() + Iterator );
             --NUMBER_OF_CPUs;
         }
         else {
             CommunicationBuffers[ Iterator ].setField( collideField );
+            
             CommunicationBuffers[ Iterator ].generateProtocol( LocalToGlobalIdTable );
+            
+            if ( ProtocolSize < BufferSize ) {
+                ProtocolSize = BufferSize;
+            }
             ++Iterator;
         }
     }
 
-    // DEBUGGING
-    double* Protocol = CommunicationBuffers[ 0 ].getProtocol();
-    int ProtocolSize = CommunicationBuffers[ 0 ].getProtocolSize();
-    decodeProtocol( Protocol,
-    				ProtocolSize,
-    				collideField,
-     				GlobalToLocalIdTable );
 
-    // DEBUGGING
-    for ( unsigned i = 0; i < CommunicationBuffers.size(); ++i ) {
-        std::cout << "Buffer containes: " << CommunicationBuffers[ i ].getBufferSize() << " "
-                  << "TragetCPU: " << CommunicationBuffers[ i ].getTragetCpu() << " "
-                  << "Current CPU: " << RANK
-                  << std::endl;
-    }
+    Protocol = new double[ ProtocolSize ];
+    
 
 
     writeVtkOutput( OUTPUT_FILE_NAME,
+                    RANK,
                     collideField,
                     VtkID,
                     FluidDomain,
                     VTKrepresentation,
                     0 );
 
+    
 
 
 
@@ -218,12 +229,36 @@ int main( int argc, char *argv[] ) {
 //******************************************************************************
 
 
-/*
+    int TAG = 1;
     clock_t Begin = clock();
-
-    // Perform LB method
     double* Swap = NULL;
+
     for ( unsigned Step = 1; Step <= TimeSteps; ++Step ) {
+
+        // Communication
+        for ( unsigned i = 0; i < CommunicationBuffers.size(); ++i ) {
+     
+            MPI_Sendrecv( CommunicationBuffers[ i ].getProtocol(), 
+                          CommunicationBuffers[ i ].getProtocolSize(), 
+                          MPI_DOUBLE,
+                          CommunicationBuffers[ i ].getTragetCpu(),
+                          TAG,
+                          Protocol, 
+                          CommunicationBuffers[ i ].getProtocolSize(), 
+                          MPI_DOUBLE,
+                          CommunicationBuffers[ i ].getTragetCpu(), 
+                          TAG,
+                          MPI_COMM_WORLD, 
+                          &STATUS );
+
+
+             decodeProtocol( Protocol,
+                             CommunicationBuffers[ i ].getProtocolSize(),
+                             collideField,
+                             GlobalToLocalIdTable );
+        
+        } 
+
 
         doStreaming( collideField,
                      streamField,
@@ -249,11 +284,12 @@ int main( int argc, char *argv[] ) {
         if ( ( Step % TimeStepsPerPlotting ) == 0 ) {
 
             writeVtkOutput( OUTPUT_FILE_NAME,
-                    collideField,
-                    VtkID,
-                    FluidDomain,
-                    VTKrepresentation,
-                    Step );
+                            RANK, 
+                            collideField,
+                            VtkID,
+                            FluidDomain,
+                            VTKrepresentation,
+                            Step );
         }
 #endif
 
@@ -265,13 +301,13 @@ int main( int argc, char *argv[] ) {
     clock_t End = clock();
     double ConsumedTime = (double)( End - Begin ) / CLOCKS_PER_SEC;
     double MLUPS = ( FluidDomain.size() * TimeSteps ) / ( ConsumedTime * 1e6 );
-
+/*
     // display MLUPS number that stands for Mega Lattice Updates Per Second
     std::cout << "Computational time: " <<  ConsumedTime << " sec" << std::endl;
     std::cout << "MLUPS: " <<  MLUPS << std::endl;
     std::cout << "Number of lattices: " <<  (int)FluidDomain.size() << std::endl;
-
 */
+
 
     // delete list of oCoordinatesbstacles
     for ( std::list<BoundaryFluid*>::iterator Iterator = BoundaryList.begin();
@@ -282,8 +318,7 @@ int main( int argc, char *argv[] ) {
 
         // delete all fluid cells
         delete (*Iterator);
-
-    }
+  }
 
 	// delete list of Fluid
 	for ( std::vector<Fluid*>::iterator Iterator = FluidDomain.begin();
@@ -306,8 +341,10 @@ int main( int argc, char *argv[] ) {
     delete [] flagField;
     delete [] CpuID;
     delete [] VtkID;
-	return 0;
+    delete [] Protocol;
 
+    MPI_Finalize();
+    return 0;
 }
 
 #endif

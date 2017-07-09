@@ -339,7 +339,9 @@ int BoundaryBuffer::generateProtocol( std::unordered_map<unsigned, unsigned>& Lo
 	unsigned Shift = 0;
 	std::unordered_map<unsigned, unsigned>::const_iterator IdIterator;
 	unsigned Counter = 0;
-	for ( std::list<unsigned>::iterator Iterator = BufferElements.begin();
+	
+    
+    for ( std::list<unsigned>::iterator Iterator = BufferElements.begin();
  		  Iterator != BufferElements.end();
 		  ++Iterator, Counter += 2 ) {
 
@@ -354,6 +356,7 @@ int BoundaryBuffer::generateProtocol( std::unordered_map<unsigned, unsigned>& Lo
 				GlobalFiledID = GlobalFiledID * Vel_DOF + Shift;
 
             	m_Protocol[ Counter ] = (double)GlobalFiledID;
+
     }
 
 
@@ -383,13 +386,32 @@ int  BoundaryBuffer::updateProtocol() {
  		  Iterator != BufferElements.end();
 		  ++Iterator, Counter += 2 ) {
 
-		m_Protocol[ Counter + 1 ] = m_Field[ ( *Iterator ) ];
-        //std::cout << m_Protocol[ Counter + 1 ] << std::endl;
+	      m_Protocol[ Counter + 1 ] = m_Field[ ( *Iterator ) ];
 	}
 
 	return 0;
 }
 
+
+void BoundaryBuffer::printBufferElements() {
+    unsigned Counter = 0;
+    for ( auto Iterator = BufferElements.begin(); 
+          Iterator != BufferElements.end(); 
+          ++Iterator, Counter += 2 ) {
+        
+        std::cout << (*Iterator) << std::endl;
+    }
+}
+
+
+void BoundaryBuffer::printProtocol() {
+    unsigned ProtocolSize = getProtocolSize();
+
+    for ( unsigned i = 0; i < ProtocolSize; i += 2 ) {
+        std::cout << (unsigned)( m_Protocol[ i ] ) << std::endl;
+    }
+
+}
 
 
 void decodeProtocol( double* Protocol,
@@ -414,10 +436,7 @@ void decodeProtocol( double* Protocol,
 		LocalFiledID = IdIterator->second;
 		LocalFiledID = Vel_DOF * LocalFiledID + Shift;
 
-
-
 		Field[ LocalFiledID ] = Protocol[ i + 1 ];
-		//std::cout << Field[ LocalFiledID ] << " "<< Protocol[ i + 1 ] << std::endl;
 
 	}
 }

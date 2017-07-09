@@ -268,6 +268,8 @@ class BoundaryBuffer {
         void setTragetCpu( int TragetCpuId ) { m_TragetCpu = TragetCpuId; }
         void setField ( double* Field ) { m_Field = Field; }
 
+        void printBufferElements();
+        void printProtocol();
 	private:
 		std::list<unsigned> BufferElements;
 		double* m_Protocol;

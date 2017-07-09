@@ -15,6 +15,7 @@
 
 //Writes Density and Velocity from the collision field
 void writeVtkOutput( const char * filename,
+                     int RANK,
                      double* const collideField,
                      int* VtkID,
                      std::vector<Fluid*>& FluidDomain,
@@ -24,7 +25,7 @@ void writeVtkOutput( const char * filename,
 
     char szFilename[ 80 ];
     FILE *fp = NULL;
-    sprintf( szFilename, "%s.%i.vtk", filename, TimeStep );
+    sprintf( szFilename, "%s%i.%i.vtk", filename, RANK ,TimeStep );
 
 
     fp = fopen( szFilename, "w");

@@ -220,7 +220,6 @@ void scanBoundary(  std::list<BoundaryFluid*>& ObstacleList,
 		}
 
 
-
     }
 
 }

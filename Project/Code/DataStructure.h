@@ -1,5 +1,7 @@
 #include <list>
 #include <string>
+#include <unordered_map>
+
 #include "LBDefinitions.h"
 #include "computeCellValues.h"
 
@@ -258,21 +260,19 @@ class BoundaryBuffer {
 
 		void addBufferElement( unsigned Index );
 		int updateProtocol();
-		int generateProtocol();
+		int generateProtocol( std::unordered_map<unsigned, unsigned>& LocalToGlobalIdTable );
 
 
         // Setter FUNCTIONS
         void setIndex( unsigned Index ) { m_Index = Index; };
         void setTragetCpu( int TragetCpuId ) { m_TragetCpu = TragetCpuId; }
         void setField ( double* Field ) { m_Field = Field; }
-        void setDomainLength( unsigned* Length );
 
 	private:
 		std::list<unsigned> BufferElements;
 		double* m_Protocol;
         double* m_Field;
         int m_Index;
-        unsigned m_Length[ 3 ];
         unsigned m_BufferSize;
         bool m_isProtocolReady;
         int m_TragetCpu;
@@ -281,7 +281,8 @@ class BoundaryBuffer {
 
 void decodeProtocol( double* Protocol,
                      unsigned ProtocolSize,
-                     double* Field );
+                     double* Field,
+                     std::unordered_map<unsigned, unsigned>& GlobalToLocalIdTable );
 
 
 

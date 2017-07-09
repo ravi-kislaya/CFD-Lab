@@ -96,7 +96,7 @@ int main( int argc, char *argv[] ) {
         return -1;
     }
 
-    int RANK = std::stoi( argv[ 2 ] );
+    int RANK = 0;
     int NUMBER_OF_CPUs = 6;
     std::vector< BoundaryBuffer > CommunicationBuffers;
     CommunicationBuffers.resize( NUMBER_OF_CPUs );
@@ -171,7 +171,8 @@ int main( int argc, char *argv[] ) {
                    CommunicationBuffers );
 
 
-    // remove empty buffers from communication bufer array
+    // remove empty buffers from communication bufer array and
+    // compete initialization of buffers by assigning collideField
     int Iterator = 0;
     while ( Iterator != NUMBER_OF_CPUs ) {
         if ( CommunicationBuffers[ Iterator ].getBufferSize() == 0 ) {
@@ -179,9 +180,19 @@ int main( int argc, char *argv[] ) {
             --NUMBER_OF_CPUs;
         }
         else {
+            CommunicationBuffers[ Iterator ].setField( collideField );
+            CommunicationBuffers[ Iterator ].generateProtocol( LocalToGlobalIdTable );
             ++Iterator;
         }
     }
+
+    // DEBUGGING
+    double* Protocol = CommunicationBuffers[ 0 ].getProtocol();
+    int ProtocolSize = CommunicationBuffers[ 0 ].getProtocolSize();
+    decodeProtocol( Protocol,
+    				ProtocolSize,
+    				collideField,
+     				GlobalToLocalIdTable );
 
     // DEBUGGING
     for ( unsigned i = 0; i < CommunicationBuffers.size(); ++i ) {
@@ -259,8 +270,8 @@ int main( int argc, char *argv[] ) {
     std::cout << "Computational time: " <<  ConsumedTime << " sec" << std::endl;
     std::cout << "MLUPS: " <<  MLUPS << std::endl;
     std::cout << "Number of lattices: " <<  (int)FluidDomain.size() << std::endl;
-*/
 
+*/
 
     // delete list of oCoordinatesbstacles
     for ( std::list<BoundaryFluid*>::iterator Iterator = BoundaryList.begin();
@@ -296,6 +307,7 @@ int main( int argc, char *argv[] ) {
     delete [] CpuID;
     delete [] VtkID;
 	return 0;
+
 }
 
 #endif

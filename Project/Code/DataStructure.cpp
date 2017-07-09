@@ -7,6 +7,7 @@
 #include <list>
 
 
+
 //------------------------------------------------------------------------------
 //                            Wall cell
 //------------------------------------------------------------------------------
@@ -275,9 +276,7 @@ BoundaryBuffer::BoundaryBuffer() : m_Protocol( 0 ),
  								   m_BufferSize( 0 ),
  								   m_isProtocolReady( false ),
  								   m_TragetCpu( -1 ) {
-	for ( int i = 0; i < Dimensions; ++i ) {
-		m_Length[ i ] = 0;
-	}
+
 }
 
 BoundaryBuffer::~BoundaryBuffer() {
@@ -293,25 +292,17 @@ void BoundaryBuffer::addBufferElement( unsigned Index ) {
 }
 
 
-// inline DEBUGGING
-void BoundaryBuffer::setDomainLength( unsigned* Length ) {
-	for ( int i = 0; i < Dimensions; ++i ) {
-		m_Length[ i ] = Length[ i ];
-	}
-}
-
-
 double* BoundaryBuffer::getProtocol() {
     this->updateProtocol();
     return m_Protocol;
 }
 
 
-int BoundaryBuffer::generateProtocol() {
+int BoundaryBuffer::generateProtocol( std::unordered_map<unsigned, unsigned>& LocalToGlobalIdTable ) {
 
 // ............................ GUARDS: BEGINING ...............................
 
-	if ( m_Index == -1 ) {
+	if ( m_TragetCpu == -1 ) {
 		std::cout << "\tERROR: you've tried to generate the protocol" << std::endl;
 		std::cout << "\twithout initializing the buffer index" << std::endl;
 		std::cout << "\tERROR SOURCE: DataStructure.cpp -> generateProtocol()" << std::endl;
@@ -320,22 +311,6 @@ int BoundaryBuffer::generateProtocol() {
 #else
 		exit( EXIT_FAILURE ); // DEBUGGING
 #endif
-	}
-
-
-	bool isLengthInitialized = true;
-	for ( int i = 0; i < Dimensions; ++i )
-		isLengthInitialized *= m_Length[ i ];
-	if ( isLengthInitialized == false ) {
-		std::cout << "\tERROR: you've tried to generate the protocol" << std::endl;
-		std::cout << "\twithout initializing geometry parameters" << std::endl;
-		std::cout << "\tERROR SOURCE: DataStructure.cpp -> generateProtocol()" << std::endl;
-#ifdef TEST
-		return -1;
-#else
-		exit( EXIT_FAILURE ); // DEBUGGING
-#endif
-
 	}
 
 
@@ -353,61 +328,32 @@ int BoundaryBuffer::generateProtocol() {
 
 // .............................. GUARDS: END .................................
 
-  	// Boundary Buffer Scheme:
-  	// index 0: +x direction
-  	// index 1: -x direction
-  	// index 2: +y direction
-  	// index 3: -y direction
-  	// index 4: +z direction
-  	// index 5: -z direction
-
-	int Shift = 0;
-	unsigned X = m_Length[ 0 ];
-	unsigned Y = m_Length[ 1 ];
-	unsigned Z = m_Length[ 2 ];
-
-	switch ( m_Index ) {
-
-		case 0: Shift = ( -1 ) * Vel_DOF * X;
-				break;
-
-		case 1: Shift = Vel_DOF * X;
-				break;
-
-		case 2: Shift = ( -1 ) * Vel_DOF * (X + 2) * Y;
-				break;
-
-		case 3: Shift = Vel_DOF * (X + 2) * Y;
-				break;
-
-		case 4: Shift = ( -1 ) * Vel_DOF * (X + 2) * (Y + 2) * Z;
-				break;
-
-		case 5: Shift = Vel_DOF * (X + 2) * (Y + 2) * Z;
-				break;
-
-		default: std::cout << "ERROR: Buffer index is wrong, namely:"
- 						   << m_Index
-						   << std::endl
-						   << "ERROR SOURCE: DataStructure.cpp -> generateProtocol"
- 						   << std::endl;
-				 exit( EXIT_FAILURE );
-				 break;
-	}
-
 
 	if ( this->getBufferSize() != 0 ) {
 		m_Protocol = new double[ this->getProtocolSize() ];
 	}
 
 
+	unsigned LocalFiledID = 0;
+	unsigned GlobalFiledID = 0;
+	unsigned Shift = 0;
+	std::unordered_map<unsigned, unsigned>::const_iterator IdIterator;
 	unsigned Counter = 0;
 	for ( std::list<unsigned>::iterator Iterator = BufferElements.begin();
  		  Iterator != BufferElements.end();
 		  ++Iterator, Counter += 2 ) {
 
-                    m_Protocol[ Counter ] = (double) ( ( *Iterator ) + Shift );
+				// Iterator is given as the local field + shift. We need to
+				// convert it to global diled id + shift for the communication
+				// purposes
+				LocalFiledID = ( *Iterator ) / Vel_DOF;
+				Shift = ( *Iterator ) - Vel_DOF * LocalFiledID;
 
+				IdIterator = LocalToGlobalIdTable.find( LocalFiledID );
+				GlobalFiledID = IdIterator->second;
+				GlobalFiledID = GlobalFiledID * Vel_DOF + Shift;
+
+            	m_Protocol[ Counter ] = (double)GlobalFiledID;
     }
 
 
@@ -438,7 +384,7 @@ int  BoundaryBuffer::updateProtocol() {
 		  ++Iterator, Counter += 2 ) {
 
 		m_Protocol[ Counter + 1 ] = m_Field[ ( *Iterator ) ];
-    //    std::cout << m_Protocol[ Counter + 1 ] << std::endl;
+        //std::cout << m_Protocol[ Counter + 1 ] << std::endl;
 	}
 
 	return 0;
@@ -448,13 +394,30 @@ int  BoundaryBuffer::updateProtocol() {
 
 void decodeProtocol( double* Protocol,
 					 unsigned ProtocolSize,
-					 double* Field ) {
+					 double* Field,
+ 					 std::unordered_map<unsigned, unsigned>& GlobalToLocalIdTable ) {
 
 	unsigned Index = 0;
-	for ( unsigned i = 0; i < ProtocolSize; i += 2 ) {
-		Index = (unsigned)Protocol[ i ];
-       // std::cout << Protocol[ i ] << std::endl;
+	unsigned LocalFiledID = 0;
+	unsigned GlobalFiledID = 0;
+	unsigned Shift = 0;
+	std::unordered_map<unsigned, unsigned>::const_iterator IdIterator;
 
-		Field[ Index ] = Protocol[ i + 1 ];
+	for ( unsigned i = 0; i < ProtocolSize; i += 2 ) {
+
+
+		Index = (unsigned)Protocol[ i ];
+		GlobalFiledID = Index / Vel_DOF;
+		Shift = Index - Vel_DOF * ( GlobalFiledID );
+
+		IdIterator = GlobalToLocalIdTable.find( GlobalFiledID );
+		LocalFiledID = IdIterator->second;
+		LocalFiledID = Vel_DOF * LocalFiledID + Shift;
+
+
+
+		Field[ LocalFiledID ] = Protocol[ i + 1 ];
+		//std::cout << Field[ LocalFiledID ] << " "<< Protocol[ i + 1 ] << std::endl;
+
 	}
 }

@@ -272,8 +272,8 @@ void Fluid::doLocalCollision( double *collideField,
 //------------------------------------------------------------------------------
 BoundaryBuffer::BoundaryBuffer() : m_Protocol( 0 ),
 								   m_Field( 0 ),
-								   m_Index( -1 ),
  								   m_BufferSize( 0 ),
+								   m_ProtocolSize( 0 ),
  								   m_isProtocolReady( false ),
  								   m_TragetCpu( -1 ) {
 
@@ -282,13 +282,13 @@ BoundaryBuffer::BoundaryBuffer() : m_Protocol( 0 ),
 BoundaryBuffer::~BoundaryBuffer() {
 	if ( m_Protocol != 0 ) {
 		delete [] m_Protocol;
+		delete [] m_ReceiveBuffer;
 	}
 }
 
 // inline DEBUGGING
 void BoundaryBuffer::addBufferElement( unsigned Index ) {
 	BufferElements.push_back( Index );
-	++m_BufferSize;
 }
 
 
@@ -298,13 +298,18 @@ double* BoundaryBuffer::getProtocol() {
 }
 
 
+void BoundaryBuffer::setMappingTable( std::unordered_map<unsigned, unsigned>& Table ) {
+	m_GlobalToLocalIdTable = Table;
+}
+
+
 int BoundaryBuffer::generateProtocol( std::unordered_map<unsigned, unsigned>& LocalToGlobalIdTable ) {
 
 // ............................ GUARDS: BEGINING ...............................
 
 	if ( m_TragetCpu == -1 ) {
 		std::cout << "\tERROR: you've tried to generate the protocol" << std::endl;
-		std::cout << "\twithout initializing the buffer index" << std::endl;
+		std::cout << "\twithout initializing the target cpu" << std::endl;
 		std::cout << "\tERROR SOURCE: DataStructure.cpp -> generateProtocol()" << std::endl;
 #ifdef TEST
 		return -1;
@@ -326,11 +331,26 @@ int BoundaryBuffer::generateProtocol( std::unordered_map<unsigned, unsigned>& Lo
 	}
 
 
+	if ( m_GlobalToLocalIdTable.size() == 0 ) {
+		std::cout << "\tERROR: you've tried to generate the protocol" << std::endl;
+		std::cout << "\twithout initializing the MappingTable" << std::endl;
+		std::cout << "\tERROR SOURCE: DataStructure.cpp -> generateProtocol()" << std::endl;
+#ifdef TEST
+		return -1;
+#else
+		exit( EXIT_FAILURE ); // DEBUGGING
+#endif
+	}
+
+
+
 // .............................. GUARDS: END .................................
 
-
+	m_BufferSize = this->getBufferSize();
+	m_ProtocolSize = this->getProtocolSize();
 	if ( this->getBufferSize() != 0 ) {
-		m_Protocol = new double[ this->getProtocolSize() ];
+		m_Protocol = new double[ m_ProtocolSize ];
+		m_ReceiveBuffer = new double[ m_ProtocolSize ];
 	}
 
 
@@ -339,8 +359,8 @@ int BoundaryBuffer::generateProtocol( std::unordered_map<unsigned, unsigned>& Lo
 	unsigned Shift = 0;
 	std::unordered_map<unsigned, unsigned>::const_iterator IdIterator;
 	unsigned Counter = 0;
-	
-    
+
+
     for ( std::list<unsigned>::iterator Iterator = BufferElements.begin();
  		  Iterator != BufferElements.end();
 		  ++Iterator, Counter += 2 ) {
@@ -395,10 +415,10 @@ int  BoundaryBuffer::updateProtocol() {
 
 void BoundaryBuffer::printBufferElements() {
     unsigned Counter = 0;
-    for ( auto Iterator = BufferElements.begin(); 
-          Iterator != BufferElements.end(); 
+    for ( auto Iterator = BufferElements.begin();
+          Iterator != BufferElements.end();
           ++Iterator, Counter += 2 ) {
-        
+
         std::cout << (*Iterator) << std::endl;
     }
 }
@@ -413,11 +433,7 @@ void BoundaryBuffer::printProtocol() {
 
 }
 
-
-void decodeProtocol( double* Protocol,
-					 unsigned ProtocolSize,
-					 double* Field,
- 					 std::unordered_map<unsigned, unsigned>& GlobalToLocalIdTable ) {
+void BoundaryBuffer::unpackReceiveBuffer() {
 
 	unsigned Index = 0;
 	unsigned LocalFiledID = 0;
@@ -425,18 +441,17 @@ void decodeProtocol( double* Protocol,
 	unsigned Shift = 0;
 	std::unordered_map<unsigned, unsigned>::const_iterator IdIterator;
 
-	for ( unsigned i = 0; i < ProtocolSize; i += 2 ) {
+	for ( unsigned i = 0; i < m_ProtocolSize; i += 2 ) {
 
-
-		Index = (unsigned)Protocol[ i ];
+		Index = (unsigned)m_ReceiveBuffer[ i ];
 		GlobalFiledID = Index / Vel_DOF;
 		Shift = Index - Vel_DOF * ( GlobalFiledID );
 
-		IdIterator = GlobalToLocalIdTable.find( GlobalFiledID );
+		IdIterator = m_GlobalToLocalIdTable.find( GlobalFiledID );
 		LocalFiledID = IdIterator->second;
 		LocalFiledID = Vel_DOF * LocalFiledID + Shift;
 
-		Field[ LocalFiledID ] = Protocol[ i + 1 ];
+		m_Field[ LocalFiledID ] = m_ReceiveBuffer[ i + 1 ];
 
 	}
 }

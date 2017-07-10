@@ -43,7 +43,8 @@ void initialiseData( double** collideField,
                      std::vector<BoundaryEntry*> &BoundaryConditions,
                      std::unordered_map<unsigned, unsigned>& LocalToGlobalIdTable,
                      std::unordered_map<unsigned, unsigned>& GlobalToLocalIdTable,
-                     int RANK ) {
+                     int RANK,
+                     int NUMBER_OF_CPUs ) {
 
 
 //....................... PROCESS FLAG FIELD FILE ..............................
@@ -141,13 +142,21 @@ void initialiseData( double** collideField,
 
      unsigned GlobalIdCounter = 0;
      unsigned LocalIdCounter = 0;
+     int MaxPsrtitionNumber = 0;
+     int CpuPart= 0;
      while( !FILE.eof() ) {
          std::getline( FILE, BufferString );
 
          if( !BufferString.empty() ) {
-             ( *CpuID )[ GlobalIdCounter ] = int( std::stod( BufferString ) );
+             CpuPart = int( std::stod( BufferString ) );
+             ( *CpuID )[ GlobalIdCounter ] = CpuPart;
 
-            if ( RANK == ( *CpuID )[ GlobalIdCounter ] ) {
+
+             if ( CpuPart > MaxPsrtitionNumber ) {
+                MaxPsrtitionNumber = CpuPart;
+             }
+
+            if ( RANK == CpuPart ) {
                 LocalToGlobalIdTable.insert( { LocalIdCounter, GlobalIdCounter } );
                 GlobalToLocalIdTable.insert( { GlobalIdCounter, LocalIdCounter } );
                 //std::cout << GlobalIdCounter << " " << LocalIdCounter << std::endl;
@@ -158,6 +167,13 @@ void initialiseData( double** collideField,
          }
      }
      FILE.close();
+
+    // throw an error if the number of subdomains doesn't match to the number
+    // of processors
+    if ( NUMBER_OF_CPUs != ( MaxPsrtitionNumber + 1 ) ) {
+        std::string ERROR = "ERROR: number of processors is not equal to the number of subdomains";
+        throw ERROR;
+    }
 
 
 
@@ -220,7 +236,6 @@ void initialiseData( double** collideField,
 
             // set Global index of lattice neighbors
             GlobalIdCounter = std::stoi( BufferVector[ i ] );
-            aFluidElement->setGloabalIndex( GlobalIdCounter, i - 1 );
 
             // check whether a neighbor index belong to the cpu lattice set
             if ( GlobalToLocalIdTable.count( GlobalIdCounter ) == true ) {

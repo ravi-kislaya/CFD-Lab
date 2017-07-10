@@ -158,7 +158,6 @@ class Fluid {
 
 			for( int i = 0; i < Vel_DOF; ++i ) {
 				m_NeighbourIndex[ i ] = 0;
-                m_GloabalNeighbourIndex[ i ] = 0;
 			}
 
 		}
@@ -189,7 +188,6 @@ class Fluid {
         int getCpuID() { return m_CpuID; }
 
         int getIdIndex( int Index ) { return (int)( m_NeighbourIndex[ Index ] ); }
-        int getGloalIdIndex( int Index ) { return (int)( m_GloabalNeighbourIndex[ Index ] ); }
 
         // STTER FUNCTIONS
         void setID( int ID ) { m_ID = ID; }
@@ -204,9 +202,6 @@ class Fluid {
             m_NeighbourIndex[ Index ] = NeighborID;
         }
 
-        void setGloabalIndex( int GlobalNeighborID, int Index ) {
-            m_GloabalNeighbourIndex[ Index ] = GlobalNeighborID;
-        }
 
 	private:
         int m_ID;
@@ -214,7 +209,6 @@ class Fluid {
         double m_YCoord;
         double m_ZCoord;
         int m_NeighbourIndex[ Vel_DOF ];
-        int m_GloabalNeighbourIndex[ Vel_DOF ];
         int m_DiagonalLattice;
         std::string m_BoundaryTag;
         int m_CpuID;
@@ -254,38 +248,34 @@ class BoundaryBuffer {
 		double* getProtocol();
         unsigned getBufferSize() { return (unsigned)BufferElements.size(); };
         unsigned getProtocolSize() { return 2 * (unsigned)BufferElements.size(); };
-        int getIndex() { return  m_Index; };
         int getTragetCpu() { return m_TragetCpu; }
+        double* getReceiveBuffer() { return m_ReceiveBuffer; }
 
 
 		void addBufferElement( unsigned Index );
 		int updateProtocol();
 		int generateProtocol( std::unordered_map<unsigned, unsigned>& LocalToGlobalIdTable );
+        void unpackReceiveBuffer();
 
 
         // Setter FUNCTIONS
-        void setIndex( unsigned Index ) { m_Index = Index; };
         void setTragetCpu( int TragetCpuId ) { m_TragetCpu = TragetCpuId; }
         void setField ( double* Field ) { m_Field = Field; }
+        void setMappingTable( std::unordered_map<unsigned, unsigned>& Table );
 
         void printBufferElements();
         void printProtocol();
 	private:
 		std::list<unsigned> BufferElements;
 		double* m_Protocol;
+        double* m_ReceiveBuffer;
         double* m_Field;
-        int m_Index;
         unsigned m_BufferSize;
+        unsigned m_ProtocolSize;
         bool m_isProtocolReady;
         int m_TragetCpu;
+        std::unordered_map<unsigned, unsigned> m_GlobalToLocalIdTable;
 };
-
-
-void decodeProtocol( double* Protocol,
-                     unsigned ProtocolSize,
-                     double* Field,
-                     std::unordered_map<unsigned, unsigned>& GlobalToLocalIdTable );
-
 
 
 #endif

@@ -19,6 +19,7 @@ void initialiseData( double** collideField,
                      std::vector<BoundaryEntry*> &BoundaryElementVector,
                      std::unordered_map<unsigned, unsigned>& LocalToGlobalIdTable,
                      std::unordered_map<unsigned, unsigned>& GlobalToLocalIdTable,
-                     int RANK );
+                     int RANK,
+                     int NUMBER_OF_CPUs );
 
 #endif

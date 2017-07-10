@@ -98,7 +98,7 @@ int main( int argc, char *argv[] ) {
 
     int RANK = 0;
     int NUMBER_OF_CPUs = 0;
-    
+
     MPI_Init (&argc, &argv);
     MPI_Comm_size (MPI_COMM_WORLD, &NUMBER_OF_CPUs);
     MPI_Comm_rank (MPI_COMM_WORLD, &RANK);
@@ -130,7 +130,6 @@ int main( int argc, char *argv[] ) {
     double Tau = 0.0;
     unsigned TimeSteps = 0;
     unsigned TimeStepsPerPlotting = 0;
-    double* Protocol = 0;
 
     double *collideField = 0;
     double *streamField = 0;
@@ -143,30 +142,38 @@ int main( int argc, char *argv[] ) {
         read_parameters( INPUT_FILE_NAME,         // the name of the data file
                          &Tau,                    // relaxation time
                          &TimeSteps,              // number of simulation time steps
-                         &TimeStepsPerPlotting ); // number of visualization time steps
+                         &TimeStepsPerPlotting,   // number of visualization time steps
+                         RANK );
+
+        initialiseData( &collideField,
+                        &streamField,
+                        &flagField,
+                        &CpuID,
+                        &VtkID,
+                        FluidDomain,
+                        BoundaryConditions,
+                        LocalToGlobalIdTable,
+                        GlobalToLocalIdTable,
+                        RANK,
+                        NUMBER_OF_CPUs );
+
     }
-    catch( std::string Error ) {
-        std::cout << Error << std::endl;
+    catch( std::string ERROR ) {
+        if ( RANK == MASTER_CPU ) {
+            std::cout << ERROR << std::endl;
+        }
+
         MPI_Finalize();
         return - 1;
     }
     catch( ... ) {
-        std::cout << "Unexpected error" << std::endl;
+        if ( RANK == MASTER_CPU ) {
+            std::cout << "Unexpected error" << std::endl;
+        }
+
         MPI_Finalize();
         return - 1;
     }
-
-
-    initialiseData( &collideField,
-                    &streamField,
-                    &flagField,
-                    &CpuID,
-                    &VtkID,
-                    FluidDomain,
-                    BoundaryConditions,
-                    LocalToGlobalIdTable,
-                    GlobalToLocalIdTable,
-                    RANK );
 
 
     scanBoundary(  BoundaryList,
@@ -185,31 +192,24 @@ int main( int argc, char *argv[] ) {
     // compete initialization of buffers by assigning collideField
     // compute the size of the protocol
     int Iterator = 0;
-    unsigned BufferSize = CommunicationBuffers[ 0 ].getProtocolSize();
-    unsigned ProtocolSize = BufferSize;
+    unsigned BufferSize = 0;
     while ( Iterator != NUMBER_OF_CPUs ) {
-        
+
         BufferSize = CommunicationBuffers[ Iterator ].getProtocolSize();
- 
+
         if ( BufferSize  == 0 ) {
             CommunicationBuffers.erase( CommunicationBuffers.begin() + Iterator );
             --NUMBER_OF_CPUs;
         }
         else {
             CommunicationBuffers[ Iterator ].setField( collideField );
-            
+            CommunicationBuffers[ Iterator ].setMappingTable( GlobalToLocalIdTable );
             CommunicationBuffers[ Iterator ].generateProtocol( LocalToGlobalIdTable );
-            
-            if ( ProtocolSize < BufferSize ) {
-                ProtocolSize = BufferSize;
-            }
             ++Iterator;
         }
     }
 
 
-    Protocol = new double[ ProtocolSize ];
-    
 
 
     writeVtkOutput( OUTPUT_FILE_NAME,
@@ -220,7 +220,7 @@ int main( int argc, char *argv[] ) {
                     VTKrepresentation,
                     0 );
 
-    
+
 
 
 
@@ -237,27 +237,28 @@ int main( int argc, char *argv[] ) {
 
         // Communication
         for ( unsigned i = 0; i < CommunicationBuffers.size(); ++i ) {
-     
-            MPI_Sendrecv( CommunicationBuffers[ i ].getProtocol(), 
-                          CommunicationBuffers[ i ].getProtocolSize(), 
+
+            MPI_Sendrecv( CommunicationBuffers[ i ].getProtocol(),
+                          CommunicationBuffers[ i ].getProtocolSize(),
                           MPI_DOUBLE,
                           CommunicationBuffers[ i ].getTragetCpu(),
                           TAG,
-                          Protocol, 
-                          CommunicationBuffers[ i ].getProtocolSize(), 
+                          CommunicationBuffers[ i ].getReceiveBuffer(),
+                          CommunicationBuffers[ i ].getProtocolSize(),
                           MPI_DOUBLE,
-                          CommunicationBuffers[ i ].getTragetCpu(), 
+                          CommunicationBuffers[ i ].getTragetCpu(),
                           TAG,
-                          MPI_COMM_WORLD, 
+                          MPI_COMM_WORLD,
                           &STATUS );
 
-
-             decodeProtocol( Protocol,
+            CommunicationBuffers[ i ].unpackReceiveBuffer();
+/*
+            decodeProtocol( CommunicationBuffers[ i ].getReceiveBuffer(),
                              CommunicationBuffers[ i ].getProtocolSize(),
                              collideField,
                              GlobalToLocalIdTable );
-        
-        } 
+*/
+        }
 
 
         doStreaming( collideField,
@@ -284,7 +285,7 @@ int main( int argc, char *argv[] ) {
         if ( ( Step % TimeStepsPerPlotting ) == 0 ) {
 
             writeVtkOutput( OUTPUT_FILE_NAME,
-                            RANK, 
+                            RANK,
                             collideField,
                             VtkID,
                             FluidDomain,
@@ -299,14 +300,31 @@ int main( int argc, char *argv[] ) {
 
     // display the output information
     clock_t End = clock();
+    double Metrics[ 2 ] = { 0.0, 0.0 };
+
+
+    // Metrics[ 0 ] contains MLUPS
     double ConsumedTime = (double)( End - Begin ) / CLOCKS_PER_SEC;
-    double MLUPS = ( FluidDomain.size() * TimeSteps ) / ( ConsumedTime * 1e6 );
-/*
-    // display MLUPS number that stands for Mega Lattice Updates Per Second
-    std::cout << "Computational time: " <<  ConsumedTime << " sec" << std::endl;
-    std::cout << "MLUPS: " <<  MLUPS << std::endl;
-    std::cout << "Number of lattices: " <<  (int)FluidDomain.size() << std::endl;
-*/
+    Metrics[ 0 ] = ( FluidDomain.size() * TimeSteps ) / ( ConsumedTime * 1e6 );
+    Metrics[ 1 ] = double( FluidDomain.size() );
+
+    double TotalMetrics[ 2 ] = { 0.0, 0.0 };
+    MPI_Reduce( Metrics,
+                TotalMetrics,
+                2,
+                MPI_DOUBLE,
+                MPI_SUM,
+                0,
+                MPI_COMM_WORLD );
+
+    if ( RANK == MASTER_CPU ) {
+
+        // display MLUPS number that stands for Mega Lattice Updates Per Second
+        std::cout << "Computational time: " <<  ConsumedTime << " sec" << std::endl;
+        std::cout << "MLUPS: " <<  TotalMetrics[ 0 ] << std::endl;
+        std::cout << "Number of lattices: " <<  (int)TotalMetrics[ 1 ] << std::endl;
+
+    }
 
 
     // delete list of oCoordinatesbstacles
@@ -341,7 +359,6 @@ int main( int argc, char *argv[] ) {
     delete [] flagField;
     delete [] CpuID;
     delete [] VtkID;
-    delete [] Protocol;
 
     MPI_Finalize();
     return 0;

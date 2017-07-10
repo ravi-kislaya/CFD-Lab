@@ -60,6 +60,7 @@
   static const double Density_Reference = 1.0;
   static const int SELF_INDEX = 9; //for D3Q19
   static const char FILE_DELIMITER = '#';
+  static const int MASTER_CPU = 0;
 
 
 #endif

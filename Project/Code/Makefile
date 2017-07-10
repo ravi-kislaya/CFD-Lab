@@ -11,8 +11,8 @@ CFLAGS= -pedantic -Wall -O3 -funroll-loops --std=c++11#Werror
 
 
 #MODE=-DDEBUGGING
-MODE=-DRELEASE
-#MODE=-DMLUPS_FLAG
+#MODE=-DRELEASE
+MODE=-DMLUPS_FLAG
 # Linker flags
 # ------------
 LDFLAGS= -lm -fopenmp

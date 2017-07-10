@@ -78,8 +78,8 @@ extern clock_t last_timer_reset;
 int read_parameters( const char *INPUT_FILE_NAME,        /* the name of the data file */
                      double *Tau,                        /* relaxation time */
                      unsigned *TimeSteps,                /* number of simulation time steps */
-                     unsigned *TimeStepsPerPlotting );   /* number of visualization time steps */
-
+                     unsigned *TimeStepsPerPlotting,     /* number of visualization time steps */
+					 int RANK );
 
 
 void errhandler( int nLine,
@@ -98,7 +98,8 @@ void read_string( const char* szFileName,
 
 void read_int( const char* szFileName,
                const char* szVarName,
-               int* pVariable);
+               int* pVariable,
+			   int RANK );
 
 
 void read_unsigned( const char* szFileName,
@@ -108,7 +109,8 @@ void read_unsigned( const char* szFileName,
 
 void read_double( const char* szFileName,
                   const char* szVarName,
-                  double* pVariable);
+                  double* pVariable,
+				  int RANK );
 
 
 int min_int( const int n1, const int n2 );

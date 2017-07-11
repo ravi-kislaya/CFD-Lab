@@ -259,7 +259,7 @@ class BoundaryBuffer {
 		void addBufferElement( unsigned Index );
 		int updateProtocol();
 		int generateProtocol( std::unordered_map<unsigned, unsigned>& LocalToGlobalIdTable );
-        void unpackReceiveBuffer();
+        void unpackReceiveBuffer( double* Field );
 
 
         // Setter FUNCTIONS

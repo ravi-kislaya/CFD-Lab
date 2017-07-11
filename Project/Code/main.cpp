@@ -220,6 +220,7 @@ int Iterator = 0;
 
 
     // DEBUGGING
+/*
     std::cout << "BEFOR ODERING | RANK: " << RANK << " ODER: "
               <<  CpuCallOrder[ 0 ] << " "
               <<  CpuCallOrder[ 1 ] << " "
@@ -228,7 +229,7 @@ int Iterator = 0;
               <<  CpuCallOrder[ 4 ] << " "
               <<  CpuCallOrder[ 5 ] << " "
               << std::endl;
-
+*/
 
 
     //......................... BROADCASTING: START ............................
@@ -293,6 +294,7 @@ int Iterator = 0;
 //............................ BROADCASTING: END ...............................
 
     // DEBUGGING
+/*
     std::cout << "AFTER ODERING| RANK: " << RANK << " ODER: "
               <<  CommunicationBuffers[ 0 ].getTragetCpu() << " "
               <<  CommunicationBuffers[ 1 ].getTragetCpu() << " "
@@ -301,6 +303,7 @@ int Iterator = 0;
               <<  CommunicationBuffers[ 4 ].getTragetCpu() << " "
               <<  CommunicationBuffers[ 5 ].getTragetCpu() << " "
               << std::endl;
+*/
 #endif
 
 
@@ -354,7 +357,7 @@ int Iterator = 0;
                           MPI_COMM_WORLD,
                           &STATUS );
 
-            CommunicationBuffers[ i ].unpackReceiveBuffer();
+            CommunicationBuffers[ i ].unpackReceiveBuffer( collideField );
         }
 
 

@@ -506,7 +506,7 @@ void BoundaryBuffer::printProtocol() {
 
 }
 
-void BoundaryBuffer::unpackReceiveBuffer() {
+void BoundaryBuffer::unpackReceiveBuffer( double* Field ) {
 
 	unsigned Index = 0;
 	unsigned LocalFiledID = 0;
@@ -524,7 +524,7 @@ void BoundaryBuffer::unpackReceiveBuffer() {
 		LocalFiledID = IdIterator->second;
 		LocalFiledID = Vel_DOF * LocalFiledID + Shift;
 
-		m_Field[ LocalFiledID ] = m_ReceiveBuffer[ i + 1 ];
+		Field[ LocalFiledID ] = m_ReceiveBuffer[ i + 1 ];
 
 	}
 }

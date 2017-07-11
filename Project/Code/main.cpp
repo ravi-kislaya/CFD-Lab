@@ -97,15 +97,16 @@ int main( int argc, char *argv[] ) {
     }
 
     int RANK = 0;
-    int NUMBER_OF_CPUs = 0;
+    int NUMBER_OF_COMMUNICATIONS = 0;
 
     MPI_Init (&argc, &argv);
-    MPI_Comm_size (MPI_COMM_WORLD, &NUMBER_OF_CPUs);
+    MPI_Comm_size (MPI_COMM_WORLD, &NUMBER_OF_COMMUNICATIONS);
     MPI_Comm_rank (MPI_COMM_WORLD, &RANK);
 
-    MPI_Status STATUS;
+    const int NUMBER_OF_CPUs = NUMBER_OF_COMMUNICATIONS;
+
     std::vector< BoundaryBuffer > CommunicationBuffers;
-    CommunicationBuffers.resize( NUMBER_OF_CPUs );
+    CommunicationBuffers.resize( NUMBER_OF_COMMUNICATIONS );
 
 
 //******************************************************************************
@@ -188,18 +189,135 @@ int main( int argc, char *argv[] ) {
                    CommunicationBuffers );
 
 
-    // remove empty buffers from communication bufer array,
-    // compete initialization of buffers by assigning collideField
-    // compute the size of the protocol
-    int Iterator = 0;
+int Iterator = 0;
+#ifdef ODERING
+//******************************************************************************
+//                              ODER OF CPU CALLS
+//******************************************************************************
+
+    int CpuCallOrder[ NUMBER_OF_CPUs ];
+
+    BoundaryBuffer SwapBuffer;
+
+    // Initialize the message of ordering and shift every non blank buffers to
+    // the left side
+    for ( int i = 0; i < NUMBER_OF_CPUs; ++i ) {
+
+        // Initilize CpuCallOrder array with -1 to be able to distinguish
+        // between a CPU id and a blank value
+        CpuCallOrder[ i ] = -1;
+        if ( CommunicationBuffers[ i ].getBufferSize() != 0 ) {
+            CpuCallOrder[ Iterator ] = CommunicationBuffers[ i ].getTragetCpu();
+
+            SwapBuffer = CommunicationBuffers[ Iterator ];
+            CommunicationBuffers[ Iterator ] = CommunicationBuffers[ i ];
+            CommunicationBuffers[ i ] = SwapBuffer;
+
+            ++Iterator;
+        }
+    }
+
+
+
+    // DEBUGGING
+    std::cout << "BEFOR ODERING | RANK: " << RANK << " ODER: "
+              <<  CpuCallOrder[ 0 ] << " "
+              <<  CpuCallOrder[ 1 ] << " "
+              <<  CpuCallOrder[ 2 ] << " "
+              <<  CpuCallOrder[ 3 ] << " "
+              <<  CpuCallOrder[ 4 ] << " "
+              <<  CpuCallOrder[ 5 ] << " "
+              << std::endl;
+
+
+
+    //......................... BROADCASTING: START ............................
+    int SwapInetger = 0;
+    int SentCpuCallOrder[ NUMBER_OF_CPUs ];
+    for ( int CpuIterator = 0; CpuIterator < NUMBER_OF_CPUs; ++CpuIterator ) {
+
+        // build the package that has to be sent
+        for ( int i = 0; i < NUMBER_OF_CPUs; ++i  ) {
+            SentCpuCallOrder[ i ] = CpuCallOrder[ i ];
+        }
+
+
+        MPI_Bcast( SentCpuCallOrder,
+                   NUMBER_OF_CPUs,
+                   MPI_INT,
+                   CpuIterator,
+                   MPI_COMM_WORLD );
+
+
+        // Do not sort the CpuCallingOder array if its broadcasting has been done
+        if ( RANK > CpuIterator ) {
+
+            // Find the exact place where we have to set up the
+            // corresponding reciprocal call
+            Iterator = 0;
+            for ( Iterator = 0; Iterator < NUMBER_OF_CPUs; ++Iterator ) {
+                if ( SentCpuCallOrder[ Iterator ] == RANK ) {
+                    break;
+                }
+            }
+
+            // if Iterator is not equal to the number of CPUs it means that
+            // the place was found and we have to make the corresponding permutation
+            if ( Iterator != NUMBER_OF_CPUs ) {
+
+                // To find the place that we have to swap we're going to scan
+                // though the entire CpuCallOrder array to find the entry that's equal
+                // to the CPU ID of a sender
+                int PermutationPlace = 0;
+                for ( int i = 0; i < NUMBER_OF_CPUs; ++i ) {
+                    if ( CpuCallOrder[ i ] == CpuIterator ) {
+                        PermutationPlace = i;
+                        break;
+                    }
+                }
+
+                // swap CpuCallOrder and buffers respectively
+                SwapInetger = CpuCallOrder[ PermutationPlace ];
+                CpuCallOrder[ PermutationPlace ] = CpuCallOrder[ Iterator ];
+                CpuCallOrder[ Iterator ] = SwapInetger;
+
+                SwapBuffer = CommunicationBuffers[ PermutationPlace ];
+                CommunicationBuffers[ PermutationPlace ] = CommunicationBuffers[ Iterator ];
+                CommunicationBuffers[ Iterator ] = SwapBuffer;
+
+            }
+
+        }
+    }
+
+//............................ BROADCASTING: END ...............................
+
+    // DEBUGGING
+    std::cout << "AFTER ODERING| RANK: " << RANK << " ODER: "
+              <<  CommunicationBuffers[ 0 ].getTragetCpu() << " "
+              <<  CommunicationBuffers[ 1 ].getTragetCpu() << " "
+              <<  CommunicationBuffers[ 2 ].getTragetCpu() << " "
+              <<  CommunicationBuffers[ 3 ].getTragetCpu() << " "
+              <<  CommunicationBuffers[ 4 ].getTragetCpu() << " "
+              <<  CommunicationBuffers[ 5 ].getTragetCpu() << " "
+              << std::endl;
+#endif
+
+
+
+
+    // remove empty buffers
+    // compete initialization of buffers by assigning collideField,
+    // the mapping tabble and generate the protocol
+    Iterator = 0;
     unsigned BufferSize = 0;
-    while ( Iterator != NUMBER_OF_CPUs ) {
+    while ( Iterator != NUMBER_OF_COMMUNICATIONS ) {
 
         BufferSize = CommunicationBuffers[ Iterator ].getProtocolSize();
 
         if ( BufferSize  == 0 ) {
             CommunicationBuffers.erase( CommunicationBuffers.begin() + Iterator );
-            --NUMBER_OF_CPUs;
+            --NUMBER_OF_COMMUNICATIONS;
         }
         else {
             CommunicationBuffers[ Iterator ].setField( collideField );
@@ -211,31 +329,16 @@ int main( int argc, char *argv[] ) {
 
 
 
-
-    writeVtkOutput( OUTPUT_FILE_NAME,
-                    RANK,
-                    collideField,
-                    VtkID,
-                    FluidDomain,
-                    VTKrepresentation,
-                    0 );
-
-
-
-
-
 //******************************************************************************
 //                          PERFORM COMPUTATION
 //******************************************************************************
 
-
+    MPI_Status STATUS;
+    double* Swap = NULL;
     int TAG = 1;
     clock_t Begin = clock();
-    double* Swap = NULL;
-
     for ( unsigned Step = 1; Step <= TimeSteps; ++Step ) {
 
-        // Communication
         for ( unsigned i = 0; i < CommunicationBuffers.size(); ++i ) {
 
             MPI_Sendrecv( CommunicationBuffers[ i ].getProtocol(),
@@ -252,12 +355,6 @@ int main( int argc, char *argv[] ) {
                           &STATUS );
 
             CommunicationBuffers[ i ].unpackReceiveBuffer();
-/*
-            decodeProtocol( CommunicationBuffers[ i ].getReceiveBuffer(),
-                             CommunicationBuffers[ i ].getProtocolSize(),
-                             collideField,
-                             GlobalToLocalIdTable );
-*/
         }
 
 
@@ -300,8 +397,11 @@ int main( int argc, char *argv[] ) {
 
     // display the output information
     clock_t End = clock();
-    double Metrics[ 2 ] = { 0.0, 0.0 };
 
+//******************************************************************************
+//                          COMPUTE PERFORMANCE
+//******************************************************************************
+    double Metrics[ 2 ] = { 0.0, 0.0 };
 
     // Metrics[ 0 ] contains MLUPS
     double ConsumedTime = (double)( End - Begin ) / CLOCKS_PER_SEC;
@@ -314,7 +414,7 @@ int main( int argc, char *argv[] ) {
                 2,
                 MPI_DOUBLE,
                 MPI_SUM,
-                0,
+                MASTER_CPU,
                 MPI_COMM_WORLD );
 
     if ( RANK == MASTER_CPU ) {
@@ -326,6 +426,9 @@ int main( int argc, char *argv[] ) {
 
     }
 
+//******************************************************************************
+//                          RELEASE RESOURCES
+//******************************************************************************
 
     // delete list of oCoordinatesbstacles
     for ( std::list<BoundaryFluid*>::iterator Iterator = BoundaryList.begin();

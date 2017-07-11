@@ -1,7 +1,7 @@
 Boundary Conditions: 10
 
 ###############################
-inlet INFLOW 0.0 0.0 0.0001
+inlet INFLOW 0.0 0.0 0.001
 outlet1 OUTFLOW
 outlet2 OUTFLOW
 outlet3 OUTFLOW

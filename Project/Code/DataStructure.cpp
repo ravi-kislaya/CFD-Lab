@@ -271,6 +271,7 @@ void Fluid::doLocalCollision( double *collideField,
 //                            Boundary Buffer
 //------------------------------------------------------------------------------
 BoundaryBuffer::BoundaryBuffer() : m_Protocol( 0 ),
+								   m_ReceiveBuffer( 0 ),
 								   m_Field( 0 ),
  								   m_BufferSize( 0 ),
 								   m_ProtocolSize( 0 ),
@@ -280,15 +281,83 @@ BoundaryBuffer::BoundaryBuffer() : m_Protocol( 0 ),
 }
 
 BoundaryBuffer::~BoundaryBuffer() {
+
 	if ( m_Protocol != 0 ) {
 		delete [] m_Protocol;
 		delete [] m_ReceiveBuffer;
 	}
+
+}
+
+
+BoundaryBuffer::BoundaryBuffer( const BoundaryBuffer& aBuffer ) {
+
+	this->m_BufferElements = aBuffer.m_BufferElements ;
+    this->m_BufferSize = aBuffer.m_BufferSize;
+    this->m_ProtocolSize = aBuffer.m_ProtocolSize;
+    this->m_isProtocolReady = aBuffer.m_isProtocolReady;
+    this->m_TragetCpu = aBuffer.m_TragetCpu;
+    this->m_GlobalToLocalIdTable = aBuffer.m_GlobalToLocalIdTable;
+    this->m_Field = aBuffer.m_Field;
+
+	if ( aBuffer.m_ProtocolSize != 0 ) {
+		this->m_Protocol = new double[ m_ProtocolSize ];
+		this->m_ReceiveBuffer = new double[ m_ProtocolSize ];
+		for ( unsigned i = 0; i < m_ProtocolSize; ++i ) {
+			this->m_Protocol[ i ] = aBuffer.m_Protocol[ i ];
+			this->m_ReceiveBuffer[ i ] = aBuffer.m_ReceiveBuffer[ i ];
+		}
+	}
+
+}
+
+
+const BoundaryBuffer* BoundaryBuffer::operator=( const BoundaryBuffer& aBuffer ) {
+
+	// Free memory on the heap if the protocol and receive buffer were generated
+	// calling the assignment operator before
+	if ( this->m_Protocol != 0 ) {
+		delete [] m_Protocol;
+		delete [] m_ReceiveBuffer;
+	}
+
+	this->m_BufferElements = aBuffer.m_BufferElements ;
+    this->m_BufferSize = aBuffer.m_BufferSize;
+    this->m_ProtocolSize = aBuffer.m_ProtocolSize;
+    this->m_isProtocolReady = aBuffer.m_isProtocolReady;
+    this->m_TragetCpu = aBuffer.m_TragetCpu;
+    this->m_GlobalToLocalIdTable = aBuffer.m_GlobalToLocalIdTable;
+    this->m_Field = aBuffer.m_Field;
+
+	if ( aBuffer.m_ProtocolSize != 0 ) {
+
+		this->m_Protocol = new double[ m_ProtocolSize ];
+		this->m_ReceiveBuffer = new double[ m_ProtocolSize ];
+
+		for ( unsigned i = 0; i < this->m_ProtocolSize; ++i ) {
+			this->m_Protocol[ i ] = aBuffer.m_Protocol[ i ];
+			this->m_ReceiveBuffer[ i ] = aBuffer.m_ReceiveBuffer[ i ];
+		}
+	}
+
+	return this;
+}
+
+void BoundaryBuffer::flushBuffer() {
+	if ( this->m_Protocol != 0 ) {
+		delete [] m_Protocol;
+		delete [] m_ReceiveBuffer;
+	}
+
+	m_BufferElements.clear();
+	m_GlobalToLocalIdTable.clear();
+	m_TragetCpu = -1;
+
 }
 
 // inline DEBUGGING
 void BoundaryBuffer::addBufferElement( unsigned Index ) {
-	BufferElements.push_back( Index );
+	m_BufferElements.push_back( Index );
 }
 
 
@@ -349,6 +418,10 @@ int BoundaryBuffer::generateProtocol( std::unordered_map<unsigned, unsigned>& Lo
 	m_BufferSize = this->getBufferSize();
 	m_ProtocolSize = this->getProtocolSize();
 	if ( this->getBufferSize() != 0 ) {
+		if ( m_Protocol != 0 ) {
+			delete [ ] m_Protocol;
+			delete [ ] m_ReceiveBuffer;
+		}
 		m_Protocol = new double[ m_ProtocolSize ];
 		m_ReceiveBuffer = new double[ m_ProtocolSize ];
 	}
@@ -361,8 +434,8 @@ int BoundaryBuffer::generateProtocol( std::unordered_map<unsigned, unsigned>& Lo
 	unsigned Counter = 0;
 
 
-    for ( std::list<unsigned>::iterator Iterator = BufferElements.begin();
- 		  Iterator != BufferElements.end();
+    for ( std::list<unsigned>::iterator Iterator = m_BufferElements.begin();
+ 		  Iterator != m_BufferElements.end();
 		  ++Iterator, Counter += 2 ) {
 
 				// Iterator is given as the local field + shift. We need to
@@ -402,8 +475,8 @@ int  BoundaryBuffer::updateProtocol() {
 
 
 	unsigned Counter = 0;
-	for ( std::list<unsigned>::iterator Iterator = BufferElements.begin();
- 		  Iterator != BufferElements.end();
+	for ( std::list<unsigned>::iterator Iterator = m_BufferElements.begin();
+ 		  Iterator != m_BufferElements.end();
 		  ++Iterator, Counter += 2 ) {
 
 	      m_Protocol[ Counter + 1 ] = m_Field[ ( *Iterator ) ];
@@ -415,8 +488,8 @@ int  BoundaryBuffer::updateProtocol() {
 
 void BoundaryBuffer::printBufferElements() {
     unsigned Counter = 0;
-    for ( auto Iterator = BufferElements.begin();
-          Iterator != BufferElements.end();
+    for ( auto Iterator = m_BufferElements.begin();
+          Iterator != m_BufferElements.end();
           ++Iterator, Counter += 2 ) {
 
         std::cout << (*Iterator) << std::endl;

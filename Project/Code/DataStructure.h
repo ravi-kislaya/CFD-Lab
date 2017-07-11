@@ -242,12 +242,16 @@ class BoundaryBuffer {
 		BoundaryBuffer();
         ~BoundaryBuffer();
 
+        BoundaryBuffer( const BoundaryBuffer& aBuffer );
+        const BoundaryBuffer* operator=( const BoundaryBuffer& aBuffer );
+
+
 
         // Getter FUNCTIONS
         double* getField() { return m_Field; };
 		double* getProtocol();
-        unsigned getBufferSize() { return (unsigned)BufferElements.size(); };
-        unsigned getProtocolSize() { return 2 * (unsigned)BufferElements.size(); };
+        unsigned getBufferSize() { return (unsigned)m_BufferElements.size(); };
+        unsigned getProtocolSize() { return 2 * (unsigned)m_BufferElements.size(); };
         int getTragetCpu() { return m_TragetCpu; }
         double* getReceiveBuffer() { return m_ReceiveBuffer; }
 
@@ -265,8 +269,11 @@ class BoundaryBuffer {
 
         void printBufferElements();
         void printProtocol();
+
+        void flushBuffer();
+
 	private:
-		std::list<unsigned> BufferElements;
+		std::list<unsigned> m_BufferElements;
 		double* m_Protocol;
         double* m_ReceiveBuffer;
         double* m_Field;

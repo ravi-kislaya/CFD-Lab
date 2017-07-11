@@ -189,130 +189,10 @@ int main( int argc, char *argv[] ) {
                    CommunicationBuffers );
 
 
-int Iterator = 0;
-#ifdef ODERING
-//******************************************************************************
-//                              ODER OF CPU CALLS
-//******************************************************************************
-
-    int CpuCallOrder[ NUMBER_OF_CPUs ];
-
-    BoundaryBuffer SwapBuffer;
-
-    // Initialize the message of ordering and shift every non blank buffers to
-    // the left side
-    for ( int i = 0; i < NUMBER_OF_CPUs; ++i ) {
-
-        // Initilize CpuCallOrder array with -1 to be able to distinguish
-        // between a CPU id and a blank value
-        CpuCallOrder[ i ] = -1;
-        if ( CommunicationBuffers[ i ].getBufferSize() != 0 ) {
-            CpuCallOrder[ Iterator ] = CommunicationBuffers[ i ].getTragetCpu();
-
-            SwapBuffer = CommunicationBuffers[ Iterator ];
-            CommunicationBuffers[ Iterator ] = CommunicationBuffers[ i ];
-            CommunicationBuffers[ i ] = SwapBuffer;
-
-            ++Iterator;
-        }
-    }
-
-
-
-    // DEBUGGING
-/*
-    std::cout << "BEFOR ODERING | RANK: " << RANK << " ODER: "
-              <<  CpuCallOrder[ 0 ] << " "
-              <<  CpuCallOrder[ 1 ] << " "
-              <<  CpuCallOrder[ 2 ] << " "
-              <<  CpuCallOrder[ 3 ] << " "
-              <<  CpuCallOrder[ 4 ] << " "
-              <<  CpuCallOrder[ 5 ] << " "
-              << std::endl;
-*/
-
-
-    //......................... BROADCASTING: START ............................
-    int SwapInetger = 0;
-    int SentCpuCallOrder[ NUMBER_OF_CPUs ];
-    for ( int CpuIterator = 0; CpuIterator < NUMBER_OF_CPUs; ++CpuIterator ) {
-
-        // build the package that has to be sent
-        for ( int i = 0; i < NUMBER_OF_CPUs; ++i  ) {
-            SentCpuCallOrder[ i ] = CpuCallOrder[ i ];
-        }
-
-
-        MPI_Bcast( SentCpuCallOrder,
-                   NUMBER_OF_CPUs,
-                   MPI_INT,
-                   CpuIterator,
-                   MPI_COMM_WORLD );
-
-
-        // Do not sort the CpuCallingOder array if its broadcasting has been done
-        if ( RANK > CpuIterator ) {
-
-            // Find the exact place where we have to set up the
-            // corresponding reciprocal call
-            Iterator = 0;
-            for ( Iterator = 0; Iterator < NUMBER_OF_CPUs; ++Iterator ) {
-                if ( SentCpuCallOrder[ Iterator ] == RANK ) {
-                    break;
-                }
-            }
-
-            // if Iterator is not equal to the number of CPUs it means that
-            // the place was found and we have to make the corresponding permutation
-            if ( Iterator != NUMBER_OF_CPUs ) {
-
-                // To find the place that we have to swap we're going to scan
-                // though the entire CpuCallOrder array to find the entry that's equal
-                // to the CPU ID of a sender
-                int PermutationPlace = 0;
-                for ( int i = 0; i < NUMBER_OF_CPUs; ++i ) {
-                    if ( CpuCallOrder[ i ] == CpuIterator ) {
-                        PermutationPlace = i;
-                        break;
-                    }
-                }
-
-                // swap CpuCallOrder and buffers respectively
-                SwapInetger = CpuCallOrder[ PermutationPlace ];
-                CpuCallOrder[ PermutationPlace ] = CpuCallOrder[ Iterator ];
-                CpuCallOrder[ Iterator ] = SwapInetger;
-
-                SwapBuffer = CommunicationBuffers[ PermutationPlace ];
-                CommunicationBuffers[ PermutationPlace ] = CommunicationBuffers[ Iterator ];
-                CommunicationBuffers[ Iterator ] = SwapBuffer;
-
-            }
-
-        }
-    }
-
-//............................ BROADCASTING: END ...............................
-
-    // DEBUGGING
-/*
-    std::cout << "AFTER ODERING| RANK: " << RANK << " ODER: "
-              <<  CommunicationBuffers[ 0 ].getTragetCpu() << " "
-              <<  CommunicationBuffers[ 1 ].getTragetCpu() << " "
-              <<  CommunicationBuffers[ 2 ].getTragetCpu() << " "
-              <<  CommunicationBuffers[ 3 ].getTragetCpu() << " "
-              <<  CommunicationBuffers[ 4 ].getTragetCpu() << " "
-              <<  CommunicationBuffers[ 5 ].getTragetCpu() << " "
-              << std::endl;
-*/
-#endif
-
-
-
-
     // remove empty buffers
     // compete initialization of buffers by assigning collideField,
     // the mapping tabble and generate the protocol
-    Iterator = 0;
+    int Iterator = 0;
     unsigned BufferSize = 0;
     while ( Iterator != NUMBER_OF_COMMUNICATIONS ) {
 
@@ -344,6 +224,8 @@ int Iterator = 0;
 
         for ( unsigned i = 0; i < CommunicationBuffers.size(); ++i ) {
 
+            // Send-receive operation ( the communication subsystem)  takes care 
+            // of the issue of preventring cyclic dependencies
             MPI_Sendrecv( CommunicationBuffers[ i ].getProtocol(),
                           CommunicationBuffers[ i ].getProtocolSize(),
                           MPI_DOUBLE,

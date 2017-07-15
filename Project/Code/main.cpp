@@ -95,7 +95,7 @@ int main( int argc, char *argv[] ) {
         File.close();
         return -1;
     }
-
+#ifndef DCPUPARTITION_CHECK
     int RANK = 0;
     int NUMBER_OF_COMMUNICATIONS = 0;
 
@@ -373,7 +373,148 @@ int main( int argc, char *argv[] ) {
     delete [] VtkID;
 
     MPI_Finalize();
+#endif
+
+//******************************************************************************
+//                          CPU PARTITION CHECK
+//******************************************************************************
+
+#ifdef DCPUPARTITION_CHECK
+    int RANK = 0;
+    int NUMBER_OF_COMMUNICATIONS = 0;
+
+    const int NUMBER_OF_CPUs = NUMBER_OF_COMMUNICATIONS;
+
+    std::vector< BoundaryBuffer > CommunicationBuffers;
+    CommunicationBuffers.resize( NUMBER_OF_COMMUNICATIONS );
+
+
+//******************************************************************************
+//                          INIT PARAMETERS
+//******************************************************************************
+    // allocate a list for all fluid
+    std::vector<Fluid*> FluidDomain;
+
+    // allcocate the list of boundary layer cells
+    std::list<BoundaryFluid*> BoundaryList;
+
+    // allocate a list for VTK represenation
+    std::vector<Fluid*> VTKrepresentation;
+
+    std::vector<BoundaryEntry*> BoundaryConditions;
+
+    std::unordered_map<unsigned, unsigned> LocalToGlobalIdTable;
+    std::unordered_map<unsigned, unsigned> GlobalToLocalIdTable;
+
+    const char* INPUT_FILE_NAME = argv[ 1 ];
+    const char* OUTPUT_FILE_NAME = "./Frames/RESULT";
+    double Tau = 0.0;
+    unsigned TimeSteps = 0;
+    unsigned TimeStepsPerPlotting = 0;
+
+    double *collideField = 0;
+    double *streamField = 0;
+    int *flagField = 0;
+    int *CpuID = 0;
+    int *VtkID = 0;
+
+
+    try {
+        read_parameters( INPUT_FILE_NAME,         // the name of the data file
+                         &Tau,                    // relaxation time
+                         &TimeSteps,              // number of simulation time steps
+                         &TimeStepsPerPlotting,   // number of visualization time steps
+                         RANK );
+
+        initialiseData( &collideField,
+                        &streamField,
+                        &flagField,
+                        &CpuID,
+                        &VtkID,
+                        FluidDomain,
+                        BoundaryConditions,
+                        LocalToGlobalIdTable,
+                        GlobalToLocalIdTable,
+                        RANK,
+                        NUMBER_OF_CPUs );
+
+    }
+    catch( std::string ERROR ) {
+        if ( RANK == MASTER_CPU ) {
+            std::cout << ERROR << std::endl;
+        }
+        return - 1;
+    }
+    catch( ... ) {
+        if ( RANK == MASTER_CPU ) {
+            std::cout << "Unexpected error" << std::endl;
+        }
+        return - 1;
+    }
+
+
+    scanBoundary(  BoundaryList,
+				   FluidDomain,
+				   VTKrepresentation,
+                   flagField,
+				   VtkID,
+                   BoundaryConditions,
+                   CpuID,
+                   RANK,
+                   LocalToGlobalIdTable,
+                   CommunicationBuffers );
+	
+	writeVtkOutput( OUTPUT_FILE_NAME,
+                    RANK,
+                    collideField,
+                    VtkID,
+                    FluidDomain,
+                    VTKrepresentation,
+                    0 );
+					
+
+//******************************************************************************
+//                          RELEASE RESOURCES
+//******************************************************************************
+
+    // delete list of oCoordinatesbstacles
+    for ( std::list<BoundaryFluid*>::iterator Iterator = BoundaryList.begin();
+          Iterator != BoundaryList.end();
+          ++ Iterator ) {
+        // clean all obstacles assigned to the fluid cell
+        (*Iterator)->deleteObstacles();
+
+        // delete all fluid cells
+        delete (*Iterator);
+  }
+
+	// delete list of Fluid
+	for ( std::vector<Fluid*>::iterator Iterator = FluidDomain.begin();
+          Iterator != FluidDomain.end();
+          ++ Iterator ) {
+
+        // delete all fluid cells
+        delete (*Iterator);
+
+    }
+
+
+    for ( unsigned i = 0; i < BoundaryConditions.size(); ++i ) {
+        delete BoundaryConditions[ i ];
+    }
+
+
+    delete [] collideField;
+    delete [] streamField;
+    delete [] flagField;
+    delete [] CpuID;
+    delete [] VtkID;
+
+#endif
+
+
     return 0;
 }
+
 
 #endif

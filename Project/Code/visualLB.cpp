@@ -79,7 +79,7 @@ void writeVtkOutput( const char * filename,
 
     }
 
-
+#ifdef DCPUPARTITION_CHECK
     fprintf( fp, "\nSCALARS CpuID float 1 \n" );
     fprintf( fp, "LOOKUP_TABLE default \n" );
 
@@ -89,7 +89,8 @@ void writeVtkOutput( const char * filename,
 
             fprintf( fp, "%d\n", (*aFluidCell)->getCpuID() );
 
-    }
+    }	
+#endif
 
 
 

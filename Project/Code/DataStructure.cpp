@@ -271,10 +271,10 @@ void Fluid::doLocalCollision( double *collideField,
 //                            Boundary Buffer
 //------------------------------------------------------------------------------
 BoundaryBuffer::BoundaryBuffer() : m_Protocol( 0 ),
-								   m_ReceiveBuffer( 0 ),
+								   m_Indices( 0 ),
+								   m_ReceivedProtocol( 0 ),
 								   m_Field( 0 ),
  								   m_BufferSize( 0 ),
-								   m_ProtocolSize( 0 ),
  								   m_isProtocolReady( false ),
  								   m_TragetCpu( -1 ) {
 
@@ -284,7 +284,8 @@ BoundaryBuffer::~BoundaryBuffer() {
 
 	if ( m_Protocol != 0 ) {
 		delete [] m_Protocol;
-		delete [] m_ReceiveBuffer;
+		delete [] m_ReceivedProtocol;
+        delete [] m_Indices;
 	}
 
 }
@@ -294,18 +295,20 @@ BoundaryBuffer::BoundaryBuffer( const BoundaryBuffer& aBuffer ) {
 
 	this->m_BufferElements = aBuffer.m_BufferElements ;
     this->m_BufferSize = aBuffer.m_BufferSize;
-    this->m_ProtocolSize = aBuffer.m_ProtocolSize;
     this->m_isProtocolReady = aBuffer.m_isProtocolReady;
     this->m_TragetCpu = aBuffer.m_TragetCpu;
-    this->m_GlobalToLocalIdTable = aBuffer.m_GlobalToLocalIdTable;
     this->m_Field = aBuffer.m_Field;
 
-	if ( aBuffer.m_ProtocolSize != 0 ) {
-		this->m_Protocol = new double[ m_ProtocolSize ];
-		this->m_ReceiveBuffer = new double[ m_ProtocolSize ];
-		for ( unsigned i = 0; i < m_ProtocolSize; ++i ) {
+	if ( aBuffer.m_BufferSize != 0 ) {
+
+		this->m_Protocol = new double[ m_BufferSize ];
+		this->m_ReceivedProtocol = new double[ m_BufferSize ];
+        this->m_Indices = new int[ m_BufferSize ];
+
+		for ( unsigned i = 0; i < m_BufferSize; ++i ) {
 			this->m_Protocol[ i ] = aBuffer.m_Protocol[ i ];
-			this->m_ReceiveBuffer[ i ] = aBuffer.m_ReceiveBuffer[ i ];
+			this->m_ReceivedProtocol[ i ] = aBuffer.m_ReceivedProtocol[ i ];
+            this->m_Indices[ i ] = aBuffer.m_Indices[ i ];
 		}
 	}
 
@@ -318,25 +321,26 @@ const BoundaryBuffer* BoundaryBuffer::operator=( const BoundaryBuffer& aBuffer )
 	// calling the assignment operator before
 	if ( this->m_Protocol != 0 ) {
 		delete [] m_Protocol;
-		delete [] m_ReceiveBuffer;
+		delete [] m_ReceivedProtocol;
+        delete [] m_Indices;
 	}
 
 	this->m_BufferElements = aBuffer.m_BufferElements ;
     this->m_BufferSize = aBuffer.m_BufferSize;
-    this->m_ProtocolSize = aBuffer.m_ProtocolSize;
     this->m_isProtocolReady = aBuffer.m_isProtocolReady;
     this->m_TragetCpu = aBuffer.m_TragetCpu;
-    this->m_GlobalToLocalIdTable = aBuffer.m_GlobalToLocalIdTable;
     this->m_Field = aBuffer.m_Field;
 
-	if ( aBuffer.m_ProtocolSize != 0 ) {
+	if ( aBuffer.m_BufferSize != 0 ) {
 
-		this->m_Protocol = new double[ m_ProtocolSize ];
-		this->m_ReceiveBuffer = new double[ m_ProtocolSize ];
+		this->m_Protocol = new double[ m_BufferSize ];
+		this->m_ReceivedProtocol = new double[ m_BufferSize ];
+		this->m_Indices = new int[ m_BufferSize ];
 
-		for ( unsigned i = 0; i < this->m_ProtocolSize; ++i ) {
+		for ( unsigned i = 0; i < this->m_BufferSize; ++i ) {
 			this->m_Protocol[ i ] = aBuffer.m_Protocol[ i ];
-			this->m_ReceiveBuffer[ i ] = aBuffer.m_ReceiveBuffer[ i ];
+			this->m_ReceivedProtocol[ i ] = aBuffer.m_ReceivedProtocol[ i ];
+            this->m_Indices[ i ] = aBuffer.m_Indices[ i ];
 		}
 	}
 
@@ -346,11 +350,11 @@ const BoundaryBuffer* BoundaryBuffer::operator=( const BoundaryBuffer& aBuffer )
 void BoundaryBuffer::flushBuffer() {
 	if ( this->m_Protocol != 0 ) {
 		delete [] m_Protocol;
-		delete [] m_ReceiveBuffer;
+		delete [] m_ReceivedProtocol;
+        delete [] m_Indices;
 	}
 
 	m_BufferElements.clear();
-	m_GlobalToLocalIdTable.clear();
 	m_TragetCpu = -1;
 
 }
@@ -361,18 +365,35 @@ void BoundaryBuffer::addBufferElement( unsigned Index ) {
 }
 
 
+void BoundaryBuffer::finalizeMapping( int* ReceivedIndicies, 
+				std::unordered_map<unsigned, unsigned>& GlobalToLocalIdTable ) {
+
+	unsigned LocalFiledID = 0;
+	unsigned GlobalFiledID = 0;
+	unsigned Shift = 0;
+	std::unordered_map<unsigned, unsigned>::const_iterator IdIterator;
+
+    for ( unsigned i = 0; i < m_BufferSize; ++i ) {
+
+		GlobalFiledID = ReceivedIndicies[ i ] / Vel_DOF;
+		Shift = ReceivedIndicies[ i ] - Vel_DOF * ( GlobalFiledID );
+
+		IdIterator = GlobalToLocalIdTable.find( GlobalFiledID );
+		LocalFiledID = IdIterator->second;
+		LocalFiledID = Vel_DOF * LocalFiledID + Shift;
+
+        m_Indices[ i ] = LocalFiledID;
+
+	}
+}
+
 double* BoundaryBuffer::getProtocol() {
     this->updateProtocol();
     return m_Protocol;
 }
 
 
-void BoundaryBuffer::setMappingTable( std::unordered_map<unsigned, unsigned>& Table ) {
-	m_GlobalToLocalIdTable = Table;
-}
-
-
-int BoundaryBuffer::generateProtocol( std::unordered_map<unsigned, unsigned>& LocalToGlobalIdTable ) {
+int BoundaryBuffer::initializeMapping( std::unordered_map<unsigned, unsigned>& LocalToGlobalIdTable ) {
 
 // ............................ GUARDS: BEGINING ...............................
 
@@ -400,7 +421,7 @@ int BoundaryBuffer::generateProtocol( std::unordered_map<unsigned, unsigned>& Lo
 	}
 
 
-	if ( m_GlobalToLocalIdTable.size() == 0 ) {
+	if ( LocalToGlobalIdTable.size() == 0 ) {
 		std::cout << "\tERROR: you've tried to generate the protocol" << std::endl;
 		std::cout << "\twithout initializing the MappingTable" << std::endl;
 		std::cout << "\tERROR SOURCE: DataStructure.cpp -> generateProtocol()" << std::endl;
@@ -416,14 +437,15 @@ int BoundaryBuffer::generateProtocol( std::unordered_map<unsigned, unsigned>& Lo
 // .............................. GUARDS: END .................................
 
 	m_BufferSize = this->getBufferSize();
-	m_ProtocolSize = this->getProtocolSize();
 	if ( this->getBufferSize() != 0 ) {
 		if ( m_Protocol != 0 ) {
 			delete [ ] m_Protocol;
-			delete [ ] m_ReceiveBuffer;
-		}
-		m_Protocol = new double[ m_ProtocolSize ];
-		m_ReceiveBuffer = new double[ m_ProtocolSize ];
+            delete [ ] m_ReceivedProtocol;
+            delete [ ] m_Indices;
+        }
+		m_Protocol = new double[ m_BufferSize ];
+		m_ReceivedProtocol = new double[ m_BufferSize ];
+        m_Indices = new int[ m_BufferSize ];
 	}
 
 
@@ -436,7 +458,7 @@ int BoundaryBuffer::generateProtocol( std::unordered_map<unsigned, unsigned>& Lo
 
     for ( std::list<unsigned>::iterator Iterator = m_BufferElements.begin();
  		  Iterator != m_BufferElements.end();
-		  ++Iterator, Counter += 2 ) {
+		  ++Iterator, ++Counter ) {
 
 				// Iterator is given as the local field + shift. We need to
 				// convert it to global diled id + shift for the communication
@@ -448,7 +470,7 @@ int BoundaryBuffer::generateProtocol( std::unordered_map<unsigned, unsigned>& Lo
 				GlobalFiledID = IdIterator->second;
 				GlobalFiledID = GlobalFiledID * Vel_DOF + Shift;
 
-            	m_Protocol[ Counter ] = (double)GlobalFiledID;
+                m_Indices[ Counter ] = GlobalFiledID;
 
     }
 
@@ -477,9 +499,9 @@ int  BoundaryBuffer::updateProtocol() {
 	unsigned Counter = 0;
 	for ( std::list<unsigned>::iterator Iterator = m_BufferElements.begin();
  		  Iterator != m_BufferElements.end();
-		  ++Iterator, Counter += 2 ) {
+		  ++Iterator, ++Counter ) {
 
-	      m_Protocol[ Counter + 1 ] = m_Field[ ( *Iterator ) ];
+	      m_Protocol[ Counter ] = m_Field[ ( *Iterator ) ];
 	}
 
 	return 0;
@@ -487,44 +509,31 @@ int  BoundaryBuffer::updateProtocol() {
 
 
 void BoundaryBuffer::printBufferElements() {
-    unsigned Counter = 0;
+
     for ( auto Iterator = m_BufferElements.begin();
           Iterator != m_BufferElements.end();
-          ++Iterator, Counter += 2 ) {
+          ++Iterator) {
 
         std::cout << (*Iterator) << std::endl;
     }
+
 }
 
 
 void BoundaryBuffer::printProtocol() {
-    unsigned ProtocolSize = getProtocolSize();
 
-    for ( unsigned i = 0; i < ProtocolSize; i += 2 ) {
+    for ( unsigned i = 0; i < m_BufferElements.size(); ++i ) {
         std::cout << (unsigned)( m_Protocol[ i ] ) << std::endl;
     }
 
 }
 
-void BoundaryBuffer::unpackReceiveBuffer( double* Field ) {
 
-	unsigned Index = 0;
-	unsigned LocalFiledID = 0;
-	unsigned GlobalFiledID = 0;
-	unsigned Shift = 0;
-	std::unordered_map<unsigned, unsigned>::const_iterator IdIterator;
+void BoundaryBuffer::unpackReceiveProtocol( double* Field ) {
 
-	for ( unsigned i = 0; i < m_ProtocolSize; i += 2 ) {
+    for ( unsigned i = 0; i < m_BufferSize; ++i ) {
 
-		Index = (unsigned)m_ReceiveBuffer[ i ];
-		GlobalFiledID = Index / Vel_DOF;
-		Shift = Index - Vel_DOF * ( GlobalFiledID );
+        Field[ m_Indices[ i ] ] = m_ReceivedProtocol[ i ]; 
 
-		IdIterator = m_GlobalToLocalIdTable.find( GlobalFiledID );
-		LocalFiledID = IdIterator->second;
-		LocalFiledID = Vel_DOF * LocalFiledID + Shift;
-
-		Field[ LocalFiledID ] = m_ReceiveBuffer[ i + 1 ];
-
-	}
+    } 
 }

@@ -251,21 +251,24 @@ class BoundaryBuffer {
         double* getField() { return m_Field; };
 		double* getProtocol();
         unsigned getBufferSize() { return (unsigned)m_BufferElements.size(); };
-        unsigned getProtocolSize() { return 2 * (unsigned)m_BufferElements.size(); };
         int getTragetCpu() { return m_TragetCpu; }
-        double* getReceiveBuffer() { return m_ReceiveBuffer; }
+        double* getReceivedProtocol() { return m_ReceivedProtocol; }
+		int* getIndicies() { return m_Indices; }
 
 
 		void addBufferElement( unsigned Index );
 		int updateProtocol();
-		int generateProtocol( std::unordered_map<unsigned, unsigned>& LocalToGlobalIdTable );
-        void unpackReceiveBuffer( double* Field );
+		int initializeMapping( std::unordered_map<unsigned, unsigned>& LocalToGlobalIdTable );
+        void unpackReceiveProtocol( double* Field );
+		void finalizeMapping( int* ReceivedIndicies, 
+						  std::unordered_map<unsigned, unsigned>& GlobalToLocalIdTable );
 
 
         // Setter FUNCTIONS
         void setTragetCpu( int TragetCpuId ) { m_TragetCpu = TragetCpuId; }
         void setField ( double* Field ) { m_Field = Field; }
-        void setMappingTable( std::unordered_map<unsigned, unsigned>& Table );
+		int* setIndicies() { return m_Indices; }
+		
 
         void printBufferElements();
         void printProtocol();
@@ -275,13 +278,12 @@ class BoundaryBuffer {
 	private:
 		std::list<unsigned> m_BufferElements;
 		double* m_Protocol;
-        double* m_ReceiveBuffer;
+        int* m_Indices;
+        double* m_ReceivedProtocol;
         double* m_Field;
         unsigned m_BufferSize;
-        unsigned m_ProtocolSize;
         bool m_isProtocolReady;
         int m_TragetCpu;
-        std::unordered_map<unsigned, unsigned> m_GlobalToLocalIdTable;
 };
 
 

@@ -196,7 +196,7 @@ int main( int argc, char *argv[] ) {
     unsigned BufferSize = 0;
     while ( Iterator != NUMBER_OF_COMMUNICATIONS ) {
 
-        BufferSize = CommunicationBuffers[ Iterator ].getProtocolSize();
+        BufferSize = CommunicationBuffers[ Iterator ].getBufferSize();
 
         if ( BufferSize  == 0 ) {
             CommunicationBuffers.erase( CommunicationBuffers.begin() + Iterator );
@@ -204,11 +204,37 @@ int main( int argc, char *argv[] ) {
         }
         else {
             CommunicationBuffers[ Iterator ].setField( collideField );
-            CommunicationBuffers[ Iterator ].setMappingTable( GlobalToLocalIdTable );
-            CommunicationBuffers[ Iterator ].generateProtocol( LocalToGlobalIdTable );
+            CommunicationBuffers[ Iterator ].initializeMapping( LocalToGlobalIdTable );
             ++Iterator;
         }
     }
+
+
+	int TAG = 1;
+	MPI_Status STATUS;
+	int* ReceivedIndicies = 0;
+    for ( unsigned i = 0; i < CommunicationBuffers.size(); ++i ) {
+		ReceivedIndicies = new int [ CommunicationBuffers[ i ].getBufferSize() ];
+
+    	// Send-receive operation ( the communication subsystem)  takes care 
+        // of the issue of preventring cyclic dependencies
+        MPI_Sendrecv( CommunicationBuffers[ i ].getIndicies(),
+                      CommunicationBuffers[ i ].getBufferSize(),
+                      MPI_INT,
+                      CommunicationBuffers[ i ].getTragetCpu(),
+                      TAG,
+                      ReceivedIndicies,
+                      CommunicationBuffers[ i ].getBufferSize(),
+                      MPI_INT,
+                      CommunicationBuffers[ i ].getTragetCpu(),
+                      TAG,
+                      MPI_COMM_WORLD,
+                      &STATUS );
+
+        CommunicationBuffers[ i ].finalizeMapping( ReceivedIndicies, 
+											   	   GlobalToLocalIdTable );
+		delete [ ] ReceivedIndicies;
+	}
 
 
 
@@ -216,9 +242,7 @@ int main( int argc, char *argv[] ) {
 //                          PERFORM COMPUTATION
 //******************************************************************************
 
-    MPI_Status STATUS;
     double* Swap = NULL;
-    int TAG = 1;
     clock_t Begin = clock();
     for ( unsigned Step = 1; Step <= TimeSteps; ++Step ) {
 
@@ -227,19 +251,19 @@ int main( int argc, char *argv[] ) {
             // Send-receive operation ( the communication subsystem)  takes care 
             // of the issue of preventring cyclic dependencies
             MPI_Sendrecv( CommunicationBuffers[ i ].getProtocol(),
-                          CommunicationBuffers[ i ].getProtocolSize(),
+                          CommunicationBuffers[ i ].getBufferSize(),
                           MPI_DOUBLE,
                           CommunicationBuffers[ i ].getTragetCpu(),
                           TAG,
-                          CommunicationBuffers[ i ].getReceiveBuffer(),
-                          CommunicationBuffers[ i ].getProtocolSize(),
+                          CommunicationBuffers[ i ].getReceivedProtocol(),
+                          CommunicationBuffers[ i ].getBufferSize(),
                           MPI_DOUBLE,
                           CommunicationBuffers[ i ].getTragetCpu(),
                           TAG,
                           MPI_COMM_WORLD,
                           &STATUS );
 
-            CommunicationBuffers[ i ].unpackReceiveBuffer( collideField );
+            CommunicationBuffers[ i ].unpackReceiveProtocol( collideField );
         }
 
 

@@ -261,13 +261,23 @@ def readCells( Points, Faces ):
             break
 
 
-################################################################################
+        ################################################################################
     file = open('polyMesh/neighbour', 'r')
     Text = file.read().splitlines()
 
     # Find the entry of the block
     findEntryLine(Text)
-    Counter = 0
+
+    #for line in Text:
+        #if line != BLOCK_END:
+
+            #ID = int(line)
+            #print ID, type( Cells[ID] )
+            #if ( type( Cells[ID] ) == type( int ) ):
+            #    print "Error"
+
+
+
     Counter = 0
     for line in Text:
         if line != BLOCK_END:

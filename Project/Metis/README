@@ -1,0 +1,11 @@
+Execute metis as following:
+
+gpmetis [options] graphfile nparts
+
+-contig
+-ptype=kway
+-objtype=vol
+
+EXAMPLE:
+
+./gpmetis -minconn -objtype=vol AdjacencyList.graph 5

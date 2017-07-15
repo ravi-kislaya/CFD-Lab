@@ -3,6 +3,7 @@
 #include <iostream>
 #include <stdio.h>
 #include <typeinfo>
+#include <unordered_map>
 
 #include "helper.h"
 #include "boundary.h"
@@ -15,59 +16,87 @@ void scanBoundary(  std::list<BoundaryFluid*>& ObstacleList,
 					std::vector<Fluid*>& VTKrepresentation,
                     int* flagField,
 					int *VtkID,
- 					std::vector<BoundaryEntry*> BoundaryConditions ) {
+ 					std::vector<BoundaryEntry*> BoundaryConditions,
+ 					int *CpuID,
+ 					int RANK,
+ 					std::unordered_map<unsigned, unsigned>& LocalToGlobalIdTable,
+ 					std::vector<BoundaryBuffer>& CommunicationBuffers ) {
 
 
 	int ID = 0;
 	int isLatticeUnDrawable = 0;
+	std::unordered_map<unsigned, unsigned>::const_iterator IdIterator;
 
-    int Current_Cell_Flag = 0;
-	int Current_Cell_Field = 0;
 
-    int Neighbour_Cell_Flag = 0;
-    int Neighbour_Cell_Field = 0;
+	int Current_Local_Cell_Flag = 0;
+	int Current_Local_Cell_Field = 0;
 
-	int Neighbour[ Vel_DOF ] = { 0 };
+    int Neighbour_Global_Cell_Flag = 0;
+	int Neighbour_Local_Cell_Flag = 0;
+    int Neighbour_Local_Cell_Field = 0;
+
 	double Dot_Product = 0.0;
-	int FreeSlipVelocity[ 6 ] = { 2, 6, 8, 10, 12, 16 };
-
-
 	double WallVelocity[ 3 ] = { 0.0, 0.0, 0.0};
 	double InletVelocity[ 3 ] = { 0.0, 0.0, 0.0};
+
 	int BoundaryID = -1;
 	int BoundaryType = -1;
 
 	const int VTK_NEIGHBOR_SIZE = 6;
 	int VtkNeighbors[ VTK_NEIGHBOR_SIZE ] = { 10, 12, 13, 16, 17, 18 };
 
+	int NeighborCpuID = -1;
+
+
     for ( std::vector<Fluid*>::iterator aFluidCell = FluidDomain.begin();
           aFluidCell != FluidDomain.end();
           ++aFluidCell, ++ID ) {
 
 		// Compute the current cell
-        Current_Cell_Flag = ( *aFluidCell )->getIndex( SELF_INDEX );
-		Current_Cell_Field = Vel_DOF * Current_Cell_Flag;
+		// IMPORTANT: the flag field is give in the glabal cell id whereas
+		// collide and steam field are give in the local coordinates
+		// IMPORTANT: all Fluid cells contain the local cell IDs
+		Current_Local_Cell_Flag = ( *aFluidCell )->getIndex( SELF_INDEX );
+		Current_Local_Cell_Field = Vel_DOF * Current_Local_Cell_Flag;
 
 		// Allocate a new fluid cell
-		BoundaryFluid* aBoundaryFluidCell = new BoundaryFluid( Current_Cell_Flag );
+		BoundaryFluid* aBoundaryFluidCell = new BoundaryFluid( Current_Local_Cell_Field );
 
-		// scan neighbours
+//.............................. SCAN PART: START ..............................
 		for ( int i = 0; i < Vel_DOF; ++i ) {
 
-			Neighbour_Cell_Flag = ( *aFluidCell )->getIndex( i );
-			BoundaryID = flagField[ Neighbour_Cell_Flag ];
+//.............................. PREPARATION ..................................
+
+			Neighbour_Local_Cell_Flag = ( *aFluidCell )->getIndex( i );
+			IdIterator = LocalToGlobalIdTable.find( Neighbour_Local_Cell_Flag );
+			Neighbour_Global_Cell_Flag = IdIterator->second;
+
+			BoundaryID = flagField[ Neighbour_Global_Cell_Flag ];
 			BoundaryType = BoundaryConditions[ BoundaryID ]->TYPE;
+
+			NeighborCpuID = CpuID[ Neighbour_Global_Cell_Flag ];
+
+
+
+
+//.............................. COMPARISON ..................................
+			// fill all communication buffers with corresponding lattices
+			if ( ( BoundaryType == FLUID ) && ( NeighborCpuID != RANK ) ) {
+				CommunicationBuffers[ NeighborCpuID ].setTragetCpu( NeighborCpuID );
+				CommunicationBuffers[ NeighborCpuID ].addBufferElement( Current_Local_Cell_Field + i );
+			}
+
 
 			// add neighbours cell ( which is wall or moving wall to the list )
 			//No slip
 			if ( BoundaryType == NO_SLIP ) {
 
-				Neighbour_Cell_Field = Vel_DOF * Neighbour_Cell_Flag;
+				Neighbour_Local_Cell_Field = Vel_DOF * Neighbour_Local_Cell_Flag;
 
 				// IMPORTANT: Neighbour_Cell_Field means a wall lattice
 				//			  Current_Cell_Field means a fluid lattice
-				Obstacle* Wall = new StationaryWall( Neighbour_Cell_Field,
-                                                     Current_Cell_Field,
+				Obstacle* Wall = new StationaryWall( Neighbour_Local_Cell_Field,
+                                                     Current_Local_Cell_Field,
                                                      i );
 
 				aBoundaryFluidCell->addObstacle( Wall );
@@ -77,8 +106,7 @@ void scanBoundary(  std::list<BoundaryFluid*>& ObstacleList,
 
 			//Moving Wall
 			if ( BoundaryType == MOVING_WALL ) {
-			//if( z == 0.95 && x!=0.05 && x!=0.95 && y!=0.05 && y!=0.95 && i > 13 ) {
-			
+
 				// Explicitly assign the velocity components to a temp variables
 				// to make the dot product formula look clear
 				WallVelocity[ 0 ] = BoundaryConditions[ BoundaryID ]->Data[ 0 ];
@@ -90,13 +118,13 @@ void scanBoundary(  std::list<BoundaryFluid*>& ObstacleList,
 					+ ( WallVelocity[ 1 ] * LATTICEVELOCITIES[ 18 - i ][ 1 ] )
 					+ ( WallVelocity[ 2 ] * LATTICEVELOCITIES[ 18 - i ][ 2 ] );
 
-				Neighbour_Cell_Field = Vel_DOF * Neighbour_Cell_Flag;
+				Neighbour_Local_Cell_Field = Vel_DOF * Neighbour_Local_Cell_Flag;
 
 
 				// IMPORTANT: Neighbour_Cell_Field means a wall lattice
 				//			  Current_Cell_Field means a fluid lattice
-				Obstacle* Wall = new MovingWall( Neighbour_Cell_Field,
-												 Current_Cell_Field,
+				Obstacle* Wall = new MovingWall( Neighbour_Local_Cell_Field,
+												 Current_Local_Cell_Field,
 												 i,
 												 Dot_Product );
 
@@ -113,70 +141,35 @@ void scanBoundary(  std::list<BoundaryFluid*>& ObstacleList,
 				InletVelocity[ 1 ] = BoundaryConditions[ BoundaryID ]->Data[ 1 ];
 				InletVelocity[ 2 ] = BoundaryConditions[ BoundaryID ]->Data[ 2 ];
 
-				Neighbour_Cell_Field = Vel_DOF * Neighbour_Cell_Flag;
+				Neighbour_Local_Cell_Field = Vel_DOF * Neighbour_Local_Cell_Flag;
 
 				// IMPORTANT: Neighbour_Cell_Field means a wall lattice
 				//			  Current_Cell_Field means a fluid lattice
-				Obstacle* Wall = new Inflow( Neighbour_Cell_Field,
-											 Current_Cell_Field,
-											 18 - i,
-											 InletVelocity );
+				Obstacle* Inlet = new Inflow( Neighbour_Local_Cell_Field,
+											  Current_Local_Cell_Field,
+											  18 - i,
+											  InletVelocity );
 
-				aBoundaryFluidCell->addObstacle( Wall );
-
-			}
-
-/*
-			//Pressure In
-			if ( BoundaryType == PRESSURE_IN ) {
-
-				Neighbour_Cell_Field = Vel_DOF * Neighbour_Cell_Flag;
-				Obstacle* Wall = new PressureIn( Neighbour_Cell_Field,//Here,Neighbour means wall
-												 Current_Cell_Field,  //Here,Current means fluid
-												 18 - i,
-												 DeltaDensity );
-
-				//TODO:some global variable from readParameters
-				aBoundaryFluidCell->addObstacle( Wall );
-
+				aBoundaryFluidCell->addObstacle( Inlet );
 
 			}
-*/
 
-			//Outflow
 			if ( BoundaryType == OUTFLOW ) {
 
 
 				// IMPORTANT: Neighbour_Cell_Field means a wall lattice
 				//			  Current_Cell_Field means a fluid lattice
-				Neighbour_Cell_Field = Vel_DOF * Neighbour_Cell_Flag;
-				Obstacle* Wall = new Outflow( Neighbour_Cell_Field,
-											  Current_Cell_Field,
-											  18 - i );
-				aBoundaryFluidCell->addObstacle( Wall );
+				Neighbour_Local_Cell_Field = Vel_DOF * Neighbour_Local_Cell_Flag;
+				Obstacle* Outlet = new Outflow( Neighbour_Local_Cell_Field,
+											    Current_Local_Cell_Field,
+											    18 - i );
+				aBoundaryFluidCell->addObstacle( Outlet );
 
 			}
 
 		}
+//.............................. SCAN PART: END ..............................
 
-/*
-		//separate loop for Free Slip
-		for( int i = 0; i < 6; ++i ) {
-
-			Neighbour_Cell_Flag = ( *aFluidCell )->getIndex( FreeSlipVelocity[ i ] );
-
-			if( flagField[ Neighbour_Cell_Flag ] == FREE_SLIP ) {
-
-				Neighbour_Cell_Field = Vel_DOF * Neighbour_Cell_Flag;
-				Obstacle* Wall = new FreeSlip( Neighbour_Cell_Field,//Here,Neighbour means wall
-											   Current_Cell_Field,  //Here,Current means fluid
-											   FreeSlipVelocity[i] );
-				aBoundaryFluidCell->addObstacle( Wall );
-
-			}
-
-		}
-*/
 
 //.............................. VTK PART: START ...............................
 		// Check out all neighbors in the positive octant
@@ -184,13 +177,29 @@ void scanBoundary(  std::list<BoundaryFluid*>& ObstacleList,
 		// to the represenation list
 		isLatticeUnDrawable = 0;
 		for ( int i = 0; i < VTK_NEIGHBOR_SIZE; ++i ) {
-			BoundaryID = flagField[ (*aFluidCell)->getIdIndex( VtkNeighbors[ i ] ) ];
+
+			// convert the local ID to the global one to iterate through
+			// both flag field and partitioning field
+			IdIterator = LocalToGlobalIdTable.find(  (*aFluidCell)->getIdIndex( VtkNeighbors[ i ] ) );
+			BoundaryID = flagField[ IdIterator->second ];
+
+			// find out the type of boundary condition
+			// IMPORTANT: Fluid coresponds to the BC type that equals to zero
 			isLatticeUnDrawable += BoundaryConditions[ BoundaryID ]->TYPE;
+
+			if ( CpuID[ IdIterator->second ] != RANK ) {
+				isLatticeUnDrawable += true;
+			}
 		}
 
-
-		BoundaryID = flagField[ (*aFluidCell)->getDiagonalLattice() ];
+		// process the diagonal element in the same manner as above
+		IdIterator = LocalToGlobalIdTable.find(  (*aFluidCell)->getDiagonalLattice() );
+		BoundaryID = flagField[ IdIterator->second ];
 		isLatticeUnDrawable += BoundaryConditions[ BoundaryID ]->TYPE;
+
+		if ( CpuID[ IdIterator->second ] != RANK ) {
+			isLatticeUnDrawable += true;
+		}
 
 
 		if ( isLatticeUnDrawable == false  ) {
@@ -209,7 +218,6 @@ void scanBoundary(  std::list<BoundaryFluid*>& ObstacleList,
 		else {
 			ObstacleList.push_back( aBoundaryFluidCell );
 		}
-
 
 
     }

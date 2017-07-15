@@ -37,9 +37,14 @@ void trimList( std::list<std::string> &aList );
 void initialiseData( double** collideField,
                      double** streamField,
                      int** flagField,
+                     int** CpuID,
                      int** VtkID,
                      std::vector<Fluid*> &FluidDomain,
-                     std::vector<BoundaryEntry*> &BoundaryConditions ) {
+                     std::vector<BoundaryEntry*> &BoundaryConditions,
+                     std::unordered_map<unsigned, unsigned>& LocalToGlobalIdTable,
+                     std::unordered_map<unsigned, unsigned>& GlobalToLocalIdTable,
+                     int RANK,
+                     int NUMBER_OF_CPUs ) {
 
 
 //....................... PROCESS FLAG FIELD FILE ..............................
@@ -128,6 +133,49 @@ void initialiseData( double** collideField,
     }
 
 
+//...................... PROCESS PARTITIONING FILE  ............................
+
+     BufferList.clear();
+     FILE.open( "./Mesh/CpuPartitioning.prt" );
+
+    ( *CpuID ) = new int[ ProblemSize ];
+
+     unsigned GlobalIdCounter = 0;
+     unsigned LocalIdCounter = 0;
+     int MaxPsrtitionNumber = 0;
+     int CpuPart= 0;
+     while( !FILE.eof() ) {
+         std::getline( FILE, BufferString );
+
+         if( !BufferString.empty() ) {
+             CpuPart = int( std::stod( BufferString ) );
+             ( *CpuID )[ GlobalIdCounter ] = CpuPart;
+
+
+             if ( CpuPart > MaxPsrtitionNumber ) {
+                MaxPsrtitionNumber = CpuPart;
+             }
+
+            if ( RANK == CpuPart ) {
+                LocalToGlobalIdTable.insert( { LocalIdCounter, GlobalIdCounter } );
+                GlobalToLocalIdTable.insert( { GlobalIdCounter, LocalIdCounter } );
+                //std::cout << GlobalIdCounter << " " << LocalIdCounter << std::endl;
+                ++LocalIdCounter;
+            }
+
+             ++GlobalIdCounter;
+         }
+     }
+     FILE.close();
+
+    // throw an error if the number of subdomains doesn't match to the number
+    // of processors
+    if ( NUMBER_OF_CPUs != ( MaxPsrtitionNumber + 1 ) ) {
+        std::string ERROR = "ERROR: number of processors is not equal to the number of subdomains";
+        throw ERROR;
+    }
+
+
 
 //......................... PROCESS NEIGHBORS FILE  ............................
     // *** READ NEIGHBORS LIST
@@ -142,11 +190,21 @@ void initialiseData( double** collideField,
 
     trimList( BufferList );
 
+
+    int Counter = 0;
+    GlobalIdCounter = 0;
+    LocalIdCounter = LocalToGlobalIdTable.size();
+    std::unordered_map<unsigned, unsigned>::const_iterator IdIterator;
     Fluid* aFluidElement = 0;
     // go through the entire list and fill in FLuid Domain list
     for ( std::list<std::string>::iterator aString = BufferList.begin();
           aString != BufferList.end();
-          ++aString ) {
+          ++aString, ++Counter ) {
+
+        // check whether the line belongs to the current CPU
+        if ( ( *CpuID )[ Counter ] != RANK ) {
+            continue;
+        }
 
         // parse a string obtained from the Neighbors file
         BufferVector = getVectorOfStrings( *aString );
@@ -164,12 +222,61 @@ void initialiseData( double** collideField,
 
         // create and initialize a fluid element by the parsed string
         aFluidElement = new Fluid;
-        aFluidElement->setID( std::stoi( BufferVector[ 0 ] ) );
+
+        // assign CPU id to the lattice
+        aFluidElement->setCpuID( RANK );
+
+        // take the global index from the file entry
+        IdIterator = GlobalToLocalIdTable.find( std::stoi( BufferVector[ 0 ] ) );
+
+        // assign the local ID to the fluid element
+        aFluidElement->setID( IdIterator->second );
         int i = 0;
         for ( i = 1; i < Vel_DOF + 1; ++i ) {
-            aFluidElement->setIndex( std::stoi( BufferVector[ i ] ), i - 1 );
+
+            // set Global index of lattice neighbors
+            GlobalIdCounter = std::stoi( BufferVector[ i ] );
+
+            // check whether a neighbor index belong to the cpu lattice set
+            if ( GlobalToLocalIdTable.count( GlobalIdCounter ) == true ) {
+
+                // find the local ID for a lattice neighbor
+                IdIterator = GlobalToLocalIdTable.find( GlobalIdCounter );
+
+                // assign the local id to the lattice neighbor
+                aFluidElement->setIndex( IdIterator->second, i - 1 );
+
+            }
+            else {
+                // Expand the tables if there is no such id in the set
+                LocalToGlobalIdTable.insert( { LocalIdCounter, GlobalIdCounter } );
+                GlobalToLocalIdTable.insert( { GlobalIdCounter, LocalIdCounter } );
+
+                aFluidElement->setIndex( LocalIdCounter, i - 1 );
+                ++LocalIdCounter;
+            }
+
         }
-        aFluidElement->setDiagonalLattice( std::stoi( BufferVector[ i ] ) );
+
+        // Process diagonal element in the same manner as the example above
+        // IMPORTANT: the last element of the string is the diagonal element
+        // At this point variable i is equal to Vel_DOF + 1
+        GlobalIdCounter = std::stoi( BufferVector[ i ] );
+        if ( GlobalToLocalIdTable.count( GlobalIdCounter ) == true ) {
+
+            IdIterator = GlobalToLocalIdTable.find( GlobalIdCounter );
+            aFluidElement->setDiagonalLattice( IdIterator->second );
+
+        }
+        else {
+
+            // Expand tables if there is no such element in the talbles
+            LocalToGlobalIdTable.insert( { LocalIdCounter, GlobalIdCounter } );
+            GlobalToLocalIdTable.insert( { GlobalIdCounter, LocalIdCounter } );
+
+            aFluidElement->setDiagonalLattice( IdIterator->second );
+            ++LocalIdCounter;
+        }
 
         // DEBUGGING: print out the cell ID, 10th element and the diagonal element
         // std::cout << aFluidElement->getID() << " == "
@@ -200,18 +307,25 @@ void initialiseData( double** collideField,
 
     for ( std::list<std::string>::iterator Iterator = BufferList.begin();
           Iterator != BufferList.end(); ) {
+
         CoordinatesVector.push_back( *Iterator );
         BufferList.erase( Iterator++ );
+
     }
 
     // go through the entire list and assign coordinates to fluid lattices
     for ( unsigned i = 0; i < FluidDomain.size(); ++ i ) {
 
 
-        // find an entry in the Coordinates file by the lattice ID
+
+        // convert the local id to the global one
+        IdIterator = LocalToGlobalIdTable.find( FluidDomain[ i ]->getID() );
+
+
+        // find an entry in the Coordinates file by the global lattice ID
         // and parse that string
         BufferVector
-            = getVectorOfStrings( CoordinatesVector[ FluidDomain[ i ]->getID() ] );
+            = getVectorOfStrings( CoordinatesVector[ IdIterator->second ] );
 
         // assign the coordinates that the contains to the lattice object
         FluidDomain[ i ]->setXCoord( std::stod( BufferVector[ 1 ] ) );
@@ -227,10 +341,18 @@ void initialiseData( double** collideField,
 
     }
 
+
+//...................... PROCESS FILE OF COORDINATES  ..........................
+//    for ( unsigned i = 0; i < FluidDomain.size(); ++ i ) {
+//        FluidDomain[ i ]->setCpuID( (*CpuID)[ FluidDomain[ i ]->getID() ] );
+//    }
+
+
     //...................... COMPLETE INITIALIZATION  ..........................
 
-    int FieldSize = Vel_DOF * ProblemSize;
-    // allocate collide and stream fields
+    // allocate collide and stream fields based on size of
+    // the local_clobal id table
+    int FieldSize = Vel_DOF * LocalToGlobalIdTable.size();
     ( *collideField ) = new double [ FieldSize ];
     ( *streamField  ) = new double [ FieldSize ];
 

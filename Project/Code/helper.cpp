@@ -88,15 +88,15 @@ int min_int( const int n1, const int n2 )
 /* ----------------------------------------------------------------------- */
 
 
-int read_parameters( const char *INPUT_FILE_NAME,        /* the name of the data file */
-                     double *Tau,                        /* relaxation time */
-                     unsigned *TimeSteps,                     /* number of simulation time steps */
-                     unsigned *TimeStepsPerPlotting ) {       /* number of visualization time steps */
-
+int read_parameters( const char *INPUT_FILE_NAME,            /* the name of the data file */
+                     double *Tau,                            /* relaxation time */
+                     unsigned *TimeSteps,                    /* number of simulation time steps */
+                     unsigned *TimeStepsPerPlotting,         /* number of visualization time steps */
+					 int RANK ) {
 
    const double MAX_TAU = 2.0;
    const double MIN_TAU = 0.5;
-   read_double( INPUT_FILE_NAME, "tau", Tau );
+   read_double( INPUT_FILE_NAME, "tau", Tau, RANK );
    if ( ( ( *Tau ) <= MIN_TAU ) || ( ( *Tau )>= MAX_TAU ) ) {
 	   std::string Error = "ERROR: tau should be between greater than 0.5 and  less than 2.0";
 	   throw Error;
@@ -104,7 +104,7 @@ int read_parameters( const char *INPUT_FILE_NAME,        /* the name of the data
 
 
    int TemporaryVariable = 0;
-   read_int( INPUT_FILE_NAME, "timesteps", &TemporaryVariable );
+   read_int( INPUT_FILE_NAME, "timesteps", &TemporaryVariable, RANK );
    if ( TemporaryVariable <= 0 ) {
 	   std::string Error = "ERROR: Time Steps cannot be negative";
 	   throw Error;
@@ -114,7 +114,7 @@ int read_parameters( const char *INPUT_FILE_NAME,        /* the name of the data
 	}
 
 
-   read_int( INPUT_FILE_NAME, "timestepsPerPlotting", &TemporaryVariable );
+   read_int( INPUT_FILE_NAME, "timestepsPerPlotting", &TemporaryVariable, RANK );
    if ( TemporaryVariable <= 0 ) {
 	   std::string Error = "ERROR: Time Steps Per Plotting cannot be negative";
 	   throw Error;
@@ -266,8 +266,10 @@ void read_string( const char* szFileName, const char* szVarName, char*   pVariab
                                       pVariable );
 }
 
-void read_int( const char* szFileName, const char* szVarName, int* pVariable)
-{
+void read_int( const char* szFileName,
+			   const char* szVarName,
+			   int* pVariable,
+			   int RANK ) {
     char* szValue = NULL;       /* string containing the read variable value */
 
     if( szVarName  == 0 )  ERROR("null pointer given as varable name" );
@@ -282,10 +284,13 @@ void read_int( const char* szFileName, const char* szVarName, int* pVariable)
     if( sscanf( szValue, "%d", pVariable) == 0)
         READ_ERROR("wrong format", szVarName, szFileName, 0);
 
-    printf( "File: %s\t\t%s%s= %d\n", szFileName,
-                                      szVarName,
-                                      &("               "[min_int( (int)strlen(szVarName), 15)]),
-                                      *pVariable );
+	if ( RANK == MASTER_CPU ) {
+    	printf( "File: %s\t\t%s%s= %d\n",
+				szFileName,
+                szVarName,
+                &("               "[min_int( (int)strlen(szVarName), 15)]),
+                *pVariable );
+	}
 }
 
 
@@ -312,8 +317,10 @@ void read_unsigned( const char* szFileName, const char* szVarName, unsigned* pVa
 }
 
 
-void read_double( const char* szFileName, const char* szVarName, double* pVariable)
-{
+void read_double( const char* szFileName,
+				  const char* szVarName,
+				  double* pVariable,
+				  int RANK ) {
     char* szValue = NULL;       /* String mit dem eingelesenen Variablenwert */
 
     if( szVarName  == 0 )  ERROR("null pointer given as varable name" );
@@ -328,10 +335,13 @@ void read_double( const char* szFileName, const char* szVarName, double* pVariab
     if( sscanf( szValue, "%lf", pVariable) == 0)
         READ_ERROR("wrong format", szVarName, szFileName, 0);
 
-    printf( "File: %s\t\t%s%s= %f\n", szFileName,
-                                      szVarName,
-                                      &("               "[min_int( (int)strlen(szVarName), 15)]),
-                                      *pVariable );
+	if ( RANK == MASTER_CPU ) {
+    	printf( "File: %s\t\t%s%s= %f\n",
+				szFileName,
+                szVarName,
+                &("               "[min_int( (int)strlen(szVarName), 15)]),
+                *pVariable );
+	}
 }
 
 

@@ -8,15 +8,10 @@ void doStreaming( double *collideField,
 	 			  double *streamField,
 				  std::vector<Fluid*>& FluidDomain ) {
 
-
-	int Fluid_Cell = 0, Neighbour_Cell = 0;
-
 	//Looping through all fluid element
-	for ( std::vector<Fluid*>::iterator aFluidCell = FluidDomain.begin();
-          aFluidCell != FluidDomain.end();
-          ++aFluidCell ) {
+	for ( unsigned i = 0; i < FluidDomain.size(); ++i ) {
 
-		(*aFluidCell)->doLocalStreaming( collideField, streamField );
+		FluidDomain[ i ]->doLocalStreaming( collideField, streamField );
 
 	}
 }

@@ -1,7 +1,11 @@
 Boundary Conditions: 10
 
 ###############################
+<<<<<<< HEAD
 inlet INFLOW 0.0 0.0 0.0002
+=======
+inlet INFLOW 0.0 0.0 0.0001
+>>>>>>> 693b5d11e4cc6cd957cd3ea45e9ee9086174554d
 outlet1 OUTFLOW
 outlet2 OUTFLOW
 outlet3 OUTFLOW

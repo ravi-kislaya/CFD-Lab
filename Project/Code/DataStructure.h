@@ -1,5 +1,7 @@
 #include <list>
 #include <string>
+#include <unordered_map>
+
 #include "LBDefinitions.h"
 #include "computeCellValues.h"
 
@@ -151,10 +153,11 @@ class Fluid {
                    m_XCoord( 0.0 ),
                    m_YCoord( 0.0 ),
                    m_ZCoord( 0.0 ),
-                   m_DiagonalLattice( 0 )  {
+                   m_DiagonalLattice( 0 ),
+                   m_CpuID( 0 ) {
 
 			for( int i = 0; i < Vel_DOF; ++i ) {
-				m_NeighbourIndex[i] = 0;
+				m_NeighbourIndex[ i ] = 0;
 			}
 
 		}
@@ -164,7 +167,8 @@ class Fluid {
                                                             m_YCoord( y ),
                                                             m_ZCoord( z ),
                                                             m_DiagonalLattice( 0 ),
-                                                            m_BoundaryTag("NONE") {
+                                                            m_BoundaryTag("NONE"),
+                                                            m_CpuID( 0 ) {
             // Assign all neighbours
 			for( int i = 0; i < Vel_DOF; ++i ) {
 				m_NeighbourIndex[ i ] = Index[ i ];
@@ -177,20 +181,27 @@ class Fluid {
         double getYCoord() { return m_YCoord; }
         double getZCoord() { return m_ZCoord; }
         int getIndex( int Index ) { return m_NeighbourIndex[ Index ]; }
-        int getIdIndex( int Index ) { return (int)( m_NeighbourIndex[ Index ] ); }
-		void doLocalStreaming( double* collideField, double* streamField );
+        void doLocalStreaming( double* collideField, double* streamField );
 		void doLocalCollision( double *collideField, double Inverse_Tau );
         int getDiagonalLattice() { return (int)( m_DiagonalLattice ); }
         std::string getBoundaryTag() { return m_BoundaryTag; }
+        int getCpuID() { return m_CpuID; }
+
+        int getIdIndex( int Index ) { return (int)( m_NeighbourIndex[ Index ] ); }
 
         // STTER FUNCTIONS
         void setID( int ID ) { m_ID = ID; }
         void setXCoord( double XCoord ) { m_XCoord = XCoord; }
         void setYCoord( double YCoord ) { m_YCoord = YCoord; }
         void setZCoord( double ZCoord ) { m_ZCoord = ZCoord; }
-        void setIndex( int NeighborID, int Index ) { m_NeighbourIndex[ Index ] = NeighborID; }
         void setDiagonalLattice( int ID ) { m_DiagonalLattice = ID; }
         void setBoundaryTag( std::string Tag ) { m_BoundaryTag = Tag; }
+        void setCpuID( int CpuID ) { m_CpuID = CpuID; }
+
+        void setIndex( int NeighborID, int Index ) {
+            m_NeighbourIndex[ Index ] = NeighborID;
+        }
+
 
 	private:
         int m_ID;
@@ -200,6 +211,7 @@ class Fluid {
         int m_NeighbourIndex[ Vel_DOF ];
         int m_DiagonalLattice;
         std::string m_BoundaryTag;
+        int m_CpuID;
 };
 
 
@@ -219,5 +231,60 @@ class BoundaryEntry {
         int TYPE;
         double Data[ Dimensions ];
 };
+
+
+//------------------------------------------------------------------------------
+//                            Boundary Buffer
+//------------------------------------------------------------------------------
+//scheme :
+class BoundaryBuffer {
+	public:
+		BoundaryBuffer();
+        ~BoundaryBuffer();
+
+        BoundaryBuffer( const BoundaryBuffer& aBuffer );
+        const BoundaryBuffer* operator=( const BoundaryBuffer& aBuffer );
+
+
+
+        // Getter FUNCTIONS
+        double* getField() { return m_Field; };
+		double* getProtocol();
+        unsigned getBufferSize() { return (unsigned)m_BufferElements.size(); };
+        int getTragetCpu() { return m_TragetCpu; }
+        double* getReceivedProtocol() { return m_ReceivedProtocol; }
+		int* getIndicies() { return m_Indices; }
+
+
+		void addBufferElement( unsigned Index );
+		int updateProtocol();
+		int initializeMapping( std::unordered_map<unsigned, unsigned>& LocalToGlobalIdTable );
+        void unpackReceiveProtocol( double* Field );
+		void finalizeMapping( int* ReceivedIndicies, 
+						  std::unordered_map<unsigned, unsigned>& GlobalToLocalIdTable );
+
+
+        // Setter FUNCTIONS
+        void setTragetCpu( int TragetCpuId ) { m_TragetCpu = TragetCpuId; }
+        void setField ( double* Field ) { m_Field = Field; }
+		int* setIndicies() { return m_Indices; }
+		
+
+        void printBufferElements();
+        void printProtocol();
+
+        void flushBuffer();
+
+	private:
+		std::list<unsigned> m_BufferElements;
+		double* m_Protocol;
+        int* m_Indices;
+        double* m_ReceivedProtocol;
+        double* m_Field;
+        unsigned m_BufferSize;
+        bool m_isProtocolReady;
+        int m_TragetCpu;
+};
+
 
 #endif

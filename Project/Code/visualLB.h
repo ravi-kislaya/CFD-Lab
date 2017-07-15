@@ -20,6 +20,7 @@ void write_vtkPointElements( FILE* fp,
                              int* VtkID );
 
 void writeVtkOutput( const char * filename,
+                     int RANK,
                      double* const collideField,
                      int* VtkID,
                      std::vector<Fluid*>& FluidDomain,

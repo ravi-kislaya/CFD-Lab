@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <string>
 #include <fstream>
-#include <iostream>
 #include <list>
 #include <vector>
 #include <unordered_map>
@@ -416,6 +415,31 @@ int findIntegerInString ( std::string &aString ) {
         try{
             // try to convert a word to an integer
             Result = std::stoi( Words[ i ] );
+        }
+        catch( std::exception const & ERROR ) {
+
+            // Continue if it's not possible to convert an instance to an integer
+            continue;
+        }
+
+        // if we reach that place it means that we've found the first
+        // integer in the given string
+        break;
+    }
+
+    return Result;
+}
+
+double findDoubleInString ( std::string &aString ) {
+
+    double Result = -1.0;
+    std::vector<std::string> Words = getVectorOfStrings(aString);
+
+    for ( unsigned i = 0; i < Words.size(); ++i ) {
+
+        try{
+            // try to convert a word to an integer
+            Result = std::stod( Words[ i ] );
         }
         catch( std::exception const & ERROR ) {
 

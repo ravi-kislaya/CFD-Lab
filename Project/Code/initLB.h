@@ -22,4 +22,10 @@ void initialiseData( double** collideField,
                      int RANK,
                      int NUMBER_OF_CPUs );
 
+double findDoubleInString ( std::string &aString );
+
+int findIntegerInString ( std::string &aString );
+
+void trimList( std::list<std::string> &aList );
+
 #endif

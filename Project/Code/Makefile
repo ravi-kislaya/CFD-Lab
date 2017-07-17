@@ -1,6 +1,6 @@
 # Include files
 SOURCES=initLB.cpp visualLB.cpp boundary.cpp collision.cpp streaming.cpp\
- 		computeCellValues.cpp main.cpp helper.cpp DataStructure.cpp
+ 		computeCellValues.cpp main.cpp helper.cpp DataStructure.cpp DynamicInletVelocity.cpp
 
 # Compiler
 # --------
@@ -11,10 +11,9 @@ CFLAGS= -pedantic -Wall -O3 -funroll-loops --std=c++11#Werror
 
 #MODE= -DMLUPS_FLAG
 #MODE=-DDEBUGGING
-#MODE=-DRELEASE
-#MODE= -DRELEASE
+MODE=-DRELEASE
 #MODE=-DMLUPS_FLAG
-MODE=-DCPUPARTITION_CHECK
+#MODE=-DCPUPARTITION_CHECK
 # Linker flags
 # ------------
 LDFLAGS=

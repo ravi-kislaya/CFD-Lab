@@ -137,9 +137,9 @@ void scanBoundary(  std::list<BoundaryFluid*>& ObstacleList,
 
 				// Explicitly assign the velocity components to a temp variables
 				// to make the definition of the INLET boundary condition look clear
-				InletVelocity[ 0 ] = BoundaryConditions[ BoundaryID ]->Data[ 0 ];
+				/*InletVelocity[ 0 ] = BoundaryConditions[ BoundaryID ]->Data[ 0 ];
 				InletVelocity[ 1 ] = BoundaryConditions[ BoundaryID ]->Data[ 1 ];
-				InletVelocity[ 2 ] = BoundaryConditions[ BoundaryID ]->Data[ 2 ];
+				InletVelocity[ 2 ] = BoundaryConditions[ BoundaryID ]->Data[ 2 ];*/
 
 				Neighbour_Local_Cell_Field = Vel_DOF * Neighbour_Local_Cell_Flag;
 
@@ -148,7 +148,7 @@ void scanBoundary(  std::list<BoundaryFluid*>& ObstacleList,
 				Obstacle* Inlet = new Inflow( Neighbour_Local_Cell_Field,
 											  Current_Local_Cell_Field,
 											  18 - i,
-											  InletVelocity );
+											  BoundaryConditions[ BoundaryID ]->Data );
 
 				aBoundaryFluidCell->addObstacle( Inlet );
 

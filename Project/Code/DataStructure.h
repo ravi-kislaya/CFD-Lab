@@ -85,14 +85,15 @@ class Inflow : public Obstacle {
 					double* Inlet ) : Obstacle( SelfIndex,
                                                 getSourceIndex,
                                                 Component ) {
-						m_InletVelocity[0] = Inlet[0];
-						m_InletVelocity[1] = Inlet[1];
-						m_InletVelocity[2] = Inlet[2];
+						m_InletVelocity = Inlet;
+						/*m_InletVelocity[1] = Inlet[1];
+						m_InletVelocity[2] = Inlet[2];*/
 					}
+
 
         virtual void treatBoundary( double * Field );
 	private:
-		double m_InletVelocity[ Dimensions ];
+		double* m_InletVelocity;
 };
 
 class Outflow : public Obstacle {

@@ -21,6 +21,7 @@
 #include "visualLB.h"
 #include "computeCellValues.h"
 #include "helper.h"
+#include "DynamicInletVelocity.h"
 
 
 int main( int argc, char *argv[] ) {
@@ -78,7 +79,15 @@ int main( int argc, char *argv[] ) {
           // CHECK if file containing partitioning exists
           File.open( "./Mesh/CpuPartitioning.prt" );
           if ( !File ) {
-                std::string ERROR = "ERROR: file /Mesh/BoundaryList.bc does not exist";
+                std::string ERROR = "ERROR: file /Mesh/CpuPartitioning.prt does not exist";
+                throw( ERROR );
+          }
+		  File.close();
+		  
+		  // CHECK if file containing Dynamic Input Velocity exists
+		  File.open( "./InletVelocity/aorta.inl" );
+          if ( !File ) {
+                std::string ERROR = "ERROR: file ./InletVelocity/aorta.inl does not exist";
                 throw( ERROR );
           }
           File.close();
@@ -137,7 +146,11 @@ int main( int argc, char *argv[] ) {
     int *flagField = 0;
     int *CpuID = 0;
     int *VtkID = 0;
-
+	
+	std::vector<double> TimeVelocityInlet;
+	int LBStep = 0;
+	int EndTimeStep = 0;
+	double NewInletVelocity = 0.0;
 
     try {
         read_parameters( INPUT_FILE_NAME,         // the name of the data file
@@ -157,6 +170,11 @@ int main( int argc, char *argv[] ) {
                         GlobalToLocalIdTable,
                         RANK,
                         NUMBER_OF_CPUs );
+						
+		readInletVelocity(  TimeVelocityInlet,
+							LBStep,
+							EndTimeStep  );
+		
 
     }
     catch( std::string ERROR ) {
@@ -265,7 +283,18 @@ int main( int argc, char *argv[] ) {
 
             CommunicationBuffers[ i ].unpackReceiveProtocol( collideField );
         }
-
+		//Assuming that first boundary condition is Inflow which is time dependent
+		interpolateInletVelocity(  NewInletVelocity,
+									TimeVelocityInlet,
+									Step,
+									LBStep,
+									EndTimeStep  );
+		BoundaryConditions[0]->Data[0] = NewInletVelocity;
+		BoundaryConditions[0]->Data[1] = 0.0;
+		BoundaryConditions[0]->Data[2] = 0.0;
+		//Debugging begin
+		//printf("VX =  %f, VY =%f, VZ =%f \n",BoundaryConditions[0]->Data[0],BoundaryConditions[0]->Data[1],BoundaryConditions[0]->Data[2]);
+		//Debugging end
 
         doStreaming( collideField,
                      streamField,
@@ -371,6 +400,7 @@ int main( int argc, char *argv[] ) {
     delete [] flagField;
     delete [] CpuID;
     delete [] VtkID;
+
 
     MPI_Finalize();
 #endif

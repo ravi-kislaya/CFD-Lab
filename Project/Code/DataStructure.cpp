@@ -2,7 +2,7 @@
 #include "helper.h"
 #include "computeCellValues.h"
 #include "LBDefinitions.h"
-
+#include <stdio.h>
 #include <iostream>
 #include <list>
 
@@ -157,10 +157,12 @@ inline void Inflow::treatBoundary( double * Field ) {
 
 	double Density = 1.0;
  	double TempF = 0.0;
+	//Debugging begin
+	//printf("VX =  %f, VY =%f, VZ =%f \n",m_InletVelocity[0],m_InletVelocity[1],m_InletVelocity[2]);
+	//Debugging end
  	computeDensity( Field + m_SourceIndex, &Density );
  	computeSingleFeq( &Density, m_InletVelocity, &TempF, m_VelocityComponent );
  	Field[m_SelfIndex + m_VelocityComponent] = TempF;
-
 
 }
 

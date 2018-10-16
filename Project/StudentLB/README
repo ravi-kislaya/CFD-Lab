@@ -1,0 +1,62 @@
+
+
+
+Instruction how to run StudentLB automatically:
+
+1. If you are not able to run run.sh script, please, check wheter
+   you have permission to run the script on your system
+   POSSIBLE SOLUTION: chmod 775 <folder>/StudentLB/run.sh 
+
+
+2. Be sure that your polyMesh folder (which should be in the root directory)
+   contains the follwing files in case if you don't have LBM mesh:
+   "owner", "boundary", "nieghbour", "points", "faces"
+
+   EXAMPLE:
+	   	ls <folder>/polyMesh/
+			boundary
+			faces
+			neighbour
+			owner
+			points
+
+
+3. If you get the error with the mesh conversion then you can do following:
+   3.1 open the "owner" file in the polyMesh folder
+   3.2 look at the FoamFile header
+   3.3 add space between "nCells:" and the actual cell number
+   
+   EXAMPLE:
+   ORIGINE:
+   note        "nPoints:148745  nCells:112734  nFaces:372179  nInternalFaces:304225";
+
+   CHANGE TO:
+   note        "nPoints:148745  nCells: 112734  nFaces:372179  nInternalFaces:304225";	
+   									         ^
+
+4. Please be sure that metis (gpmetis) was installed on your system
+   HINT: Sometimes you have to download and compile metis on your system explicitly
+   Please visit the official website: http://glaros.dtc.umn.edu/gkhome/metis/metis/overview
+   By default: compiled metis is in the following folder: <folder>/StudentLB/Metis/gpmetis
+
+
+5. Please be sure that there are both gcc/7 compiler and mpi.ompi/2.0
+   installed on your system.
+
+   NOTE: Please, load the above mentioned modules manually if you work on the LRZ cluster 
+   NOTE: Please, appeal to the adimnistrators if you're not able to load this if you work 
+   		 on the LRZ linux cluster 
+
+
+6. All boundary conditions should be set up using the text file called BoundaryList.bc
+   Please download the example from the github repository if for some reasons you don't 
+   have such file in your ./Code/ folder
+
+7. For setting the parameter like tau, Time Steps and Time Steps per plotting 
+   Input.data must be used.
+   Its location should be <folder>/StudentLB/Code/
+   If it is not there then please download from github repository.
+
+8. For setting the time dependent boundary condition the file name aorta.inl must be provided
+   in <folder>/StudentLB/Code/InputVelocity directory. If its not there, please download from the github repository.
+

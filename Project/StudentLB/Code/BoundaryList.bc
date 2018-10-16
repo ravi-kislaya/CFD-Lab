@@ -1,0 +1,53 @@
+Boundary Conditions: 10
+
+
+Points to take care while editing this file:
+
+1. If the script run.sh is run then you can
+   see two windows. On the polyMesh window
+   carefully note the names of the 
+   Boundary Conditions.
+
+2. First entry of every line is the boundary 
+   names as mentioned in polyMesh file. 
+   The names of the boundary condition should 
+   be exactly the same as mention in polyMesh.
+   Any spelling mistake will lead to error.
+
+3. The second entry is the type of boundary
+   condition like "INFLOW", "OUTFLOW",
+   "MOVING_WALL" etc
+
+4. Depending on the boundary conditions the 
+   values of input parameters need to be provided.
+   Note the values should be small, because 
+   classical LBM fails for high mach number.
+   The order will always be X-direction then 
+   Y-Direction followed by Z-direction
+
+5. Please note that last two entries
+   should be walls NO_SLIP and
+   Fluid FLUID respectively.
+
+6. To run the code with constant input condition,
+   comment the code in main.cpp from
+   line number 289 to 297 to get time independent
+   input velocity.
+
+7. By default the input is time dependent unless
+   step 6 is not implemented.
+
+
+
+###############################
+inlet INFLOW 0.0 0.0 0.0001
+outlet1 OUTFLOW
+outlet2 OUTFLOW
+outlet3 OUTFLOW
+outlet4	OUTFLOW
+outlet5 OUTFLOW
+outlet6 OUTFLOW
+outlet7 OUTFLOW
+outlet8 OUTFLOW
+walls NO_SLIP
+Fluid FLUID

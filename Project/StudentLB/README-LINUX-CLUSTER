@@ -1,0 +1,51 @@
+To run StudentLB on the Linux cluster, please execute the following:
+
+1) go to the StudetnLB root folder
+2) load the following modules manually:
+
+	module unload mpi.intel
+	module load python
+	module load gcc/7
+	module load mpi.ompi/2.0
+
+3) run the script: 
+	
+	./run.sh
+
+4) IF YOU WANT TO MEASURE PERFORMANCE, PLEASE, DO THE FOLLOWING:
+
+	4.1) go to the Code directory
+			cd <folder>/StudentLB/Code
+
+	4.2) open the Makefile in a text editor
+			vim Makefile
+
+	4.3) comment the current variable MODE and 
+		 uncomment the variable MODE=-DMLUPS_FLAG
+
+		 EXAMPLE:
+
+		 ...
+		 #MODE=-DDEBUGGING
+ 		 #MODE=-DRELEASE
+ 		 MODE=-DMLUPS_FLAG
+ 		 ...
+
+ 	4.4) save and close the file
+
+ 	4.5) come back to the root directory ( <folder>/StudentLB )
+
+ 	4.6) run the following script: ./run.sh
+	
+5) TO GET THE BEST PERFORMANCE ONE SHOULD DOMAIN OF LARGE SIZE.
+   WHILE SUBMITTING THE PROJECT WE DID NOT INCLUDE THE MESH
+   WITH LARGE SIZE IN THE FOLDER.
+   INSTRUCTIONS TO DOWNLOAD AND RUN IT:
+
+	5.1) download the contents of folder from following location:
+	"https://drive.google.com/open?id=0B5ViZZUl2jU8elduR19GTUd2YTQ"
+	
+	5.2) copy the content of the in polyMesh folder which is 
+		 in root directory ( <folder>/StudentLB )
+	
+	5.3) compile the code in MODE=-DMLUPS_FLAG to calculate MLUPS.

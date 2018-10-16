@@ -1,0 +1,11 @@
+Please, run ./run.sh script or execute the following command:
+mpirun -n 1 ./lbsim ./Input.data 1
+
+--------------------------------------------------------------------------------
+STRUCTURE:
+	1) Build folder contains all object files
+	2) Frame folder contains all vtk files
+	3) Mesh folder contains neighbour, coordinates and cell informations
+	4) Other folders contains informations regarding other stuff
+
+--------------------------------------------------------------------------------
